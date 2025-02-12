@@ -2,34 +2,26 @@
 
 .topbar {
   width: 100%;
-
-  /* Top Bar's drop shadow should always be visible */
   z-index: var(--zIndexTopbar);
-  position: relative;
-
-  @media (--viewportMedium) {
-    position: fixed;
-    top: 0;
-    left: 0;
-    /* We need to raise Topbar above .container */
-    z-index: var(--zIndexTopbar);
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 /* Can be given to Topbar when a modal is opened
- * so that the Topbar is not rendered on top of it.*/
+ * so that the Topbar is not rendered on top of it. */
 .topbarBehindModal {
   z-index: initial;
 }
 
 .container {
-  /* Layout */
   width: 100%;
+  padding-top: var(--topbarHeight);
+  min-height: calc(100vh - var(--topbarHeight));
   flex-grow: 1;
   display: flex;
 
   @media (--viewportMedium) {
-    position: relative;
     padding-top: var(--topbarHeightDesktop);
     min-height: calc(100vh - var(--topbarHeightDesktop));
   }
@@ -38,15 +30,10 @@
 /* Container for side and content */
 .layoutWrapperContainer {
   composes: container;
-  /* parent aka root is flexbox, this container takes all available space */
   flex-shrink: 0;
-
-  /* This container uses flexbox layout */
   display: flex;
   flex-direction: column;
   width: 100%;
-
-  /* When side nav is shown as a column, Topbar's box-shadow should be visible */
   z-index: calc(var(--zIndexTopbar) - 1);
 
   @media (--viewportMedium) {
@@ -59,16 +46,14 @@
   display: none;
 
   @media (--viewportMedium) {
-    /* Layout */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     padding: 24px 0 0 24px;
   }
-  @media (--viewportLarge) {
-    /* Layout */
-    padding: 40px 0 0 36px;
 
+  @media (--viewportLarge) {
+    padding: 40px 0 0 36px;
     flex-direction: column;
     justify-content: flex-start;
     border: none;
@@ -79,6 +64,7 @@
   @media (min-width: 1440px) {
     padding: 40px 0 0 calc((100vw - 1368px) / 2);
   }
+
   @media (--viewportXLarge) {
     padding: 40px 0 0 calc((100vw - 1800px) / 2);
   }

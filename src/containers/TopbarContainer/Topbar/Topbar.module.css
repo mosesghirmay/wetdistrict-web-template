@@ -2,28 +2,26 @@
 
 .root {
   width: 100%;
-
-  /* Top Bar's drop shadow should always be visible */
   z-index: var(--zIndexTopbar);
-  position: relative;
+  position: fixed; /* Ensures Topbar stays at the top */
+  top: 0;
+  left: 0;
 }
 
 .container {
-  /* Size */
   width: 100%;
   height: var(--topbarHeight);
-
-  /* Layout for child components */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-
-  /* fill */
   background-color: var(--colorWhite);
-
-  /* shadows */
   box-shadow: var(--boxShadow);
+  padding: 0 12px;
+  position: fixed; /* Keep Topbar fixed to top */
+  top: 0;
+  left: 0;
+  z-index: var(--zIndexTopbar);
 
   @media (--viewportMedium) {
     height: var(--topbarHeightDesktop);
@@ -34,80 +32,85 @@
   }
 }
 
-.logoutButton {
+/* Adjustments to avoid unwanted spacing */
+.layoutWrapper {
   margin: 0;
+  padding: 0;
 }
 
-/* Child component's size (and positioning) should be given here */
-.menu,
-.searchMenu {
-  /* Font */
-  composes: h5 from global;
-  color: var(--colorGrey700);
+/* Ensure page content starts directly below the Topbar */
+.mainContent {
+  padding-top: var(--topbarHeight);
+}
 
-  /* Layout */
+.logo {
+  flex: 0 0 auto;
   display: flex;
-  width: 66px;
-  margin: 0;
-  border-width: 0px;
-  background-color: transparent;
-
-  /* Hovers */
-  &:enabled {
-    cursor: pointer;
-  }
-  &:enabled:hover,
-  &:enabled:active {
-    background-color: transparent;
-    box-shadow: none;
-  }
-  &:disabled {
-    background-color: transparent;
-    cursor: auto;
-  }
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .menu {
-  padding: 15px 24px;
-  position: relative;
-
-  @media (--viewportMedium) {
-    padding: 21px 24px;
-  }
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  border: none;
+  outline: none;
 }
+
+.menuIcon {
+  margin: 0;
+  border: none;
+  outline: none;
+}
+
+.topbarFiltersButton {
+  width: 250px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  font-size: 14px;
+  border-radius: 30px;
+  background-color: var(--colorWhite) !important;
+  color: var(--colorGrey700) !important;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 15px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  gap: 10px;
+}
+
+.topbarContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.topbarFiltersButton:hover {
+  background-color: var(--colorWhite) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
 .searchMenu {
-  padding: 12px 24px;
-
-  @media (--viewportMedium) {
-    padding: 18px 24px;
-  }
-}
-
-.menuIcon,
-.searchMenuIcon {
-  margin: 9px 0;
+  display: none !important;
 }
 
 .notificationDot {
-  /* Dimensions */
   width: 12px;
   height: 12px;
   border-radius: 50%;
-
-  /* Position */
   position: absolute;
   top: 17px;
   right: 17px;
-
-  /* Style: red dot with white border */
   background-color: var(--colorFail);
   border: 2px solid var(--colorWhite);
-
   animation-name: notificationPop;
   animation-duration: 0.1s;
   animation-delay: 0.1s;
   animation-fill-mode: forwards;
-
   animation-timing-function: ease-in;
   opacity: 0;
   transform: scale(0);
@@ -140,9 +143,6 @@
 .rootMenuIcon {
   fill: var(--colorGrey700);
 }
-.rootSearchIcon {
-  stroke: var(--colorGrey700);
-}
 
 .searchContainer {
   position: relative;
@@ -153,9 +153,6 @@
 .mobileHelp {
   color: var(--colorGrey300);
   margin: 0 24px;
-
-  /* Absolute position to avoid affecting the layout of the autocomplete
-   predictions list */
   position: absolute;
   top: 73px;
 }
@@ -164,7 +161,6 @@
 
 .modalContainer {
   composes: marketplaceModalInMobileBaseStyles from global;
-  padding: 0;
   padding: var(--modalPadding);
 
   @media (--viewportMedium) {
@@ -177,9 +173,11 @@
     border-bottom: none;
   }
 }
+
 .modalContainerSearchForm {
   composes: modalContainer;
   padding: 0;
+
   @media (--viewportMedium) {
     padding: var(--modalPaddingMedium);
   }
@@ -219,8 +217,6 @@
 
 .bottomWrapper {
   composes: marketplaceModalBottomWrapper from global;
-
-  /* Align the helper links to the left since there isn't a Primary Button anymore */
   text-align: left;
 }
 
@@ -231,24 +227,15 @@
 .genericError {
   position: fixed;
   top: calc(var(--topbarHeight) + 15px);
-
-  /* Place enough to the right to hide the error */
   right: -355px;
   opacity: 0;
-
   max-width: 340px;
   margin: 0 15px;
-
-  /* Animate error from the right */
   transition: all ease-out 0.2s;
   transition-delay: 1s;
-
-  /* Bleed the bg color from the bottom */
   padding-bottom: 4px;
   background-color: var(--marketplaceColor);
   border-radius: var(--borderRadiusMedium);
-
-  /* Place on top of everything */
   z-index: var(--zIndexGenericError);
 
   @media (--viewportMedium) {
@@ -277,3 +264,4 @@
     margin: 0;
   }
 }
+

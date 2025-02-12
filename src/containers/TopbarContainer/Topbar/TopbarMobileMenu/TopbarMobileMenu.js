@@ -1,7 +1,3 @@
-/**
- *  TopbarMobileMenu prints the menu content for authenticated user or
- * shows login actions for those who are not authenticated.
- */
 import React from 'react';
 import classNames from 'classnames';
 
@@ -197,3 +193,4 @@ const TopbarMobileMenu = props => {
 };
 
 export default TopbarMobileMenu;
+

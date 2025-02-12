@@ -25,6 +25,8 @@ import TopbarMobileMenu from './TopbarMobileMenu/TopbarMobileMenu';
 import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
 
 import css from './Topbar.module.css';
+import { FaRegCalendarAlt } from 'react-icons/fa'; // Import from react-icons
+
 
 const MAX_MOBILE_SCREEN_WIDTH = 1024;
 
@@ -244,6 +246,8 @@ const TopbarComponent = props => {
         : null,
     };
   };
+
+
   const initialSearchFormValues = topbarSearcInitialValues();
 
   const classes = classNames(rootClassName || css.root, className);
@@ -263,42 +267,57 @@ const TopbarComponent = props => {
 
   const mobileSearchButtonMaybe = showSearchForm ? (
     <Button
-      rootClassName={css.searchMenu}
-      onClick={() => redirectToURLWithModalState(history, location, 'mobilesearch')}
-      title={intl.formatMessage({ id: 'Topbar.searchIcon' })}
-    >
-      <SearchIcon className={css.searchMenuIcon} />
-    </Button>
-  ) : (
-    <div className={css.searchMenu} />
-  );
-
-  return (
-    <div className={classes}>
-      <LimitedAccessBanner
-        isAuthenticated={isAuthenticated}
-        isLoggedInAs={isLoggedInAs}
-        authScopes={authScopes}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        currentPage={resolvedCurrentPage}
+  rootClassName={css.searchMenu}
+  onClick={() => redirectToURLWithModalState(history, location, 'mobilesearch')}
+  title={intl.formatMessage({ id: 'Topbar.searchIcon' })}
+>
+  <SearchIcon className={css.searchMenuIcon} />
+</Button>
+) : (
+  <div className={css.searchMenu} />
+);
+  
+return (
+  <div className={classes}>
+    <LimitedAccessBanner
+      isAuthenticated={isAuthenticated}
+      isLoggedInAs={isLoggedInAs}
+      authScopes={authScopes}
+      currentUser={currentUser}
+      onLogout={handleLogout}
+      currentPage={resolvedCurrentPage}
+    />
+    <div className={classNames(mobileRootClassName || css.container, mobileClassName)}>
+      {/* Logo */}
+      <LinkedLogo
+        layout={'mobile'}
+        alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
+        linkToExternalSite={config?.topbar?.logoLink}
       />
-      <div className={classNames(mobileRootClassName || css.container, mobileClassName)}>
-        <Button
-          rootClassName={css.menu}
-          onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
-          title={intl.formatMessage({ id: 'Topbar.menuIcon' })}
-        >
-          <MenuIcon className={css.menuIcon} />
-          {notificationDot}
-        </Button>
-        <LinkedLogo
-          layout={'mobile'}
-          alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
-          linkToExternalSite={config?.topbar?.logoLink}
-        />
-        {mobileSearchButtonMaybe}
-      </div>
+
+      <Button
+  rootClassName={css.topbarFiltersButton}
+  onClick={() => redirectToURLWithModalState(history, location, 'calendar')}
+>
+  <FaRegCalendarAlt className={css.calendarIcon} />
+  <span>Choose a date</span>
+</Button>
+
+      {/* Menu Button */}
+      <Button
+        rootClassName={css.menu}
+        onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
+        title={intl.formatMessage({ id: 'Topbar.menuIcon' })}
+      >
+        <MenuIcon className={css.menuIcon} />
+        {notificationDot}
+      </Button>
+
+      {/* Search Button */}
+      {mobileSearchButtonMaybe}
+    </div>
+);
+
       <div className={css.desktop}>
         <TopbarDesktop
           className={desktopClassName}

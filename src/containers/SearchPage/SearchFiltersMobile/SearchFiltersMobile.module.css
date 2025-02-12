@@ -8,8 +8,8 @@
 
   /* sticky result summary in mobile */
   position: sticky;
-  top: 0;
-  z-index: 1;
+  top: var(--topbarHeight); /* Ensures it stays under the topbar */
+  z-index: var(--zIndexTopbar);
 }
 
 .searchResultSummary {
