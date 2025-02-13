@@ -111,3 +111,8 @@
 .isOpen {
   display: block;
 }
+
+/* Hide the Price Filter */
+.PriceFilterPlain_root__dusuq {
+  display: none !important;
+}

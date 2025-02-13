@@ -47,7 +47,7 @@ import {
   omitLimitedListingFieldParams,
   getDatesAndSeatsMaybe,
 } from './SearchPage.shared';
-
+ 
 import FilterComponent from './FilterComponent';
 import MainPanelHeader from './MainPanelHeader/MainPanelHeader';
 import SearchFiltersMobile from './SearchFiltersMobile/SearchFiltersMobile';

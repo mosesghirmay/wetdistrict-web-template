@@ -96,11 +96,6 @@ class SearchFiltersMobileComponent extends Component {
 
     return (
       <div className={classes}>
-       {/* <div className={css.searchResultSummary}>
-          {listingsAreLoaded && resultsCount > 0 ? resultsFound : null}
-          {listingsAreLoaded && resultsCount === 0 ? noResults : null}
-          {searchInProgress ? loadingResults : null}
-        </div> */}
         <div className={css.buttons}>
           <PopupOpenerButton isSelected={selectedFiltersCount > 0} toggleOpen={this.openFilters}>
             <FormattedMessage
@@ -134,8 +129,14 @@ class SearchFiltersMobileComponent extends Component {
               <FormattedMessage id={'SearchFiltersMobile.resetAll'} />
             </button>
           </div>
+
           {this.state.isFiltersOpenOnMobile ? (
-            <div className={css.filtersWrapper}>{children}</div>
+            <div className={css.filtersWrapper}>
+              {React.Children.map(children, child => {
+                // Remove the price filter based on child key or type
+                return child?.key !== 'price' ? child : null;
+              })}
+            </div>
           ) : null}
 
           <div className={css.showListingsContainer}>
