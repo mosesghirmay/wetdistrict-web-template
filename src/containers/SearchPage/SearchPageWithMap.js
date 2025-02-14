@@ -473,6 +473,7 @@ export class SearchPageComponent extends Component {
                   />
                 );
               })}
+              
             </SearchFiltersMobile>
             <MainPanelHeader
               className={css.mainPanelMapVariant}

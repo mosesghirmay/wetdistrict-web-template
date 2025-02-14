@@ -23,12 +23,10 @@ import SearchIcon from './SearchIcon';
 import TopbarSearchForm from './TopbarSearchForm/TopbarSearchForm';
 import TopbarMobileMenu from './TopbarMobileMenu/TopbarMobileMenu';
 import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
-import PopupOpenerButton from '../../SearchPage/PopupOpenerButton/PopupOpenerButton';
 
 import css from './Topbar.module.css';
 import { FaRegCalendarAlt } from 'react-icons/fa'; // Import from react-icons
 import CalendarFilter from '../../SearchPage/CalendarFilter'; //  Import the new CalendarFilter component
-
 
 const MAX_MOBILE_SCREEN_WIDTH = 1024;
 
@@ -199,7 +197,7 @@ const TopbarComponent = props => {
     });
   };
 
-  const { mobilemenu, mobilesearch, keywords, address, origin, bounds } = parse(location.search, {
+  const { mobilemenu, mobilesearch, keywords, calendar, address, origin, bounds } = parse(location.search, {
     latlng: ['origin'],
     latlngBounds: ['bounds'],
   });

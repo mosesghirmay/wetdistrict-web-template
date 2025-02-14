@@ -56,6 +56,7 @@ import SearchResultsPanel from './SearchResultsPanel/SearchResultsPanel';
 import NoSearchResultsMaybe from './NoSearchResultsMaybe/NoSearchResultsMaybe';
 
 import css from './SearchPage.module.css';
+import CalendarFilter from './CalendarFilter';
 
 const MODAL_BREAKPOINT = 768; // Search is in modal on mobile layout
 
@@ -328,7 +329,7 @@ export class SearchPageComponent extends Component {
                   filterConfig.key
                 }`;
                 return (
-                  <FilterComponent
+                  <CalendarFilter
                     key={key}
                     idPrefix="SearchFiltersDesktop"
                     className={css.filter}
@@ -350,6 +351,7 @@ export class SearchPageComponent extends Component {
               </button>
             </div>
           </aside>
+          
 
           <div className={css.layoutWrapperMain} role="main">
             <div className={css.searchResultContainer}>
@@ -374,9 +376,10 @@ export class SearchPageComponent extends Component {
                   const key = `SearchFiltersMobile.${filterConfig.scope || 'built-in'}.${
                     filterConfig.key
                   }`;
+                  
 
                   return (
-                    <FilterComponent
+                    <CalendarFilter
                       key={key}
                       idPrefix="SearchFiltersMobile"
                       config={filterConfig}

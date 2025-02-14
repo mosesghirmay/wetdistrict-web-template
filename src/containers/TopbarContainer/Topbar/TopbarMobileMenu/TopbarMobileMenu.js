@@ -15,12 +15,16 @@ import {
 
 import css from './TopbarMobileMenu.module.css';
 
+/**
+ * Custom link component for rendering internal and external links in the menu
+ */
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
   const { group, text, type, href, route } = linkConfig;
+
   const getCurrentPageClass = page => {
     const hasPageName = name => currentPage?.indexOf(name) === 0;
-    const isCMSPage = pageId => hasPageName('CMSPage') && currentPage === `${page}:${pageId}`;
-    const isInboxPage = tab => hasPageName('InboxPage') && currentPage === `${page}:${tab}`;
+    const isCMSPage = pageId => hasPageName('CMSPage') && currentPage === `CMSPage:${pageId}`;
+    const isInboxPage = tab => hasPageName('InboxPage') && currentPage === `InboxPage:${tab}`;
     const isCurrentPage = currentPage === page;
 
     return isCMSPage(route?.params?.pageId) || isInboxPage(route?.params?.tab) || isCurrentPage
@@ -28,8 +32,6 @@ const CustomLinkComponent = ({ linkConfig, currentPage }) => {
       : null;
   };
 
-  // Note: if the config contains 'route' keyword,
-  // then in-app linking config has been resolved already.
   if (type === 'internal' && route) {
     // Internal link
     const { name, params, to } = route || {};
@@ -41,6 +43,7 @@ const CustomLinkComponent = ({ linkConfig, currentPage }) => {
       </NamedLink>
     );
   }
+  
   return (
     <ExternalLink href={href} className={css.navigationLink}>
       <span className={css.menuItemBorder} />
@@ -50,18 +53,8 @@ const CustomLinkComponent = ({ linkConfig, currentPage }) => {
 };
 
 /**
- * Menu for mobile layout (opens through hamburger icon)
- *
- * @component
- * @param {Object} props
- * @param {boolean} props.isAuthenticated
- * @param {string?} props.currentPage
- * @param {boolean} props.currentUserHasListings
- * @param {Object?} props.currentUser API entity
- * @param {number} props.notificationCount
- * @param {Array<Object>} props.customLinks Contains object like { group, text, type, href, route }
- * @param {Function} props.onLogout
- * @returns {JSX.Element} search icon
+ * Mobile menu component for the topbar.
+ * Opens via the hamburger icon.
  */
 const TopbarMobileMenu = props => {
   const {
@@ -76,15 +69,13 @@ const TopbarMobileMenu = props => {
 
   const user = ensureCurrentUser(currentUser);
 
-  const extraLinks = customLinks.map((linkConfig, index) => {
-    return (
-      <CustomLinkComponent
-        key={`${linkConfig.text}_${index}`}
-        linkConfig={linkConfig}
-        currentPage={currentPage}
-      />
-    );
-  });
+  const extraLinks = customLinks.map((linkConfig, index) => (
+    <CustomLinkComponent
+      key={`${linkConfig.text}_${index}`}
+      linkConfig={linkConfig}
+      currentPage={currentPage}
+    />
+  ));
 
   if (!isAuthenticated) {
     const signup = (
@@ -104,6 +95,7 @@ const TopbarMobileMenu = props => {
         <FormattedMessage id="TopbarMobileMenu.signupOrLogin" values={{ signup, login }} />
       </span>
     );
+
     return (
       <div className={css.root}>
         <div className={css.content}>
@@ -180,9 +172,11 @@ const TopbarMobileMenu = props => {
             <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
           </NamedLink>
         </div>
+
         <div className={css.customLinksWrapper}>{extraLinks}</div>
         <div className={css.spacer} />
       </div>
+
       <div className={css.footer}>
         <NamedLink className={css.createNewListingLink} name="NewListingPage">
           <FormattedMessage id="TopbarMobileMenu.newListingLink" />
@@ -193,4 +187,3 @@ const TopbarMobileMenu = props => {
 };
 
 export default TopbarMobileMenu;
-
