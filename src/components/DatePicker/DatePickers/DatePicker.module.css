@@ -1,15 +1,27 @@
 @import '../../../styles/customMediaQueries.css';
 
 .root {
-  display: block;
+  background-color: white !important;
+  border: none !important; /* ✅ Remove border */
+  border-radius: 0 !important; /* ✅ Remove rounded corners */
+  width: 100% !important; /* ✅ Expand full width */
+  max-width: 100% !important; /* ✅ Override any existing max width */
+  padding: 0 !important; /* ✅ Remove extra padding */
+  box-shadow: none !important; /* ✅ Remove box shadow */
+  display: flex !important;
+  flex-direction: column !important; /* ✅ Stack elements */
+  align-items: center !important; /* ✅ Center content */
+}
+
+
+/* ✅ Ensure Time Picker & Duration stay below */
+.filtersWrapper {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-width: 272px;
-  border-right: 1px solid var(--datepickerBorderColor);
-  border-bottom: 1px solid var(--datepickerBorderColor);
-  border-left: 1px solid var(--datepickerBorderColor);
-  border-radius: 0 0 6px 6px;
-  color: var(--datepickerFgColor);
-  background-color: var(--datepickerBgColor);
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 200px; /* ✅ Adjust height for spacing */
 }
 
 .light {
@@ -34,10 +46,10 @@
 
 .datepicker {
   display: block;
-  width: min-content;
-  min-width: 272px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100% !important; /* ✅ Expand to full modal width */
+  max-width: none !important; /* ✅ Remove any max-width restrictions */
+  margin: 0 auto; /* ✅ Center alignment */
+  padding: 0; /* ✅ Remove extra padding */
 }
 
 .disabled *:disabled {
@@ -50,21 +62,45 @@
     color: var(--datepickerHeaderFgColorDisabled);
   }
 
-  .date {
-    cursor: default;
-    opacity: 0.5;
-  }
+/* ✅ Past & Unavailable Dates (Grey + Strikethrough) */
+.dateDisabled {
+  color: var(--colorGrey400) !important; /* ✅ Grey text */
+  text-decoration: line-through !important; /* ✅ Strikethrough */
+  pointer-events: none; /* ✅ Prevent selection */
+  opacity: 0.6;
+}
 
-  .date:hover > * {
-    background-color: transparent;
-  }
+/* ✅ Ensure that unavailable weekdays are also grey */
+.weekday.dateDisabled {
+  color: var(--colorGrey400) !important;
+  text-decoration: line-through !important;
+}
 
-  .dateInRange:hover {
-    .renderedDay {
-      background-color: var(--datepickerHoveredBgColor);
-      color: var(--datepickerHoveredFgColor);
-    }
-  }
+/* ✅ Default styling for all dates */
+.date {
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  font-size: 15px;
+  line-height: 24px;
+  position: relative;
+  border-radius: 50%; /* ✅ Circular highlight */
+}
+
+.dateToday {
+  border: 2px solid var(--marketplaceColor);  /* ✅ Ensures border for today's date */
+  border-radius: 50%;
+}
+
+.dateSelected {
+  background-color: var(--marketplaceColor); /* ✅ When selected, fill background */
+  color: white;
+  border: 2px solid var(--marketplaceColorDark);
+}
+
+
 
   .dateSelected:hover > * {
     color: var(--colorWhite);
@@ -121,12 +157,15 @@
 }
 
 .arrowIcon {
-  stroke: var(--datepickerHeaderArrowColor);
-  fill: var(--datepickerHeaderArrowColor);
+  stroke: var(--black);
+  fill: var(--black);
 }
 
 .body {
-  padding: 0 1px 12px 1px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center
 }
 
 .calendarViewport {
@@ -138,7 +177,7 @@
 }
 .calendars {
   display: flex;
-  width: calc(3 * 266px);
+height: auto;
   position: relative;
   top: 0;
   transform: translateX(-264px);
@@ -159,6 +198,7 @@
 
 .weekday > span {
   display: flex;
+  width: 100% !important;
   justify-content: center;
   align-items: center;
   font-weight: 600;
@@ -219,8 +259,7 @@
     width: 14px;
     height: 2px;
     position: absolute;
-    bottom: 6px;
-    background-color: var(--datepickerFgColor);
+   
   }
 }
 
@@ -235,10 +274,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--datepickerSelectedBgColor);
-    border-radius: calc(37px / 2);
-    color: var(--datepickerFgColor);
-  }
+    background-color: var(--marketplaceColor);
+    border: 1px solid var(--marketplaceColorDark);
+    border-radius: 20%;
+    color: var(--colorWhite);  }
 }
 
 .dateEnd {
@@ -306,7 +345,7 @@
   &:hover .renderedDay,
   & .renderedDay {
     background-color: transparent;
-    color: var(--datepickerDisabledFgColor);
+    color: var(--colorGrey200);
     text-decoration: var(--datepickerDisabledTextDeco);
   }
 
@@ -368,4 +407,22 @@
   clip: rect(0 0 0 0);
   -webkit-clip-path: inset(50%);
   clip-path: inset(50%);
+}
+
+.dateLabel {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: black; /* ✅ Adjust color as needed */
+  text-align: left;
+}
+
+
+.datePickerPopup {
+  width: 100% !important; /* ✅ Expands popup width */
+  max-width: 100% !important;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

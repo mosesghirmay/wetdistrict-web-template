@@ -1,4 +1,3 @@
-console.log("✅ CalendarFilter is rendering...");
 import React from 'react';
 import BookingDateRangeFilter from './BookingDateRangeFilter/BookingDateRangeFilter';
 

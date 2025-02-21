@@ -1539,3 +1539,7 @@ textarea {
     margin-top: 32px;
   }
 }
+
+:root {
+  --colorGrey50: #f8f8f8; /* Light grey */
+}

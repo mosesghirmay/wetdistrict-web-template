@@ -72,31 +72,41 @@ class FilterPlainComponent extends Component {
       initialValues,
       keepDirtyOnReinitialize = false,
     } = this.props;
+
     const classes = classNames(rootClassName || css.root, className);
+
+    // 🔹 Only show expandable header if there are multiple filters
+    const showExpandableHeader = React.Children.count(children) > 1;
 
     return (
       <div className={classes}>
-        <div className={css.filterHeader}>
-          <button className={css.labelButton} onClick={this.toggleIsOpen}>
-            <span className={css.labelButtonContent}>
-              <span className={css.labelWrapper}>
-                <span className={css.label}>
-                  {label}
-                  {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
-                  {labelSelection ? (
-                    <span className={css.labelSelected}>{labelSelection}</span>
-                  ) : null}
+        {showExpandableHeader && ( // ✅ Only render header if more than one filter
+          <div className={css.filterHeader}>
+            <button className={css.labelButton} onClick={this.toggleIsOpen}>
+              <span className={css.labelButtonContent}>
+                <span className={css.labelWrapper}>
+                  <span className={css.label}>
+                    {label}
+                    {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
+                    {labelSelection ? (
+                      <span className={css.labelSelected}>{labelSelection}</span>
+                    ) : null}
+                  </span>
+                </span>
+                <span className={css.openSign}>
+                  <IconPlus isOpen={this.state.isOpen} isSelected={isSelected} />
                 </span>
               </span>
-              <span className={css.openSign}>
-                <IconPlus isOpen={this.state.isOpen} isSelected={isSelected} />
-              </span>
-            </span>
-          </button>
-        </div>
+            </button>
+          </div>
+        )}
+
+        {/* ✅ Always open if there’s only one filter */}
         <div
           id={id}
-          className={classNames(plainClassName, css.plain, { [css.isOpen]: this.state.isOpen })}
+          className={classNames(plainClassName, css.plain, {
+            [css.isOpen]: this.state.isOpen || !showExpandableHeader,
+          })}
           ref={node => {
             this.filterContent = node;
           }}

@@ -3,7 +3,6 @@ import { useIntl } from 'react-intl';
 import classNames from 'classnames';
 
 import { OutsideClickHandler } from '../../../components';
-
 import { getISODateString, getStartOfDay, isValidDateString } from './DatePicker.helpers';
 import DatePicker from './DatePicker';
 
@@ -17,13 +16,14 @@ const dateFormatOptions = {
 
 export const SingleDatePicker = props => {
   const intl = useIntl();
+  const element = useRef(null);
+
   const [mounted, setMounted] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // ✅ Default to open
   const [dateData, setDateData] = useState({
     date: props.value || null,
     formatted: props.value ? intl.formatDate(props.value, dateFormatOptions) : '',
   });
-  const element = useRef(null);
 
   const {
     className,
@@ -40,14 +40,21 @@ export const SingleDatePicker = props => {
     ...rest
   } = props;
 
-  // If value has changed, update internal state
+  // ✅ Ensure past dates are disabled
+  const isDateDisabled = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of the day
+    return date < today; // Blocks past dates
+  };
+
+  // ✅ Track mount state
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // ✅ Sync state with external value updates
   useEffect(() => {
     if (mounted && value?.getTime() !== dateData?.date?.getTime()) {
-      // If mounted, changes to value should be reflected to 'date' state
       setDateData({
         date: value,
         formatted: value ? intl.formatDate(value, dateFormatOptions) : '',
@@ -63,30 +70,30 @@ export const SingleDatePicker = props => {
       ? { startDate: getISODateString(dateData.date) }
       : {};
 
-  const handleChange = value => {
-    const startOfDay = getStartOfDay(value);
-    setDateData({ date: startOfDay, formatted: intl.formatDate(startOfDay, dateFormatOptions) });
-    setIsOpen(false);
+  // ✅ Handle Date Selection
+  const handleChange = (selectedDate) => {
+    if (isDateDisabled(selectedDate)) return; // Prevent past date selection
 
-    if (element.current) {
-      element.current.querySelector('input').focus();
-    }
+    const startOfDay = getStartOfDay(selectedDate);
+    setDateData({ date: startOfDay, formatted: intl.formatDate(startOfDay, dateFormatOptions) });
 
     if (onChange) {
       onChange(startOfDay);
     }
+
+    setIsOpen(true); // ✅ Keep calendar open after selection
   };
 
   const handleOnChangeOnInput = e => {
     const inputStr = e.target.value;
     if (!inputStr) {
-      setDateData({ date: null, formatted: inputStr });
+      setDateData({ date: null, formatted: '' });
       return;
     }
 
     if (isValidDateString(inputStr)) {
       const d = new Date(inputStr);
-      if (isDayBlocked(d)) {
+      if (isDateDisabled(d)) {
         setDateData({ date: dateData.date, formatted: '' });
         return;
       } else {
@@ -99,17 +106,16 @@ export const SingleDatePicker = props => {
   };
 
   const handleBlur = () => {
-    setIsOpen(false);
+    setIsOpen(true); // ✅ Keeps it open
   };
 
   const handleKeyDown = e => {
-    // Gather all escape presses to close menu
     if (e.key === 'Escape') {
-      toggleOpen(false);
+      toggleOpen(false); // ✅ Allows closing with Escape key
     }
   };
+
   const handleOnKeyDownOnInput = e => {
-    // Gather all escape presses to close menu
     if (e.key === 'Space' || e.key === 'Enter') {
       e.preventDefault();
       toggleOpen();
@@ -117,7 +123,7 @@ export const SingleDatePicker = props => {
   };
 
   const toggleOpen = enforcedState => {
-    if (enforcedState) {
+    if (typeof enforcedState === 'boolean') {
       setIsOpen(enforcedState);
     } else {
       setIsOpen(prevState => !prevState);
@@ -132,36 +138,40 @@ export const SingleDatePicker = props => {
   };
 
   return (
-    <OutsideClickHandler className={classes} onOutsideClick={handleBlur}>
+    <OutsideClickHandler className={classes} onOutsideClick={() => setIsOpen(true)}> {/* ✅ Keeps open */}
       <div id={pickerId} onKeyDown={handleKeyDown} ref={element}>
         <div
           className={classNames(css.inputWrapper, {
             [css.open]: isOpen,
             [inputClassName]: inputClassName,
           })}
-          onClick={toggleOpen}
+          onClick={() => setIsOpen(true)}
         >
           <input
             id={id}
-            className={classNames(css.input, { [css.inputPlaceholder]: !value })}
-            placeholder={placeholderText}
-            value={dateData.formatted}
+            className={classNames(css.input, {
+              [css.inputPlaceholder]: !dateData.formatted,
+            })}
+            placeholder={
+              dateData.formatted || intl.formatDate(new Date(), dateFormatOptions) // ✅ Uses selected date or today
+            }
+            value={dateData.formatted} // ✅ Always shows the date unless manually cleared
             {...inputProps}
           />
         </div>
 
         <div className={popupClassName || css.popup}>
-          {isOpen ? (
+          {isOpen && (
             <DatePicker
               range={false}
               showMonthStepper={true}
               onChange={handleChange}
-              isDayBlocked={isDayBlocked}
+              isDayBlocked={isDateDisabled} // ✅ Blocks past dates
               value={dateData.date}
               {...startDateMaybe}
               {...rest}
             />
-          ) : null}
+          )}
         </div>
       </div>
     </OutsideClickHandler>

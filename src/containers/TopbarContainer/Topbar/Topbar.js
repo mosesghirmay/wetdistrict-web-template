@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'; 
 import pickBy from 'lodash/pickBy';
 import classNames from 'classnames';
 
@@ -26,7 +26,13 @@ import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
 
 import css from './Topbar.module.css';
 import { FaRegCalendarAlt } from 'react-icons/fa'; // Import from react-icons
-import CalendarFilter from '../../SearchPage/CalendarFilter'; //  Import the new CalendarFilter component
+import SingleDatePicker from '../../../components/DatePicker/DatePickers/SingleDatePicker';
+
+import WrittenLogo from '../../../assets/WrittenLogo.png';
+import { useHistory } from "react-router-dom";  // ✅ Import useHistory
+
+
+
 
 const MAX_MOBILE_SCREEN_WIDTH = 1024;
 
@@ -127,7 +133,31 @@ const GenericError = props => {
   );
 };
 
-const TopbarComponent = props => {
+const TopbarComponent = (props) => {
+  const [isCalendarOpen, setCalendarOpen] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);  // ✅ Ensures selectedDate is always defined
+  const [selectedStartTime, setSelectedStartTime] = useState('');
+  const [isDatePickerOpen, setDatePickerOpen] = useState(false);
+  const [isDateSelected, setIsDateSelected] = useState(false); // ✅ Track date selection
+
+  // ✅ Prevent background scrolling when Date Picker is open
+  useEffect(() => {
+    document.body.style.overflow = isDatePickerOpen ? 'hidden' : '';
+  }, [isDatePickerOpen]);
+
+  // ✅ Handle Date Selection
+  const handleDateChange = (date) => {
+    if (date) {
+      setSelectedDate(date);
+      setIsDateSelected(true);  // ✅ Set flag when a date is picked
+    }
+  
+
+  // ✅ Open & Close Date Picker
+  const handleDatePickerOpen = () => setDatePickerOpen(true);
+  const handleDatePickerClose = () => setDatePickerOpen(false);
+  };
+
   const {
     className,
     rootClassName,
@@ -154,10 +184,30 @@ const TopbarComponent = props => {
     config,
     routeConfiguration,
   } = props;
+  
+  
+
+const handleSingleDateSelection = (date) => {
+  setSelectedDate(date); // ✅ Overwrite previous selection with new date
+};
+
+const formatStartTime = (date, time) => {
+  if (!date) return null; // Ensure a date is selected
+
+  const selectedDate = new Date(date); // Convert date string to Date object
+  const [hour, minute, period] = time.match(/(\d+):(\d+) (\w+)/).slice(1);
+
+  let hours = parseInt(hour, 10);
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  selectedDate.setHours(hours, parseInt(minute, 10), 0, 0);
+  return selectedDate.toISOString(); // Convert to ISO 8601 format
+};
+
 
   const handleSubmit = values => {
     const { currentSearchParams, history, config, routeConfiguration } = props;
-
     const topbarSearchParams = () => {
       if (isMainSearchTypeKeywords(config)) {
         return { keywords: values?.keywords };
@@ -197,7 +247,7 @@ const TopbarComponent = props => {
     });
   };
 
-  const { mobilemenu, mobilesearch, keywords, calendar, address, origin, bounds } = parse(location.search, {
+  const { mobilemenu, mobilesearch, keywords, address, origin, bounds } = parse(location.search, {
     latlng: ['origin'],
     latlngBounds: ['bounds'],
   });
@@ -264,6 +314,8 @@ const TopbarComponent = props => {
 
   const showSearchForm =
     showSearchOnAllPages || showSearchOnSearchPage || showSearchNotOnLandingPage;
+  
+  
 
   const mobileSearchButtonMaybe = showSearchForm ? (
     <Button
@@ -276,47 +328,141 @@ const TopbarComponent = props => {
 ) : (
   <div className={css.searchMenu} />
 );
-  
-return (
-  <div className={classes}>
-    <LimitedAccessBanner
-      isAuthenticated={isAuthenticated}
-      isLoggedInAs={isLoggedInAs}
-      authScopes={authScopes}
-      currentUser={currentUser}
-      onLogout={handleLogout}
-      currentPage={resolvedCurrentPage}
-    />
-    <div className={classNames(mobileRootClassName || css.container, mobileClassName)}>
-      {/* Logo */}
-      <LinkedLogo
-        layout={'mobile'}
-        alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
-        linkToExternalSite={config?.topbar?.logoLink}
-      />
 
-      <Button
-  rootClassName={css.topbarFiltersButton}
-  onClick={() => redirectToURLWithModalState(history, location, 'calendar')}
+ 
+  return (
+    <div className={classes}>
+      <LimitedAccessBanner
+        isAuthenticated={isAuthenticated}
+        isLoggedInAs={isLoggedInAs}
+        authScopes={authScopes}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        currentPage={resolvedCurrentPage}
+      />
+<div 
+  className={classNames(mobileRootClassName || css.container, mobileClassName)}
+  style={{ backgroundColor: 'var(--colorgrey50)', opacity: 1 }}
+>
+        {/* Logo */}
+        <LinkedLogo
+          layout={'mobile'}
+          alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
+          linkToExternalSite={config?.topbar?.logoLink}
+        />
+
+        {/* 🔹 Date Picker Button */}
+        <button 
+  className={css.datePickerButton} 
+  onClick={() => {
+    setDatePickerOpen(true);  
+    setCalendarOpen(true);  // ✅ Force it open immediately
+  }}
 >
   <FaRegCalendarAlt className={css.calendarIcon} />
-  <span>Choose a date</span>
-</Button>
+  <span>{intl.formatMessage({ id: 'Topbar.chooseDate' }) || 'Choose a date'}</span>
+</button>
 
-      {/* Menu Button */}
-      <Button
-        rootClassName={css.menu}
-        onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
-        title={intl.formatMessage({ id: 'Topbar.menuIcon' })}
-      >
-        <MenuIcon className={css.menuIcon} />
-        {notificationDot}
-      </Button>
 
-      {/* Search Button */}
-      {mobileSearchButtonMaybe}
+
+
+{/* ✅ Full-Screen Date Picker Modal with Expanded Wrapper */}
+{isDatePickerOpen && (
+  <div 
+    className={`${css.datePickerContainer} ${isCalendarOpen ? css.expanded : ''}`}
+    style={{  
+      minHeight: '700px',  /* ✅ Increase height to fit all filters */
+      display: 'flex',
+      flexDirection: 'column',
+      transition: 'min-height 0.3s ease-in-out',
+    }}
+  >
+
+    {/* ✅ useHistory Hook Inside Functional Component */}
+    {(() => {
+      const history = useHistory(); // ✅ Ensures it's inside a function component
+      return (
+        <div className={css.writtenLogoContainer}>
+        <img 
+          src={WrittenLogo} 
+          alt="Wet District" 
+          className={css.writtenLogo} 
+          aria-hidden="true"
+          onClick={() => {
+            setDatePickerOpen(false);  // ✅ Close the modal
+            history.push("/s");        // ✅ Redirect to Search Page
+          }}  
+          style={{ cursor: "pointer" }}  
+        />
+      </div>
+      
+      );
+    })()}
+
+    {/* ✅ Close Button */}
+    <button
+      className={css.datePickerCloseButton}
+      onClick={() => setDatePickerOpen(false)}
+    >
+      CLOSE X
+    </button>
+
+    {/* ✅ Main Date Picker Wrapper */}
+<div className={css.datePickerWrapper}>
+  
+  {/* ✅ Calendar Section */}
+  <label className={css.dropdownLabel}>Date:</label>
+  <SingleDatePicker
+    id="TopbarCalendar"
+    value={selectedDate}
+    onChange={setSelectedDate}
+    isOpen={isDatePickerOpen}
+  />
+
+  {/* ✅ Start Time Picker Section */}
+  <div className={css.filtersWrapper}>
+    <div className={css.dropdownContainer}>
+      <label className={css.dropdownLabel}>Start Time:</label>
+      <div className={css.buttonGroup}>
+        {["10:00 AM", "2:00 PM", "6:00 PM"].map(time => (
+          <button
+            key={time}
+            className={`${css.selectionButton} ${selectedStartTime === time ? css.selected : ''}`}
+            onClick={() => setSelectedStartTime(time)}
+          >
+            {time}
+          </button>
+        ))}
+      </div>
     </div>
-);
+  </div>
+
+  {/* ✅ Moved Button: Inside Modal, Below Start Time Picker */}
+  <button
+    className={`${css.datePickerSubmitButton} ${selectedDate && selectedStartTime ? css.enabled : ''}`}
+    disabled={!selectedDate || !selectedStartTime}
+  >
+    Search available boats
+  </button>
+
+</div>
+  </div>
+)}
+
+
+        {/* Menu Button */}
+        <Button
+          rootClassName={css.menu}
+          onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
+          title={intl.formatMessage({ id: 'Topbar.menuIcon' })}
+        >
+          <MenuIcon className={css.menuIcon} />
+          {notificationDot}
+        </Button>
+
+        {/* Search Button */}
+        {mobileSearchButtonMaybe}
+      </div>
 
       <div className={css.desktop}>
         <TopbarDesktop
@@ -335,6 +481,7 @@ return (
           showSearchForm={showSearchForm}
         />
       </div>
+
       <Modal
         id="TopbarMobileMenu"
         containerClassName={css.modalContainer}
@@ -345,6 +492,7 @@ return (
       >
         {authInProgress ? null : mobileMenu}
       </Modal>
+
       <Modal
         id="TopbarMobileSearch"
         containerClassName={css.modalContainerSearchForm}
@@ -365,6 +513,7 @@ return (
           </p>
         </div>
       </Modal>
+
       <ModalMissingInformation
         id="MissingInformationReminder"
         containerClassName={css.missingInformationModal}
@@ -384,38 +533,42 @@ return (
 };
 
 /**
- * Topbar containing logo, main search and navigation links.
+ * Topbar containing logo, main search, and navigation links.
  *
  * @component
- * @param {Object} props
- * @param {string?} props.className add more style rules in addition to components own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {Object} props.desktopClassName add more style rules for TopbarDesktop
- * @param {Object} props.mobileRootClassName overwrite mobile layout root classes
- * @param {Object} props.mobileClassName add more style rules for mobile layout
- * @param {boolean} props.isAuthenticated
- * @param {boolean} props.isLoggedInAs
- * @param {Object} props.currentUser
- * @param {boolean} props.currentUserHasListings
- * @param {boolean} props.currentUserHasOrders
- * @param {string} props.currentPage
- * @param {number} props.notificationCount
- * @param {Function} props.onLogout
- * @param {Function} props.onManageDisableScrolling
- * @param {Function} props.onResendVerificationEmail
- * @param {Object} props.sendVerificationEmailInProgress
- * @param {Object} props.sendVerificationEmailError
- * @param {boolean} props.showGenericError
- * @param {Object} props.history
- * @param {Function} props.history.push
- * @param {Object} props.location
- * @param {string} props.location.search '?foo=bar'
- * @returns {JSX.Element} topbar component
+ * @param {Object} props - Component props
+ * @param {string} [props.className] - Additional CSS classes for styling
+ * @param {string} [props.rootClassName] - Overwrites the component's root class
+ * @param {Object} props.desktopClassName - CSS class for TopbarDesktop styling
+ * @param {Object} props.mobileRootClassName - Overwrites mobile layout root class
+ * @param {Object} props.mobileClassName - Additional styles for mobile layout
+ * @param {boolean} props.isAuthenticated - User authentication status
+ * @param {boolean} props.isLoggedInAs - If logged in as another user type
+ * @param {Object} props.currentUser - Current user object
+ * @param {boolean} props.currentUserHasListings - If the user has active listings
+ * @param {boolean} props.currentUserHasOrders - If the user has active orders
+ * @param {string} props.currentPage - Current active page
+ * @param {number} props.notificationCount - Number of unread notifications
+ * @param {Function} props.onLogout - Logout function
+ * @param {Function} props.onManageDisableScrolling - Disables scrolling
+ * @param {Function} props.onResendVerificationEmail - Handles email verification
+ * @param {boolean} props.sendVerificationEmailInProgress - Email verification loading state
+ * @param {Object} props.sendVerificationEmailError - Email verification error object
+ * @param {boolean} props.showGenericError - If a generic error should be shown
+ * @param {Object} props.history - React Router history object
+ * @param {Function} props.history.push - Redirect function
+ * @param {Object} props.location - Current location object
+ * @param {string} props.location.search - Query string parameters (e.g., '?foo=bar')
+ * @returns {JSX.Element} - The Topbar component
  */
+
 const Topbar = props => {
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
   const intl = useIntl();
+
+  
+
   return (
     <TopbarComponent
       config={config}
