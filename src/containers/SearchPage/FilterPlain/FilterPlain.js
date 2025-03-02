@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { bool, func, node, object, string } from 'prop-types';
 import classNames from 'classnames';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
@@ -8,27 +9,6 @@ import FilterForm from '../FilterForm/FilterForm';
 
 import css from './FilterPlain.module.css';
 
-/**
- * FilterPlain component
- * TODO: change to functional component
- *
- * @component
- * @param {Object} props
- * @param {string} [props.className] - Custom class that extends the default class for the root element
- * @param {string} [props.rootClassName] - Custom class that overrides the default class for the root element
- * @param {string} [props.plainClassName] - Custom class that extends the default class css.plain
- * @param {string} props.id - The ID
- * @param {Function} props.onSubmit - The function to submit
- * @param {React.Node} props.label - The label
- * @param {React.Node} [props.labelSelection] - The label with active selection
- * @param {React.Node} [props.labelSelectionSeparator] - The label selection separator
- * @param {boolean} props.isSelected - Whether the filter is selected
- * @param {React.Node} props.children - The children
- * @param {Object} [props.initialValues] - The initial values
- * @param {boolean} [props.keepDirtyOnReinitialize] - Whether to keep dirty on reinitialize
- * @param {intlShape} props.intl - The intl object
- * @returns {JSX.Element}
- */
 class FilterPlainComponent extends Component {
   constructor(props) {
     super(props);
@@ -70,43 +50,39 @@ class FilterPlainComponent extends Component {
       isSelected,
       children,
       initialValues,
-      keepDirtyOnReinitialize = false,
+      keepDirtyOnReinitialize,
+      contentPlacementOffset,
+      isSearchFiltersMobile,
     } = this.props;
-
-    const classes = classNames(rootClassName || css.root, className);
-
-    // 🔹 Only show expandable header if there are multiple filters
-    const showExpandableHeader = React.Children.count(children) > 1;
+    const classes = classNames(
+      rootClassName || css.root,
+      className,
+      isSearchFiltersMobile ? css.searchFiltersMobile : null
+    );
 
     return (
       <div className={classes}>
-        {showExpandableHeader && ( // ✅ Only render header if more than one filter
-          <div className={css.filterHeader}>
-            <button className={css.labelButton} onClick={this.toggleIsOpen}>
-              <span className={css.labelButtonContent}>
-                <span className={css.labelWrapper}>
-                  <span className={css.label}>
-                    {label}
-                    {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
-                    {labelSelection ? (
-                      <span className={css.labelSelected}>{labelSelection}</span>
-                    ) : null}
-                  </span>
-                </span>
-                <span className={css.openSign}>
-                  <IconPlus isOpen={this.state.isOpen} isSelected={isSelected} />
+        <div className={css.filterHeader}>
+          <button className={css.labelButton} onClick={this.toggleIsOpen}>
+            <span className={css.labelButtonContent}>
+              <span className={css.labelWrapper}>
+                <span className={css.label}>
+                  {label}
+                  {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
+                  {labelSelection ? (
+                    <span className={css.labelSelected}>{labelSelection}</span>
+                  ) : null}
                 </span>
               </span>
-            </button>
-          </div>
-        )}
-
-        {/* ✅ Always open if there’s only one filter */}
+              <span className={css.openSign}>
+                <IconPlus isOpen={this.state.isOpen} isSelected={isSelected} />
+              </span>
+            </span>
+          </button>
+        </div>
         <div
           id={id}
-          className={classNames(plainClassName, css.plain, {
-            [css.isOpen]: this.state.isOpen || !showExpandableHeader,
-          })}
+          className={classNames(plainClassName, css.plain, { [css.isOpen]: this.state.isOpen })}
           ref={node => {
             this.filterContent = node;
           }}
@@ -114,6 +90,7 @@ class FilterPlainComponent extends Component {
           <FilterForm
             id={`${id}.form`}
             liveEdit
+            contentPlacementOffset={contentPlacementOffset}
             onChange={this.handleChange}
             initialValues={initialValues}
             keepDirtyOnReinitialize={keepDirtyOnReinitialize}
@@ -128,6 +105,34 @@ class FilterPlainComponent extends Component {
     );
   }
 }
+
+FilterPlainComponent.defaultProps = {
+  rootClassName: null,
+  className: null,
+  plainClassName: null,
+  initialValues: null,
+  keepDirtyOnReinitialize: false,
+  labelSelection: null,
+  labelSelectionSeparator: null,
+};
+
+FilterPlainComponent.propTypes = {
+  rootClassName: string,
+  className: string,
+  plainClassName: string,
+  id: string.isRequired,
+  onSubmit: func.isRequired,
+  label: node.isRequired,
+  labelSelection: node,
+  labelSelectionSeparator: node,
+  isSelected: bool.isRequired,
+  children: node.isRequired,
+  initialValues: object,
+  keepDirtyOnReinitialize: bool,
+
+  // form injectIntl
+  intl: intlShape.isRequired,
+};
 
 const FilterPlain = injectIntl(FilterPlainComponent);
 

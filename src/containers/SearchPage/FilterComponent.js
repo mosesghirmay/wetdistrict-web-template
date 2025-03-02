@@ -7,18 +7,17 @@ import { convertCategoriesToSelectTreeOptions, constructQueryParamName } from '.
 // component imports
 import SelectSingleFilter from './SelectSingleFilter/SelectSingleFilter';
 import SelectMultipleFilter from './SelectMultipleFilter/SelectMultipleFilter';
-import BookingDateRangeFilter from './BookingDateRangeFilter/BookingDateRangeFilter';
+import BookingDateRangeFilter from './BookingDateRangeFilter/BookingDateRangeFilter'; // ✅ Default Sharetribe Date Picker
 import KeywordFilter from './KeywordFilter/KeywordFilter';
 import PriceFilter from './PriceFilter/PriceFilter';
 import IntegerRangeFilter from './IntegerRangeFilter/IntegerRangeFilter';
 import SeatsFilter from './SeatsFilter/SeatsFilter';
 
+// Debugging to confirm component renders
 console.log("✅ FilterComponent is rendering in Topbar!");
 
-
 /**
- * FilterComponent is used to map configured filter types
- * to actual filter components
+ * FilterComponent maps configured filter types to actual filter components.
  */
 const FilterComponent = props => {
   const {
@@ -32,19 +31,17 @@ const FilterComponent = props => {
     intl,
     ...rest
   } = props;
-  // Note: config can be either
-  // - listingFields config or
-  // - default filter config
-  // They both have 'key' and 'schemaType' included.
+
+  // Debugging: Log the received props
+  console.log("📍 Props in FilterComponent:", props);
+
   const { key, schemaType } = config;
   const { liveEdit, showAsPopup } = rest;
-
   const useHistoryPush = liveEdit || showAsPopup;
   const prefix = idPrefix || 'SearchPage';
   const componentId = `${prefix}.${key.toLowerCase()}`;
   const name = key.replace(/\s+/g, '-');
 
-  // Default filters: price, keywords, dates
   switch (schemaType) {
     case 'category': {
       const { scope, isNestedEnum, nestedParams } = config;
@@ -92,9 +89,9 @@ const FilterComponent = props => {
           {...rest}
         />
       );
+
+    // **✅ Reverting to Sharetribe's Default Date Range Picker**
     case 'dates': {
-      const { dateRangeMode } = config;
-      const isNightlyMode = dateRangeMode === 'night';
       return (
         <BookingDateRangeFilter
           id={componentId}
@@ -102,11 +99,12 @@ const FilterComponent = props => {
           queryParamNames={[key]}
           initialValues={initialValues([key], liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          minimumNights={isNightlyMode ? 1 : 0}
+          isSearchFiltersMobile={rest.isSearchFiltersMobile}
           {...rest}
         />
       );
     }
+
     case 'seats': {
       return (
         <SeatsFilter
@@ -122,7 +120,7 @@ const FilterComponent = props => {
     }
   }
 
-  // Custom extended data filters
+  // **Custom Extended Data Filters**
   switch (schemaType) {
     case SCHEMA_TYPE_ENUM: {
       const { scope, enumOptions, filterConfig = {} } = config;
@@ -137,7 +135,6 @@ const FilterComponent = props => {
           initialValues={initialValues(queryParamNames, liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
           options={enumOptions}
-          isNestedEnum={false}
           {...rest}
         />
       ) : (
@@ -154,44 +151,33 @@ const FilterComponent = props => {
         />
       );
     }
-    case SCHEMA_TYPE_MULTI_ENUM: {
-      const { scope, enumOptions, filterConfig = {} } = config;
-      const { label, searchMode } = filterConfig;
-      const queryParamNames = [constructQueryParamName(key, scope)];
+    case SCHEMA_TYPE_MULTI_ENUM:
       return (
         <SelectMultipleFilter
           id={componentId}
-          label={label}
+          label={config.filterConfig?.label || key}
           name={name}
-          queryParamNames={queryParamNames}
-          initialValues={initialValues(queryParamNames, liveEdit)}
+          queryParamNames={[constructQueryParamName(key, config.scope)]}
+          initialValues={initialValues([constructQueryParamName(key, config.scope)], liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          options={enumOptions}
-          schemaType={schemaType}
-          searchMode={searchMode}
+          options={config.enumOptions}
           {...rest}
         />
       );
-    }
-    case SCHEMA_TYPE_LONG: {
-      const { minimum, maximum, scope, step, filterConfig = {} } = config;
-      const { label } = filterConfig;
-      const queryParamNames = [constructQueryParamName(key, scope)];
+
+    case SCHEMA_TYPE_LONG:
       return (
         <IntegerRangeFilter
           id={componentId}
-          label={label}
+          label={config.filterConfig?.label || key}
           name={name}
-          queryParamNames={queryParamNames}
-          initialValues={initialValues(queryParamNames, liveEdit)}
+          queryParamNames={[constructQueryParamName(key, config.scope)]}
+          initialValues={initialValues([constructQueryParamName(key, config.scope)], liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          min={minimum}
-          max={maximum}
-          step={step}
           {...rest}
         />
       );
-    }
+
     default:
       return null;
   }

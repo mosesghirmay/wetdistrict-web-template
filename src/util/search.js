@@ -31,29 +31,34 @@ export const constructQueryParamName = (key, scope) => {
  * The configuration of default filters has key, which is 1-on-1 mapping
  * with the name of the query parameter. E.g. 'price'.
  *
- * @param {Object} listingFieldsConfig Custom filters are checked agains extended data config of a listing entity.
+ * @param {Object} listingFieldsConfig Custom filters are checked against extended data config of a listing entity.
  * @param {Object} defaultFiltersConfig Configuration of default filters.
  */
-export const getQueryParamNames = (listingFieldsConfig, defaultFiltersConfig) => {
-  const queryParamKeysOfDefaultFilters = defaultFiltersConfig.reduce((pickedKeys, config) => {
-    const { key, schemaType, scope, nestedParams } = config;
-    const newKeys =
-      schemaType === 'category' && nestedParams
-        ? nestedParams?.map(p => constructQueryParamName(p, scope))
-        : [key];
-    return [...pickedKeys, ...newKeys];
-  }, []);
+export const getQueryParamNames = (listingFieldsConfig = [], defaultFiltersConfig = []) => {
+  if (!Array.isArray(listingFieldsConfig) || !Array.isArray(defaultFiltersConfig)) {
+    console.error("Invalid arguments passed to getQueryParamNames");
+    return [];
+  }
+
+  const queryParamKeysOfDefaultFilters = defaultFiltersConfig.map(config => config.key);
   const queryParamKeysOfListingFields = listingFieldsConfig.reduce((params, config) => {
+    if (!config || !config.key || !config.scope) return params;
     const param = constructQueryParamName(config.key, config.scope);
     return config.filterConfig?.indexForSearch ? [...params, param] : params;
   }, []);
+
   return [...queryParamKeysOfDefaultFilters, ...queryParamKeysOfListingFields];
 };
+
 /**
  * Check if any of the filters (defined by filterKeys) have currently active query parameter in URL.
  */
-export const isAnyFilterActive = (filterKeys, urlQueryParams, filterConfigs) => {
-  const { listingFieldsConfig, defaultFiltersConfig } = filterConfigs;
+export const isAnyFilterActive = (
+  filterKeys = [],
+  urlQueryParams = {},
+  listingFieldsConfig = [],
+  defaultFiltersConfig = []
+) => {
   const queryParamKeys = getQueryParamNames(listingFieldsConfig, defaultFiltersConfig);
 
   const getQueryParamKeysOfGivenFilters = (pickedKeys, key) => {
@@ -68,72 +73,82 @@ export const isAnyFilterActive = (filterKeys, urlQueryParams, filterConfigs) => 
     const [key, value] = entry;
     return queryParamKeysOfGivenFilters.includes(key) && value != null;
   });
+
   return !!activeKey;
-};
-
-/**
- * Pick initial vales for FieldSelectTree component.
- * The value object should be an object containing search params:
- * { pub_categoryLevel1: 'cats', pub_categoryLevel2: 'egyptian-mau', meta_foo: 'bar' }
- *
- * @param {String} prefix like "pub_categoryLevel"
- * @param {Object} values object literal containing level-specific info
- *
- * @returns returns properties, which have a key that starts with the given prefix.
- */
-export const pickInitialValuesForFieldSelectTree = (prefix, values) => {
-  const pickValuesFn = (picked, entry) => {
-    const [key, value] = entry;
-    const prefixIndex = key.indexOf(prefix);
-    const startsWithPrefix = prefixIndex > -1;
-    return startsWithPrefix ? { ...picked, [key.slice(prefixIndex)]: value } : picked;
-  };
-  const prefixCollection = Object.entries(values).reduce(pickValuesFn, {});
-  return prefixCollection;
-};
-
-/**
- * This converts the category structure to the format that that's understood by SelectSingleFilter
- * and its child component: FieldSelectTree.
- *
- * @param {Array} categories contain objects with props: _id_, _name_, potentially _subcategories_.
- * @returns an array that contains objects with props: _option_, _label_ and potentially _suboptions_.
- */
-export const convertCategoriesToSelectTreeOptions = categories => {
-  const convertSubcategoryData = params => {
-    const { id, name, subcategories } = params;
-    const suboptionsMaybe = subcategories
-      ? { suboptions: subcategories.map(cat => convertSubcategoryData(cat)) }
-      : {};
-    return { option: id, label: name, ...suboptionsMaybe };
-  };
-
-  const categoriesArray = Array.isArray(categories) ? categories : [];
-  return categoriesArray.map(cat => convertSubcategoryData(cat));
 };
 
 /**
  * Check if the main search type is 'keywords'
  */
 export const isMainSearchTypeKeywords = config =>
-  config.search?.mainSearch?.searchType === 'keywords';
+  config?.search?.mainSearch?.searchType === 'keywords';
 
 /**
  * Check if the origin parameter is currently active.
  */
 export const isOriginInUse = config =>
-  config.search?.mainSearch?.searchType === 'location' && config.maps?.search?.sortSearchByDistance;
+  config?.search?.mainSearch?.searchType === 'location' && config?.maps?.search?.sortSearchByDistance;
 
 /**
  * Check if the stock management is currently active.
  */
 export const isStockInUse = config => {
-  const listingTypes = config.listing.listingTypes;
+  const listingTypes = config?.listing?.listingTypes || [];
   const stockProcesses = ['default-purchase'];
-  const hasStockProcessesInUse = !!listingTypes.find(conf =>
-    stockProcesses.includes(conf.transactionType.process)
-  );
 
-  // Note: these are active processes!
-  return hasStockProcessesInUse;
+  return listingTypes.some(conf => stockProcesses.includes(conf.transactionType?.process));
+};
+
+/**
+ * Convert categories to tree format for field selection.
+ */
+export const convertCategoriesToSelectTreeOptions = (categories = []) => {
+  return categories.map(category => ({
+    value: category.id,
+    label: category.name,
+    children: category.subcategories ? convertCategoriesToSelectTreeOptions(category.subcategories) : [],
+  }));
+};
+
+/**
+ * Extract initial values for field selection.
+ */
+export const pickInitialValuesForFieldSelectTree = (selectedValues = [], availableOptions = []) => {
+  return selectedValues.filter(value => availableOptions.some(option => option.value === value));
+};
+
+/**
+ * Extract only the necessary search params.
+ */
+export const pickSearchParamsOnly = (params = {}, allowedKeys = []) => {
+  return Object.keys(params)
+    .filter(key => allowedKeys.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = params[key];
+      return obj;
+    }, {});
+};
+
+/**
+ * Function to omit certain listing field parameters from search.
+ */
+export const omitLimitedListingFieldParams = (params = {}, excludedKeys = []) => {
+  return Object.keys(params)
+    .filter(key => !excludedKeys.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = params[key];
+      return obj;
+    }, {});
+};
+
+/**
+ * Function to retrieve valid filter params.
+ */
+export const validFilterParams = params => {
+  return Object.entries(params).reduce((acc, [key, value]) => {
+    if (value !== null && value !== undefined) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 };

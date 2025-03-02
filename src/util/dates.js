@@ -1,6 +1,18 @@
 import moment from 'moment-timezone/builds/moment-timezone-with-data-10-year-range.min';
 
+const timeSlotMinutes = 180;
+
 /**
+ * Find the next boundary based on custom slot duration.
+ * Uses `timeSlotMinutes` instead of defaulting to 1 hour.
+ */
+export const findNextCustomBoundary = (currentMomentOrDate, timeZone) =>
+  moment(currentMomentOrDate)
+    .clone()
+    .tz(timeZone)
+    .add(timeSlotMinutes, 'minutes')
+    .startOf('minute')
+    .toDate();/**
  * Input names for the DateRangePicker from DatePicker.
  */
 export const START_DATE = 'startDate';
@@ -595,8 +607,10 @@ export const stringifyDateToISO8601 = (date, timeZone = null) => {
 // - getStartHours
 // - getEndHours
 
-// Helper function for exported function: getSharpHours
-// Recursively find boundaries for bookable time slots.
+/**
+ * Recursively finds booking unit boundaries within availability range.
+ * Modified to use custom time slots instead of sharp hour boundaries.
+ */
 const findBookingUnitBoundaries = params => {
   const {
     cumulatedResults,
@@ -606,14 +620,11 @@ const findBookingUnitBoundaries = params => {
     nextBoundaryFn,
     intl,
     timeZone,
-    timeUnit = 'hour',
   } = params;
 
   if (moment(currentBoundary).isBetween(startMoment, endMoment, null, '[]')) {
     const timeOfDay = formatDateIntoPartials(currentBoundary, intl, { timeZone })?.time;
 
-    // Choose the previous (aka first) sharp hour boundary,
-    // if daylight saving time (DST) creates the same time of day two times.
     const newBoundary =
       cumulatedResults &&
       cumulatedResults.length > 0 &&
@@ -629,11 +640,12 @@ const findBookingUnitBoundaries = params => {
     return findBookingUnitBoundaries({
       ...params,
       cumulatedResults: [...cumulatedResults, ...newBoundary],
-      currentBoundary: moment(nextBoundaryFn(currentBoundary, timeUnit, timeZone)),
+      currentBoundary: findNextCustomBoundary(currentBoundary, timeZone),
     });
   }
   return cumulatedResults;
 };
+
 
 /**
  * Find the next sharp hour after the current moment.
@@ -682,25 +694,51 @@ export const findNextBoundary = (currentMomentOrDate, timeUnit, timeZone) =>
  *
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
+/**
+ * Generate available booking slots based on `timeSlotMinutes` (180 minutes).
+ */
 export const getSharpHours = (startTime, endTime, timeZone, intl) => {
-  if (!moment.tz.zone(timeZone)) {
-    throw new Error(
-      'Time zones are not loaded into moment-timezone. "getSharpHours" function uses time zones.'
-    );
-  }
+  const startMoment = moment(startTime).tz(timeZone).startOf('day'); 
+  const endMoment = moment(endTime).tz(timeZone);
 
-  // Select a moment before startTime to find next possible sharp hour.
-  // I.e. startTime might be a sharp hour.
-  const millisecondBeforeStartTime = new Date(startTime.getTime() - 1);
+  // Define fixed start times: 10AM, 2PM, 6PM
+  const allowedTimes = [10, 14, 18]; 
+
+  let sharpHours = [];
+
+  allowedTimes.forEach(hour => {
+    const slotMoment = startMoment.clone().hour(hour).minute(0);
+    console.log("🕒 Checking slot:", slotMoment.format('YYYY-MM-DD HH:mm'));
+
+    if (slotMoment.isBefore(endMoment)) {
+      sharpHours.push({
+        timestamp: slotMoment.valueOf(),
+        timeOfDay: intl.formatTime(slotMoment.toDate(), {
+          hour: 'numeric', // Removes leading zeroes
+          minute: '2-digit',
+          hour12: true, // ✅ Forces AM/PM format
+        }),
+      });
+    }
+  });
+
+  console.log("✅ Generated Sharp Hours:", sharpHours);
+  return sharpHours;
+
+
+
+
+  
+
+const millisecondBeforeStartTime = new Date(startTime.getTime() - 1);
   return findBookingUnitBoundaries({
-    currentBoundary: findNextBoundary(millisecondBeforeStartTime, 'hour', timeZone),
+    currentBoundary: findNextCustomBoundary(millisecondBeforeStartTime, timeZone),
     startMoment: moment(startTime),
     endMoment: moment(endTime),
-    nextBoundaryFn: findNextBoundary,
+    nextBoundaryFn: findNextCustomBoundary,
     cumulatedResults: [],
     intl,
     timeZone,
-    timeUnit: 'hour',
   });
 };
 
@@ -731,10 +769,29 @@ export const getSharpHours = (startTime, endTime, timeZone, intl) => {
  *
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
+/**
+ * Generate available start times based on `timeSlotMinutes` (3-hour slots).
+ */
 export const getStartHours = (startTime, endTime, timeZone, intl) => {
+  // Define allowed fixed pickup times
+  const allowedTimes = ['10:00', '14:00', '18:00']; // 10 AM, 2 PM, 6 PM
+
+  // Get all available time slots
   const hours = getSharpHours(startTime, endTime, timeZone, intl);
-  return hours.length < 2 ? hours : hours.slice(0, -1);
+
+  // Ensure times are correctly formatted before filtering
+  const formattedHours = hours.map(time =>
+    intl.formatTime(time.timestamp, { hour: '2-digit', minute: '2-digit', hour12: false })
+  );
+
+  // Filter to only allowed start times
+  const filteredHours = hours.filter((time, index) => allowedTimes.includes(formattedHours[index]));
+
+  console.log("✅ Available start hours:", filteredHours); // Debugging
+
+  return filteredHours;
 };
+
 
 /**
  * Find sharp end hours for bookable time units (hour) inside given time window.
@@ -763,10 +820,28 @@ export const getStartHours = (startTime, endTime, timeZone, intl) => {
  *
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
+/**
+ * Generate available end times based on `timeSlotMinutes` (3-hour slots).
+ */
 export const getEndHours = (startTime, endTime, timeZone, intl) => {
-  const hours = getSharpHours(startTime, endTime, timeZone, intl);
-  return hours.length < 2 ? [] : hours.slice(1);
+  if (!startTime) return []; // Ensure a start time is selected
+
+  const endMoment = moment(startTime).tz(timeZone).add(3, 'hours'); // Exactly 3 hours later
+
+  if (endMoment.isAfter(moment(endTime).tz(timeZone))) {
+    return []; // Prevent selecting times beyond available hours
+  }
+
+  return [
+    {
+      timestamp: endMoment.valueOf(),
+      timeOfDay: intl.formatTime(endMoment.toDate(), { hour: 'numeric', minute: '2-digit', hour12: true })
+    }
+  ];
 };
+
+
+
 
 //////////
 // Misc //

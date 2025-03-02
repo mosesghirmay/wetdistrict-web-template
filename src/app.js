@@ -1,6 +1,11 @@
 import React from 'react';
 import { any, string } from 'prop-types';
+import ReactDOMServer from 'react-dom/server';
 
+// react-dates needs to be initialized before using any react-dates component
+// https://github.com/airbnb/react-dates#initialize
+// NOTE: Initializing it here will initialize it also for app.test.js
+import 'react-dates/initialize';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, StaticRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -19,7 +24,6 @@ import { RouteConfigurationProvider } from './context/routeConfigurationContext'
 import { ConfigurationProvider } from './context/configurationContext';
 import { mergeConfig } from './util/configHelpers';
 import { IntlProvider } from './util/reactIntl';
-import { includeCSSProperties } from './util/style';
 import { IncludeScripts } from './util/includeScripts';
 
 import { MaintenanceMode } from './components';
@@ -27,6 +31,9 @@ import { MaintenanceMode } from './components';
 // routing
 import routeConfiguration from './routing/routeConfiguration';
 import Routes from './routing/Routes';
+
+import StateHolder from './context/StateHolder';
+import ContextFunctions from './context/ContextFunctions';
 
 // Sharetribe Web Template uses English translations as default translations.
 import defaultMessages from './translations/en.json';
@@ -143,7 +150,7 @@ const MomentLocaleLoader = props => {
 
 const Configurations = props => {
   const { appConfig, children } = props;
-  const routeConfig = routeConfiguration(appConfig.layout, appConfig?.accessControl);
+  const routeConfig = routeConfiguration(appConfig.layout);
   const locale = isTestEnv ? 'en' : appConfig.localization.locale;
 
   return (
@@ -231,13 +238,16 @@ export const ClientApp = props => {
     );
   }
 
-  // Marketplace color and the color for <PrimaryButton> come from configs
+  // Marketplace color and branding image comes from configs
   // If set, we need to create CSS Property and set it to DOM (documentElement is selected here)
   // This provides marketplace color for everything under <html> tag (including modals/portals)
   // Note: This is also set on Page component to provide server-side rendering.
   const elem = window.document.documentElement;
-  includeCSSProperties(appConfig.branding, elem);
-
+  if (appConfig.branding.marketplaceColor) {
+    elem.style.setProperty('--marketplaceColor', appConfig.branding.marketplaceColor);
+    elem.style.setProperty('--marketplaceColorDark', appConfig.branding.marketplaceColorDark);
+    elem.style.setProperty('--marketplaceColorLight', appConfig.branding.marketplaceColorLight);
+  }
   // This gives good input for debugging issues on live environments, but with test it's not needed.
   const logLoadDataCalls = appSettings?.env !== 'test';
 
@@ -252,7 +262,11 @@ export const ClientApp = props => {
           <HelmetProvider>
             <IncludeScripts config={appConfig} />
             <BrowserRouter>
-              <Routes logLoadDataCalls={logLoadDataCalls} />
+              <StateHolder>
+                <ContextFunctions>
+                  <Routes logLoadDataCalls={logLoadDataCalls} />
+                </ContextFunctions>
+              </StateHolder>
             </BrowserRouter>
           </HelmetProvider>
         </Provider>
@@ -290,7 +304,11 @@ export const ServerApp = props => {
           <HelmetProvider context={helmetContext}>
             <IncludeScripts config={appConfig} />
             <StaticRouter location={url} context={context}>
-              <Routes />
+              <StateHolder>
+                <ContextFunctions>
+                  <Routes />
+                </ContextFunctions>
+              </StateHolder>
             </StaticRouter>
           </HelmetProvider>
         </Provider>
@@ -339,12 +357,7 @@ export const renderApp = (
       hostedConfig={hostedConfig}
     />
   );
-
-  // Let's keep react-dom/server out of the main code-chunk.
-  return import('react-dom/server').then(mod => {
-    const { default: ReactDOMServer } = mod;
-    const body = ReactDOMServer.renderToString(WithChunks);
-    const { helmet: head } = helmetContext;
-    return { head, body };
-  });
+  const body = ReactDOMServer.renderToString(WithChunks);
+  const { helmet: head } = helmetContext;
+  return { head, body };
 };

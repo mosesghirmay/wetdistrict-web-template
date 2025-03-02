@@ -58,8 +58,6 @@ const CELL_WIDTH = 38;
 const SLIDE_WIDTH = CELL_WIDTH * 7;
 const OUTLINE_WIDTH = 2;
 
-
-
 const CalendarMonth = props => {
   const {
     currentDate,
@@ -83,7 +81,6 @@ const CalendarMonth = props => {
   const [keyboardUsed, setKeyboardUsed] = useState(false);
   const weekdays = getLocalizedWeekDays(firstDayOfWeek, intl);
   const calendarRows = getCalendarRows(currentMonth, firstDayOfWeek);
-
 
   // TODO: currently, startDateOffset & endDateOffset are only used for
   // to highlight days around hovered date.
@@ -145,71 +142,121 @@ const CalendarMonth = props => {
         </thead>
 
         <tbody>
-  {calendarRows.map((calendarRow, weekIndex) => {
-    const rowKey = `row-${weekIndex}`;
+          {calendarRows.map(calendarRow => {
+            const rowKey = `row-${calendarRow[0].getMonth()}-${calendarRow[0].getDate()}`;
 
-    return (
-      <tr className={css.calendarRow} key={rowKey}>
-        {calendarRow.map((day, dayIndex) => {
-          const isCurrent = isSameDay(day, currentMonth);
-          const isOverflowing = day.getMonth() !== currentMonth.getMonth();
-          const isToday = isSameDay(day, new Date());
+            return (
+              <tr className={css.calendarRow} key={rowKey}>
+                {calendarRow.map(day => {
+                  const isCurrent = isSameDay(day, currentMonth);
+                  const isOverflowing = day.getMonth() !== currentMonth.getMonth();
 
-          const isSelected = Array.isArray(currentValue)
-            ? isSameDay(day, currentValue[0]) || isSameDay(day, currentValue[1])
-            : isSameDay(day, currentValue);
+                  const isSelected = Array.isArray(currentValue)
+                    ? isSameDay(day, currentValue[0]) || isSameDay(day, currentValue[1])
+                    : isSameDay(day, currentValue);
 
-          const isInRange = range
-            ? isDateInRange(day, {
-                from: currentValue?.[0],
-                to: currentValue?.[1] || hoveredDate || currentDate,
-              })
-            : false;
+                  const isInRange = !range
+                    ? false
+                    : isDateInRange(day, {
+                        from: currentValue?.[0],
+                        to: currentValue?.[1] || hoveredDate || currentDate,
+                      });
 
-          const isDisabled = isDayBlocked(day); // ✅ Check if day is disabled
-          const isoDateString = getISODateString(day);
-          const cellKey = `cell-${isoDateString}`;
+                  const hasStartDate = !!currentValue?.[0];
+                  const potentialRangeEnd = currentValue?.[1] || hoveredDate || currentDate;
+                  const currentDateVisible = keyboardUsed && currentDate;
+                  const hasHoveredRange = hasStartDate && hoveredDate;
+                  const hasKeyboardRange = hasStartDate && currentDateVisible;
+                  const orderedValues =
+                    hasHoveredRange || hasKeyboardRange
+                      ? [currentValue?.[0], potentialRangeEnd].sort((a, b) => a - b)
+                      : !hoveredDate
+                      ? [currentValue?.[0], currentValue?.[1]]
+                      : [];
 
-          // ✅ Add condition to highlight today unless another date is selected
-          const classes = classNames(css.date, {
-            [css.dateCurrent]: isCurrent,
-            [css.dateDisabled]: isDisabled,
-            [css.dateOverflowing]: isOverflowing,
-            [css.dateToday]: isToday && !isSelected,
-            [css.dateSelected]: isSelected,
-            [css.dateInRange]: isInRange,
-          });
+                  const startMissing = !rangeStartHasValue && rangeEndHasValue;
+                  const startExist = !startMissing || hoveredDate || currentDateVisible;
+                  const boundaryPointsToEnd = !startExist && isSameDay(orderedValues[0], day);
 
-          const handleDateSelect = (day) => {
-            if (!isDayBlocked(day)) {
-              setSelectedDate(day);
-              setIsDatePickerOpen(false); // ✅ Close date picker on selection (optional)
-            }
-          };
-          
+                  const isStart = range && startExist && isSameDay(orderedValues[0], day);
+                  const isEnd = range && (isSameDay(orderedValues[1], day) || boundaryPointsToEnd);
+                  const isToday = isSameDay(day, new Date());
+                  const isDisabled = isDayBlocked(day);
 
-          return (
-            <td
-  key={`${weekIndex}-${dayIndex}`} // ✅ Unique key using indexes
-  aria-disabled={String(isDisabled)}
-  aria-selected={isSelected ? 'true' : undefined}
-  className={classes}
-  data-date={isoDateString}
-  onClick={!isDisabled ? () => handleDateSelect(day) : undefined} // ✅ Calls function only if not disabled
-  role="button"
-  tabIndex={!isDisabled ? 0 : -1}
->
-  <span className={css.renderedDay}>{day.getDate()}</span>
-</td>
+                  const hasOneDateSelected =
+                    range && Array.isArray(currentValue) && currentValue.length === 1;
+                  const isDisabledMinimumNights =
+                    !isCurrent &&
+                    hasOneDateSelected &&
+                    (currentValue[0] < hoveredDate || !hoveredDate)
+                      ? currentValue[0] < day &&
+                        !hasMinimumNights({ start: currentValue[0], end: day })
+                      : !isCurrent && hasOneDateSelected && currentValue[0] > hoveredDate
+                      ? currentValue[0] > day &&
+                        !hasMinimumNights({ start: day, end: currentValue[0] })
+                      : false;
 
-          );
-        })}
-      </tr>
-    );
-  })}
-</tbody>
+                  const isoDateString = getISODateString(day);
+                  const cellKey = `cell-${isoDateString}`;
 
+                  const classes = classNames({
+                    [css.date]: true,
+                    [css.dateCurrent]: isCurrent,
+                    [css.dateDisabled]: isDisabled || isDisabledMinimumNights,
+                    [css.dateMinimumNights]: isDisabledMinimumNights,
+                    [css.dateOverflowing]: isOverflowing,
+                    [css.dateToday]: isToday,
+                    [css.dateSelected]: isSelected,
+                    [css.dateInRange]: isInRange,
+                    [css.dateStart]: isStart,
+                    [css.dateEnd]: isEnd,
+                    [css.dateOffset]: isInsideOffsets(day),
+                  });
 
+                  const Tag = 'span';
+                  const dateString = intl.formatDate(day, { day: 'numeric', month: 'long' });
+                  const getMessage = id => intl.formatMessage({ id }, { date: dateString });
+                  const ariaLabel =
+                    !range && isSelected
+                      ? getMessage('DatePicker.screenreader.selectedDate')
+                      : isDisabled || isDisabledMinimumNights
+                      ? getMessage('DatePicker.screenreader.blockedDate')
+                      : isSelected && range && hasOneDateSelected
+                      ? getMessage('DatePicker.screenreader.selectedDate')
+                      : isSelected && isStart && isEnd
+                      ? getMessage('DatePicker.screenreader.selectedDate')
+                      : isSelected && isStart
+                      ? getMessage('DatePicker.screenreader.selectedStartDate')
+                      : isSelected && isEnd
+                      ? getMessage('DatePicker.screenreader.selectedEndDate')
+                      : range && hasOneDateSelected && day < currentValue?.[0]
+                      ? getMessage('DatePicker.screenreader.chooseStartDate')
+                      : range && hasOneDateSelected && day > currentValue?.[0]
+                      ? getMessage('DatePicker.screenreader.chooseEndDate')
+                      : getMessage('DatePicker.screenreader.chooseDate');
+
+                  return (
+                    <td
+                      aria-disabled={String(isDisabled)}
+                      aria-selected={isSelected ? 'true' : undefined}
+                      aria-label={ariaLabel}
+                      className={classes}
+                      data-date={isoDateString}
+                      key={cellKey}
+                      onClick={onClick}
+                      onMouseEnter={onMouseEnter}
+                      onMouseLeave={onMouseLeave}
+                      role="button"
+                      tabIndex={isSameDay(day, currentDate) && !disabled ? 0 : -1}
+                    >
+                      <Tag className={css.renderedDay}>{day.getDate()}</Tag>
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     </div>
   );

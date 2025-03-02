@@ -280,7 +280,36 @@ export const listingTypes = [
       location: true,
       payoutDetails: true,
     },
+    
   },
+  {
+    key: 'startTime',
+    scope: 'public',
+    schemaType: 'enum',
+    enumOptions: [
+      { option: '10:00 AM', label: '10:00 AM' },
+      { option: '2:00 PM', label: '2:00 PM' },
+      { option: '6:00 PM', label: '6:00 PM' },
+    ],
+    filterConfig: {
+      indexForSearch: true,
+      filterType: 'SelectSingleFilter',
+      label: 'Start Time',
+      group: 'primary',
+    },
+    showConfig: {
+      label: 'Start Time',
+      isDetail: true,
+    },
+    saveConfig: {
+      label: 'Start Time',
+      placeholderMessage: 'Select a start time...',
+      isRequired: true,
+      requiredMessage: 'You need to select a start time.',
+    },
+  },
+  
+
   // // Here are some examples for other listingTypes
   // // TODO: SearchPage does not work well if both booking and product selling are used at the same time
   // {
@@ -342,3 +371,5 @@ export const listingTypes = [
 // Read More:
 // https://www.sharetribe.com/docs/how-to/manage-search-schemas-with-flex-cli/#adding-listing-search-schemas
 export const enforceValidListingType = false;
+
+

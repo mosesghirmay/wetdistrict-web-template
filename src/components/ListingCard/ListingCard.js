@@ -1,11 +1,12 @@
 import React from 'react';
+import { string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
-
-import { FormattedMessage, useIntl } from '../../util/reactIntl';
+import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import { displayPrice } from '../../util/configHelpers';
 import { lazyLoadWithDimensions } from '../../util/uiHelpers';
+import { propTypes } from '../../util/types';
 import { formatMoney } from '../../util/currency';
 import { ensureListing, ensureUser } from '../../util/data';
 import { richText } from '../../util/richText';
@@ -15,6 +16,7 @@ import { isBookingProcessAlias } from '../../transactions/transaction';
 import { AspectRatioWrapper, NamedLink, ResponsiveImage } from '../../components';
 
 import css from './ListingCard.module.css';
+import { capitalizeFirstLetter } from '../../util/genericHelpers';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
@@ -45,12 +47,14 @@ const PriceMaybe = props => {
   const validListingTypes = config.listing.listingTypes;
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const showPrice = displayPrice(foundListingTypeConfig);
+  
   if (!showPrice && price) {
     return null;
   }
 
   const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
   const { formattedPrice, priceTitle } = priceData(price, config.currency, intl);
+
   return (
     <div className={css.price}>
       <div className={css.priceValue} title={priceTitle}>
@@ -65,34 +69,20 @@ const PriceMaybe = props => {
   );
 };
 
-/**
- * ListingCard
- *
- * @component
- * @param {Object} props
- * @param {string?} props.className add more style rules in addition to component's own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {Object} props.listing API entity: listing or ownListing
- * @param {string?} props.renderSizes for img/srcset
- * @param {Function?} props.setActiveListing
- * @param {boolean?} props.showAuthorInfo
- * @returns {JSX.Element} listing card to be used in search result panel etc.
- */
-export const ListingCard = props => {
+export const ListingCardComponent = ({
+  className = null,
+  rootClassName = null,
+  intl,
+  listing,
+  renderSizes = null,
+  setActiveListing = null,
+  showAuthorInfo = true,
+}) => {
   const config = useConfiguration();
-  const intl = props.intl || useIntl();
-  const {
-    className,
-    rootClassName,
-    listing,
-    renderSizes,
-    setActiveListing,
-    showAuthorInfo = true,
-  } = props;
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureListing(listing);
   const id = currentListing.id.uuid;
-  const { title = '', price, publicData } = currentListing.attributes;
+  const { title = '', price, publicData = {} } = currentListing.attributes;
   const slug = createSlug(title);
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
@@ -115,6 +105,12 @@ export const ListingCard = props => {
       }
     : null;
 
+  // ✅ Ensure maxGuests is correctly rendered
+  const maxGuests =
+    publicData?.maxGuests && publicData.maxGuests > 0
+      ? `${publicData.maxGuests} ${publicData.maxGuests > 1 ? 'guests' : 'guest'}`
+      : <FormattedMessage id="ListingCard.noGuestLimit" defaultMessage="No guest limit" />;
+
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
       <AspectRatioWrapper
@@ -132,7 +128,6 @@ export const ListingCard = props => {
         />
       </AspectRatioWrapper>
       <div className={css.info}>
-        <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         <div className={css.mainInfo}>
           <div className={css.title}>
             {richText(title, {
@@ -140,15 +135,35 @@ export const ListingCard = props => {
               longWordClass: css.longWord,
             })}
           </div>
-          {showAuthorInfo ? (
-            <div className={css.authorInfo}>
-              <FormattedMessage id="ListingCard.author" values={{ authorName }} />
+          
+          {/* Display Category (if applicable) */}
+          {publicData?.vessels && (
+            <div className={css.category}>
+              {capitalizeFirstLetter(publicData?.vessels)}
             </div>
-          ) : null}
+          )}
+  
+          {/* ✅ Corrected Guest Display Logic */}
+          <div className={css.guests}>{maxGuests}</div>
+
+          <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>
       </div>
     </NamedLink>
   );
 };
 
-export default ListingCard;
+ListingCardComponent.propTypes = {
+  className: string,
+  rootClassName: string,
+  intl: intlShape.isRequired,
+  listing: propTypes.listing.isRequired,
+  showAuthorInfo: bool,
+
+  // Responsive image sizes hint
+  renderSizes: string,
+
+  setActiveListing: func,
+};
+
+export default injectIntl(ListingCardComponent);

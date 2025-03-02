@@ -160,9 +160,7 @@ export class ModalComponent extends Component {
         rootClassName={closeButtonClasses}
         title={closeModalMessage}
       >
-        <span className={css.closeText}>
-          {closeButtonMessage || <FormattedMessage id="Modal.close" />}
-        </span>
+        
         <IconClose rootClassName={css.closeIcon} />
       </Button>
     ) : null;

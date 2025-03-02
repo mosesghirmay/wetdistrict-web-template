@@ -17,7 +17,7 @@
 
 .content {
   composes: marketplaceModalBaseStyles from global;
-  padding-top: 29px;
+  padding-top: 90px;
 
   @media (--viewportMedium) {
     margin-top: 5vh;

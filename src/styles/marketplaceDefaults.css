@@ -212,9 +212,10 @@ body {
 }
 
 ::selection {
-  background: var(--marketplaceColor); /* WebKit/Blink Browsers */
-  color: var(--colorWhite);
+  background: #B3D4FC; /* Default light blue highlight */
+  color: black;
 }
+
 
 ::-moz-selection {
   background: var(--marketplaceColor); /* Gecko Browsers */
@@ -1050,8 +1051,9 @@ textarea {
 
   /* Button colors */
   /* Primary button uses success color */
-  background-color: var(--colorPrimaryButton);
-  color: var(--colorWhite);
+  background-color: white);
+  border: 2px solid var(--marketplaceColor);
+  color: black;
 
   @media (--viewportMedium) {
     padding: 20px 0 20px 0;
@@ -1061,7 +1063,7 @@ textarea {
 .buttonPrimary:hover {
   outline: none;
   box-shadow: var(--boxShadowButton);
-  background-color: var(--colorPrimaryButtonDark);
+  background-color: var(--marketplaceColor);
   color: var(--colorWhite);
 }
 .buttonPrimary:hover {
@@ -1098,8 +1100,8 @@ textarea {
   border: none;
   border-radius: var(--borderRadiusMedium);
 
-  background-color: var(--colorPrimaryButton);
-  color: var(--colorWhite);
+  background-color: var(--marketplaceColor);
+  color: black;
 
   @media (--viewportMedium) {
     line-height: 16px;
@@ -1505,7 +1507,7 @@ textarea {
   margin-left: 8px;
 
   /* Move X icon vertically to align it with the close text. */
-  margin-top: 3px;
+  margin-top: 20px;
 
   box-sizing: content-box;
 

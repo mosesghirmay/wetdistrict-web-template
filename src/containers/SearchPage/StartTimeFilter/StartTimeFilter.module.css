@@ -1,0 +1,18 @@
+.filterWrapper {
+    margin-top: 15px;
+  }
+  
+  .filterLabel {
+    font-size: 14px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .filterSelect {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+  

@@ -1,39 +1,24 @@
-import React, { Component } from 'react';
-import classNames from 'classnames';
-import { Modal } from '../../components';
-import { withViewport } from '../../util/uiHelpers';
-
-import css from './ModalInMobile.module.css';
-
 /**
  * ModalInMobile gives possibility separate part of existing DOM so that in mobile views that
  * fragment is shown in a separate modal layer on top of the page.
  *
  * Currently, this does not implement resize listener for window.
  *
- * @example
+ * Example:
  * <Parent>
  *   <ModalInMobile isModalOpenOnMobile={this.state.modalOpen} onClose={handleClose}>
  *     <FormX />
  *   </ModalInMobile>
  * </Parent>
- *
- * @component
- * @param {Object} props
- * @param {string?} props.className add more style rules in addition to component's own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {string?} props.containerClassName overwrite components own css.modalContainer
- * @param {string} props.id
- * @param {boolean?} props.isModalOpenOnMobile
- * @param {Function} props.onClose
- * @param {Function} props.onManageDisableScrolling
- * @param {number?} props.showAsModalMaxWidth
- * @param {ReactNode?} props.closeButtonMessage
- * @param {Object} props.viewport
- * @param {number} props.viewport.width
- * @param {number} props.viewport.height
- * @returns {JSX.Element} container which is shown as a modal on mobile layout
  */
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { Modal } from '../../components';
+import { withViewport } from '../../util/uiHelpers';
+
+import css from './ModalInMobile.module.css';
+
 class ModalInMobileComponent extends Component {
   constructor(props) {
     super(props);
@@ -84,14 +69,15 @@ class ModalInMobileComponent extends Component {
     const {
       children,
       className,
-      rootClassName,
       containerClassName,
       id,
-      showAsModalMaxWidth = 0,
+      showAsModalMaxWidth,
       closeButtonMessage,
       onManageDisableScrolling,
       viewport,
       usePortal,
+      hideCloseIcon = false,
+      isFilterMobileModal,
     } = this.props;
 
     const isMobileLayout = viewport.width <= showAsModalMaxWidth;
@@ -104,7 +90,7 @@ class ModalInMobileComponent extends Component {
     // - mobile layout: content visible inside modal popup
     // - mobile layout: content hidden
     const closedClassName = isClosedInMobile ? css.modalHidden : null;
-    const classes = classNames(rootClassName || css.root, className);
+    const classes = classNames(css.root, className);
 
     return (
       <Modal
@@ -115,15 +101,47 @@ class ModalInMobileComponent extends Component {
         isOpen={isOpen}
         isClosedClassName={closedClassName}
         onClose={this.handleClose}
+        hideCloseIcon={hideCloseIcon}
         closeButtonMessage={closeButtonMessage}
         onManageDisableScrolling={onManageDisableScrolling}
         usePortal={usePortal && isOpen}
+        isFilterMobileModal={isFilterMobileModal}
       >
         {children}
       </Modal>
     );
   }
 }
+
+ModalInMobileComponent.defaultProps = {
+  children: null,
+  className: '',
+  containerClassName: null,
+  onClose: null,
+  showAsModalMaxWidth: 0,
+  closeButtonMessage: null,
+};
+
+const { bool, func, node, number, string, shape } = PropTypes;
+
+ModalInMobileComponent.propTypes = {
+  children: node,
+  className: string,
+  containerClassName: string,
+  id: string.isRequired,
+  isModalOpenOnMobile: bool.isRequired,
+  onClose: func,
+  showAsModalMaxWidth: number,
+  closeButtonMessage: node,
+  // eslint-disable-next-line react/no-unused-prop-types
+  onManageDisableScrolling: func.isRequired,
+
+  // from withViewport
+  viewport: shape({
+    width: number.isRequired,
+    height: number.isRequired,
+  }).isRequired,
+};
 
 const ModalInMobile = withViewport(ModalInMobileComponent);
 

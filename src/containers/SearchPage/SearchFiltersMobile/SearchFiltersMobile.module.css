@@ -4,12 +4,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-color: var(--colorGrey50);
-
-  /* sticky result summary in mobile */
-  position: sticky;
-  top: var(--topbarHeight); /* Ensures it stays under the topbar */
-  z-index: var(--zIndexTopbar);
 }
 
 .searchResultSummary {
@@ -48,30 +42,33 @@
 
 .modalContainer {
   width: 100%;
-  padding: 94px 0;
+  padding: 24px 0;
   margin: 0 24px;
-  background-color: var(--colorGrey50);
 }
 
 .modalHeadingWrapper {
-  padding-bottom: 31px;
-  border-bottom: 1px solid var(--colorGrey100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
 }
 
 .modalHeading {
-  composes: h1 from global;
-  margin-top: 0;
+  composes: h4 from global;
+  color: var(--colorGrey900);
+  margin: 0;
+  padding: 0;
 }
 
 .resetAllButton {
-  composes: h5 from global;
+  font-size: 16px;
   font-weight: var(--fontWeightMedium);
-  color: var(--colorGrey300);
+  color: var(--colorGrey800);
 
   /* Layout */
   display: inline;
   float: right;
-  margin: 8px 0 0 0;
+  margin: 0 0 5px 0;
   padding: 0;
 
   /* Override button styles */
@@ -89,7 +86,7 @@
   /* add bottom margin so that the last filter won't be hidden
    * under the mobile safari bottom bar or the "Show results"
    * button bar */
-  padding-bottom: 220px;
+  padding-bottom: 150px;
 }
 
 .showListingsContainer {
@@ -97,6 +94,9 @@
   bottom: 0;
   left: 0;
 
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   width: 100vw;
   padding: 18px 24px;
 
@@ -104,22 +104,219 @@
   box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
   z-index: 11;
 }
-
+.leftactionBtns {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 0.5;
+}
 .showListingsButton {
-  background-color: var(--marketplaceColor);
+  background-color: var(--secondaryColor);
+  color: var(--colorBlack);
+  border: var(--marketplaceColor) 2px solid;
   display: inline-block;
   border-radius: 3px;
+  font-size: 14px;
+  line-height: 120%;
+  min-height: auto;
+  height: auto;
+  padding: 14px 20px;
+  border-radius: 6px;
+}
+.closeBtn {
+  border: solid 2px var(--colorGrey800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  min-width: 46px;
+  cursor: pointer;
+  transition: var(--transitionStlye);
+  &:hover {
+    transition: var(--transitionStlye);
+    border-color: var(--marketplaceColor);
+    & > svg {
+      & path {
+        fill: var(--marketplaceColor);
+      }
+    }
+  }
+  & > svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+.dateSection {
+  display: none;
+  visibility: hidden;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+
+  /* margin-top: 12px; */
+
+  @media (--viewportLarge) {
+    max-width: 40%;
+    margin-top: 0px;
+  }
 }
 
-.searchFiltersMobile {
-  background-color: var(--colorGrey50);
-  position: sticky;
-  top: var(--topbarHeight);
-  z-index: var(--zIndexTopbar);
-  width: 100vw; /* Force full width */
-  left: 0 !important; /* Ensure it starts from the left */
-  right: 0;
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Bottom shadow only */
+.moreFilters {
+  border: solid 1px #000;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 100%;
+  padding: 4px 12px;
+  height: 50px;
+  color: var(--colorGrey900);
+  cursor: pointer;
+  transition: all ease 0.5s;
+  position: relative;
+  width: 46%;
+  background: white;
+  @media (min-width: 480px) {
+    font-size: 14px;
+  }
+
+  &:hover {
+    transition: all ease 0.5s;
+    color: var(--colorGrey900);
+    border-color: var(--colorGrey100);
+    box-shadow: var(--boxShadowButton);
+
+    & > svg {
+      transition: all ease 0.5s;
+
+      & > path {
+        transition: all ease 0.5s;
+        stroke: var(--colorGrey900);
+      }
+    }
+  }
+  & > div {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  & .count {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--colorWhite);
+    font-weight: var(--fontWeightRegular);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: var(--marketplaceColor);
+  }
+
+  & > svg {
+    transition: all ease 0.5s;
+    margin-right: 5px;
+    height: 18px;
+    width: 18px;
+
+    & > path {
+      transition: all ease 0.5s;
+      stroke: var(--colorGrey900);
+    }
+  }
+}
+@media (max-width: 767px) {
+  & :global(.DateInput_input__focused) {
+    display: contents !important;
+    width: 1px !important;
+    border: none !important;
+  }
+
+  & :global(.DateRangePickerInput__withBorder) {
+    background: transparent !important;
+    width: 1px !important;
+    border: none !important;
+  }
+
+  & :global(.DateRangePickerInput_arrow_svg) {
+    background: transparent !important;
+    width: 1px !important;
+    border: none !important;
+  }
+}
+.extraFilters {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid black;
+  max-height: 60px;
+  padding: 0px 12px;
+}
+
+.extraFilters {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid black;
+  max-height: 60px;
+  padding: 0px 12px;
+  width: calc(100% / 6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  & img {
+    width: 20px;
+    @media (min-width: 480px) {
+      width: 30px;
+    }
+  }
+
+  & div {
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+    width: max-content;
+    @media (min-width: 480px) {
+      font-size: 11px;
+    }
+  }
+}
+
+.peopleIcon {
+  & > img {
+    position: relative;
+  }
+}
+
+#filtersContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 5; /* Keep it behind the Topbar */
+  transform: translateY(-100%); /* Start hidden above the viewport */
+  transition: transform 0.3s ease-in-out;
+}
+
+#filtersContainer.open {
+  transform: translateY(0); /* Slide it down when active */
+}
+
+.startTimeFilter {
+  margin-top: 16px;
+  padding: 10px;
+  background: white;
+  border-radius: 5px;
 }

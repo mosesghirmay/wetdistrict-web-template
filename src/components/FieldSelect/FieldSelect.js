@@ -5,34 +5,34 @@ import { ValidationError } from '../../components';
 
 import css from './FieldSelect.module.css';
 
-const FieldSelectComponent = props => {
-  const {
-    rootClassName,
-    className,
-    selectClassName,
-    id,
-    label,
-    input,
-    meta,
-    children,
-    onChange,
-    ...rest
-  } = props;
-
+/**
+ * Select field component for Final Form.
+ */
+const FieldSelectComponent = ({
+  rootClassName,
+  className,
+  selectClassName,
+  id,
+  label,
+  input,
+  meta,
+  children,
+  onChange,
+  ...rest
+}) => {
   if (label && !id) {
-    throw new Error('id required when a label is given');
+    throw new Error('id is required when a label is provided for accessibility.');
   }
 
-  const { valid, invalid, touched, error } = meta;
-
-  // Error message and input error styles are only shown if the
-  // field has been touched and the validation has failed.
+  const { touched, invalid, error } = meta;
   const hasError = touched && invalid && error;
 
-  const selectClasses = classNames({
-    [selectClassName]: selectClassName,
+  // Apply error styling if validation fails
+  const selectClasses = classNames(selectClassName, {
     [css.selectError]: hasError,
   });
+
+  // Handle selection change
   const handleChange = e => {
     input.onChange(e);
     if (onChange) {
@@ -40,13 +40,12 @@ const FieldSelectComponent = props => {
     }
   };
 
-  const selectProps = { className: selectClasses, id, ...input, onChange: handleChange, ...rest };
-
-  const classes = classNames(rootClassName || css.root, className);
   return (
-    <div className={classes}>
-      {label ? <label htmlFor={id}>{label}</label> : null}
-      <select {...selectProps}>{children}</select>
+    <div className={classNames(rootClassName || css.root, className)}>
+      {label && <label htmlFor={id}>{label}</label>}
+      <select id={id} className={selectClasses} {...input} onChange={handleChange} {...rest}>
+        {children}
+      </select>
       <ValidationError fieldMeta={meta} />
     </div>
   );
@@ -57,17 +56,15 @@ const FieldSelectComponent = props => {
  *
  * @component
  * @param {Object} props
- * @param {string?} props.className add more style rules in addition to components own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {string?} props.selectClassName add more style rules to <select> component
  * @param {string} props.name Name of the input in Final Form
- * @param {string} props.id Label is optional, but if it is given, an id is also required so the label can reference the input in the `for` attribute
- * @param {ReactNode} props.label
- * @param {ReactNode} props.children
+ * @param {string?} props.className Additional style rules for the root container
+ * @param {string?} props.rootClassName Override default root class
+ * @param {string?} props.selectClassName Additional styles for <select> component
+ * @param {string} props.id Required if a label is provided, ensures accessibility
+ * @param {ReactNode} props.label Display label for select field
+ * @param {ReactNode} props.children Options inside <select>
  * @returns {JSX.Element} Final Form Field containing <select> input
  */
-const FieldSelect = props => {
-  return <Field component={FieldSelectComponent} {...props} />;
-};
+const FieldSelect = props => <Field component={FieldSelectComponent} {...props} />;
 
 export default FieldSelect;

@@ -23,7 +23,7 @@
 }
 
 .listingCards {
-  padding: 0 0 72px 0;
+  padding: 15px;
 
   display: grid;
   grid-template-columns: repeat(1, 1fr);

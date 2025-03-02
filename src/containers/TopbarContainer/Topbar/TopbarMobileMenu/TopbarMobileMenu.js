@@ -11,12 +11,15 @@ import {
   InlineTextButton,
   NamedLink,
   NotificationBadge,
+  IconClose,
+  AvatarSmall, // ✅ Import Close Icon
 } from '../../../../components';
 
 import css from './TopbarMobileMenu.module.css';
+import WrittenLogo from '../../../../assets/WrittenLogo.png';
 
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
-  const { group, text, type, href, route } = linkConfig;
+  const { text, type, href, route } = linkConfig;
   const getCurrentPageClass = page => {
     const hasPageName = name => currentPage?.indexOf(name) === 0;
     const isCMSPage = pageId => hasPageName('CMSPage') && currentPage === `${page}:${pageId}`;
@@ -28,10 +31,7 @@ const CustomLinkComponent = ({ linkConfig, currentPage }) => {
       : null;
   };
 
-  // Note: if the config contains 'route' keyword,
-  // then in-app linking config has been resolved already.
   if (type === 'internal' && route) {
-    // Internal link
     const { name, params, to } = route || {};
     const className = classNames(css.navigationLink, getCurrentPageClass(name));
     return (
@@ -49,20 +49,6 @@ const CustomLinkComponent = ({ linkConfig, currentPage }) => {
   );
 };
 
-/**
- * Menu for mobile layout (opens through hamburger icon)
- *
- * @component
- * @param {Object} props
- * @param {boolean} props.isAuthenticated
- * @param {string?} props.currentPage
- * @param {boolean} props.currentUserHasListings
- * @param {Object?} props.currentUser API entity
- * @param {number} props.notificationCount
- * @param {Array<Object>} props.customLinks Contains object like { group, text, type, href, route }
- * @param {Function} props.onLogout
- * @returns {JSX.Element} search icon
- */
 const TopbarMobileMenu = props => {
   const {
     isAuthenticated,
@@ -72,6 +58,7 @@ const TopbarMobileMenu = props => {
     notificationCount = 0,
     customLinks,
     onLogout,
+    onClose, // ✅ Close button function
   } = props;
 
   const user = ensureCurrentUser(currentUser);
@@ -86,103 +73,79 @@ const TopbarMobileMenu = props => {
     );
   });
 
-  if (!isAuthenticated) {
-    const signup = (
-      <NamedLink name="SignupPage" className={css.signupLink}>
-        <FormattedMessage id="TopbarMobileMenu.signupLink" />
-      </NamedLink>
-    );
-
-    const login = (
-      <NamedLink name="LoginPage" className={css.loginLink}>
-        <FormattedMessage id="TopbarMobileMenu.loginLink" />
-      </NamedLink>
-    );
-
-    const signupOrLogin = (
-      <span className={css.authenticationLinks}>
-        <FormattedMessage id="TopbarMobileMenu.signupOrLogin" values={{ signup, login }} />
-      </span>
-    );
-    return (
-      <div className={css.root}>
-        <div className={css.content}>
-          <div className={css.authenticationGreeting}>
-            <FormattedMessage
-              id="TopbarMobileMenu.unauthorizedGreeting"
-              values={{ lineBreak: <br />, signupOrLogin }}
-            />
-          </div>
-
-          <div className={css.customLinksWrapper}>{extraLinks}</div>
-
-          <div className={css.spacer} />
-        </div>
-        <div className={css.footer}>
-          <NamedLink className={css.createNewListingLink} name="NewListingPage">
-            <FormattedMessage id="TopbarMobileMenu.newListingLink" />
-          </NamedLink>
-        </div>
-      </div>
-    );
-  }
-
   const notificationCountBadge =
     notificationCount > 0 ? (
       <NotificationBadge className={css.notificationBadge} count={notificationCount} />
     ) : null;
 
-  const displayName = user.attributes.profile.firstName;
   const currentPageClass = page => {
     const isAccountSettingsPage =
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     const isInboxPage = currentPage?.indexOf('InboxPage') === 0 && page?.indexOf('InboxPage') === 0;
     return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
   };
+
   const inboxTab = currentUserHasListings ? 'sales' : 'orders';
 
   return (
     <div className={css.root}>
-      <AvatarLarge className={css.avatar} user={currentUser} />
-      <div className={css.content}>
-        <span className={css.greeting}>
-          <FormattedMessage id="TopbarMobileMenu.greeting" values={{ displayName }} />
-        </span>
-        <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
-          <FormattedMessage id="TopbarMobileMenu.logoutLink" />
-        </InlineTextButton>
-
-        <div className={css.accountLinksWrapper}>
-          <NamedLink
-            className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}
-            name="InboxPage"
-            params={{ tab: inboxTab }}
-          >
-            <FormattedMessage id="TopbarMobileMenu.inboxLink" />
-            {notificationCountBadge}
-          </NamedLink>
-          <NamedLink
-            className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}
-            name="ManageListingsPage"
-          >
-            <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
-          </NamedLink>
-          <NamedLink
-            className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}
-            name="ProfileSettingsPage"
-          >
-            <FormattedMessage id="TopbarMobileMenu.profileSettingsLink" />
-          </NamedLink>
-          <NamedLink
-            className={classNames(css.navigationLink, currentPageClass('AccountSettingsPage'))}
-            name="AccountSettingsPage"
-          >
-            <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
-          </NamedLink>
+      {/* ✅ Header with Logo on the Left & Close Button on the Right */}
+      <div className={css.header}>
+        <div className={css.logoContainer}>
+          <img src={WrittenLogo} alt="Wet District" className={css.writtenLogo} />
         </div>
-        <div className={css.customLinksWrapper}>{extraLinks}</div>
+        
+      </div>
+
+      <div className={css.content}>
+        {isAuthenticated && user ? (
+          <>
+          
+
+            {/* ✅ Correct menu for Owners & Renters */}
+            <div className={css.accountLinksWrapper}>
+              <NamedLink
+                className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}
+                name="InboxPage"
+                params={{ tab: inboxTab }}
+              >
+                <FormattedMessage id="TopbarMobileMenu.inboxLink" />
+                {notificationCountBadge}
+              </NamedLink>
+              <NamedLink
+                className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}
+                name="ManageListingsPage"
+              >
+                <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
+              </NamedLink>
+              <NamedLink
+                className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}
+                name="ProfileSettingsPage"
+              >
+                <FormattedMessage id="TopbarMobileMenu.profileSettingsLink" />
+              </NamedLink>
+              <NamedLink
+                className={classNames(css.navigationLink, currentPageClass('AccountSettingsPage'))}
+                name="AccountSettingsPage"
+              >
+                <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
+              </NamedLink>
+            </div>
+            
+
+            {/* ✅ Logout Button */}
+            <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
+              <FormattedMessage id="TopbarMobileMenu.logoutLink" />
+            </InlineTextButton>
+          </>
+        ) : null} 
+
+        
+{/* ✅ Custom links (Extra menu items) */}
+<div className={css.customLinksWrapper}>{extraLinks}</div>
         <div className={css.spacer} />
       </div>
+      
       <div className={css.footer}>
         <NamedLink className={css.createNewListingLink} name="NewListingPage">
           <FormattedMessage id="TopbarMobileMenu.newListingLink" />
@@ -193,4 +156,3 @@ const TopbarMobileMenu = props => {
 };
 
 export default TopbarMobileMenu;
-

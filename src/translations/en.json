@@ -1119,5 +1119,11 @@
   "UserNav.profileSettings": "Profile settings",
   "UserNav.yourListings": "Your listings",
   "Topbar.chooseDate": "Choose a date",
-  "Topbar.chooseDateLabel": "Pick a date"
+  "Topbar.chooseDateLabel": "Pick a date",
+  "ListingCard.noGuestLimit": "No guest limit",
+"FieldDateAndTimeInput.startDate": "Start Date",
+  "FieldDateAndTimeInput.selectDate": "Select a Date",
+  "BookingTimeForm.selectTime": "Select a Start Time",
+  "BookingTimeForm.selectEndTime": "Select an End Time",
+  "BookingTimeForm.noAvailableTimes": "No available times"
 }

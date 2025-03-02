@@ -2,38 +2,33 @@
 
 .root {
   width: 100%;
-  z-index: var(--zIndexTopbar);
-  position: fixed; /* Ensures Topbar stays at the top */
-  top: 0;
-  left: 0;
-  background-color: --colorGrey50; /* ✅ Keeps grey50 background */
-  opacity: 1 !important;
+
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2;
 }
 
 .container {
+  /* Size */
   width: 100%;
   height: var(--topbarHeight);
+
+  /* Layout for child components */
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--colorGrey50) !important;
-  opacity: 1 !important;
-  backdrop-filter: none !important;
-  padding: 0 12px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: var(--zIndexTopbar);
-  box-shadow: none !important; /* ✅ Removes any unwanted border shadow */
-  border-bottom: none !important; /* ✅ Ensures no bottom border */
-}
 
-.Topbar_container__gG-i7 {
-  opacity: 1 !important;
-  background-color: var(--colorgrey50) !important;
-}
+  /* fill */
+  background: linear-gradient(
+    180deg,
+    #5d2bc0,
+    rgba(216, 44, 206, 1) 36%,
+    rgba(247, 200, 119, 1) 68%,
+    rgba(255, 255, 255, 1) 100%
+  );
 
+  /* shadows */
 
   @media (--viewportMedium) {
     height: var(--topbarHeightDesktop);
@@ -42,94 +37,82 @@
   @media (--viewportLarge) {
     display: none;
   }
+}
 
+.logoutButton {
+  flex: 1;
+  margin: 0;
+}
 
-/* Adjustments to avoid unwanted spacing */
-.layoutWrapper {
+/* Child component's size (and positioning) should be given here */
+.menu,
+.searchMenu {
+  color: var(--colorGrey700);
   margin: 0;
   padding: 0;
-}
-
-/* Ensure page content starts directly below the Topbar */
-.mainContent {
-  padding-top: var(--topbarHeight);
-}
-
-.logo {
-  flex: 0 0 auto;
+  /* Layout */
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  margin: 0;
+  border-width: 0px;
+  background-color: transparent;
+  margin-left: auto;
+
+  
+
+
+  &:disabled {
+    background-color: transparent;
+    cursor: auto;
+  }
 }
 
 .menu {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  border: none;
-  outline: none;
-}
+  padding: 0px 10px 0px 16px;
+  position: relative;
 
-.menuIcon {
-  margin: 0;
-  border: none;
-  outline: none;
-}
-
-/* Style the Date Picker Button */
-.datePickerButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--colorWhite);
-  border: 2px solid var(--marketplaceColor);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.datePickerButton:hover {
-  background-color: var(--marketplaceColor);
-  color: var(--colorWhite);
-}
-
-/* Icon inside the button */
-.datePickerButton .calendarIcon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-.topbarContainer {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-}
-
-.topbarFiltersButton:hover {
-  background-color: var(--colorWhite) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  @media (--viewportMedium) {
+    padding: 21px 20px;
+  }
 }
 
 .searchMenu {
-  display: none !important;
+  padding: 0px 16px 0px 10px;
+
+  width: auto;
+  & > svg {
+    fill: var(--colorWhite);
+  }
+
+  @media (--viewportMedium) {
+    padding: 18px 20px;
+  }
+}
+
+.menuIcon,
+.searchMenuIcon {
+  margin: 9px 0;
 }
 
 .notificationDot {
+  /* Dimensions */
   width: 12px;
   height: 12px;
   border-radius: 50%;
+
+  /* Position */
   position: absolute;
   top: 17px;
   right: 17px;
+
+  /* Style: red dot with white border */
   background-color: var(--colorFail);
   border: 2px solid var(--colorWhite);
+
   animation-name: notificationPop;
   animation-duration: 0.1s;
   animation-delay: 0.1s;
   animation-fill-mode: forwards;
+
   animation-timing-function: ease-in;
   opacity: 0;
   transform: scale(0);
@@ -144,6 +127,7 @@
     transform: scale(0);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -160,7 +144,11 @@
 
 /* Icon component styles */
 .rootMenuIcon {
-  fill: var(--colorGrey700);
+  fill: var(--colorblack);
+}
+
+.rootSearchIcon {
+  stroke: var(--colorblack);
 }
 
 .searchContainer {
@@ -172,6 +160,9 @@
 .mobileHelp {
   color: var(--colorGrey300);
   margin: 0 24px;
+
+  /* Absolute position to avoid affecting the layout of the autocomplete
+   predictions list */
   position: absolute;
   top: 73px;
 }
@@ -180,6 +171,7 @@
 
 .modalContainer {
   composes: marketplaceModalInMobileBaseStyles from global;
+  padding: 0;
   padding: var(--modalPadding);
 
   @media (--viewportMedium) {
@@ -236,6 +228,8 @@
 
 .bottomWrapper {
   composes: marketplaceModalBottomWrapper from global;
+
+  /* Align the helper links to the left since there isn't a Primary Button anymore */
   text-align: left;
 }
 
@@ -246,15 +240,24 @@
 .genericError {
   position: fixed;
   top: calc(var(--topbarHeight) + 15px);
+
+  /* Place enough to the right to hide the error */
   right: -355px;
   opacity: 0;
+
   max-width: 340px;
   margin: 0 15px;
+
+  /* Animate error from the right */
   transition: all ease-out 0.2s;
   transition-delay: 1s;
+
+  /* Bleed the bg color from the bottom */
   padding-bottom: 4px;
   background-color: var(--marketplaceColor);
   border-radius: var(--borderRadiusMedium);
+
+  /* Place on top of everything */
   z-index: var(--zIndexGenericError);
 
   @media (--viewportMedium) {
@@ -284,241 +287,105 @@
   }
 }
 
-/* ========== Date Picker Button Styles ========== */
-.datePickerButton {
+
+.extraMenuOptions {
+  align-items: center;
+  display: flex;
+
+  & > a {
+    color: rgb(22, 20, 20) !important;
+    font-weight: 400;
+    position: relative;
+    line-height: 100%;
+    font-size: 13px;
+    @media (min-width: 480px) {
+      font-size: 14px;
+    }
+  }
+}
+/* Topbar Container */
+.topbarContainer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between; /* Ensures space between items */
   width: 100%;
-  max-width: 260px;
-  height: 40px;
-  padding: 10px 16px;
-  border-radius: 24px; /* Rounded edges */
-  background-color: var(--colorWhite);
-  border: 1px solid var(--colorGrey300);
-  box-shadow: var(--boxShadow);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--colorText);
-  user-select: none; /* Prevents text selection */
-  cursor: default; /* Prevents pointer cursor */
-  transition: none !important; /* Disables hover animations */
+  max-width: 100%;
 }
 
-.datePickerButton:hover,
-.datePickerButton:focus,
-.datePickerButton:active {
-  background-color: var(--colorWhite) !important;
-  border-color: var(--colorGrey300) !important;
-  box-shadow: var(--boxShadow) !important;
-  color: var(--colorText) !important;
-}
-
-.datePickerButton:focus {
-  outline: none;
-  border-color: var(--marketplaceColor);
-}
-
-/* Calendar Icon inside Button */
-.datePickerButton .calendarIcon {
-  margin-right: 8px;
-  font-size: 14px;
-  color: var(--colorGrey600);
-}
-
-
-/* ========== Date Picker Container (Full-Screen Wrapper) ========== */
-.datePickerContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vw;
-  min-height: 100%;
-  transition: min-height 0.3s ease-in-out;
-  background-color: var(--colorGrey50);
+/* Left Section (Logo) */
+.leftContainer {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-top: 45px;
-  z-index: 9999;
-  overflow: hidden;
-}
-
-/* ✅ Expands wrapper size so all elements fit together */
-.datePickerContainer.open {
-  min-height: 100%;
-}
-
-.datePickerContainer.expanded {
-  min-height: 100% !important;
-}
-
-/* ========== Logo Container (Higher Placement) ========== */
-.writtenLogoContainer {
-  position: absolute;
-  top: 7px; /* Moves the logo higher above the modal */
-  left: 25px;
-  width: auto;
-  display: flex;
-  justify-content: flex-start; /* Keeps it aligned left */
-  z-index: 9999; /* Ensures it stays on top */
-}
-
-/* ========== Written Logo ========== */
-.writtenLogo {
-  width: 220px; /* Slightly bigger */
-  height: auto;
-  max-width: 250px;
-  z-index: 10000; /* Ensures it stays on top */
-}
-
-
-
-
-
-
-.dropdownLabel {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
-  text-align: left;  /* Ensuflexres left alignment */
-  width: 100%; /* Makes sure it spans the full width of the container */
-}
-
-
-/* ========== Close Button (Top Right) ========== */
-.datePickerCloseButton {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 14px;
-  font-weight: 400px;
-  color: var(--colorText);
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-
-
-/* ✅ Submit Button Styling (Now Inside the Modal) */
-.datePickerSubmitButton {
-  width: 100%;
-  max-width: 400px;
-  height: 50px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-  background-color: var(--marketplaceColor);
-  color: var(--colorWhite);
-  cursor: pointer;
-  border: none;
-  margin-top: 20px; /* ✅ Pushes it below the start time buttons */
-  transition: all 0.3s ease-in-out;
-}
-
-
-/* Default: Disabled State */
-.datePickerSubmitButton:disabled {
-  background-color: white;  /* White background */
-  color: black;  /* Black text */
-  border: 2px solid var(--marketplaceColor); /* Light border */
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Enabled: Active State */
-.datePickerSubmitButton.enabled {
-  background-color: white;
-  color: var(--colorGrey700);
-  font-weight: 500;
-  border: 2px solid var(--marketplaceColor); /* Border matches button */
-  cursor: pointer;
-  opacity: 1;
-}
-
-/* Hover effect for active button */
-.datePickerSubmitButton.enabled:hover {
-  background-color: darken(var(--marketplaceColor), 10%);
-}
-
-
-/* ✅ Ensures Modal Content Stays Centered */
-.datePickerWrapper {
-  width: 90%;
-  max-width: 600px;
-  background: var(--colorWhite);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-  max-height: 87vh;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-
-
-/* ✅ Ensure Time Picker & Duration stay BELOW the calendar */
-.filtersWrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: flex-start;
-  margin-top: 335px !important; /* ✅ Push filters below the calendar */
-  position: relative !important;
-  z-index: 10 !important;
+  max-width: 15%; /* Limits logo width */
+  align-items: center;
 }
 
-/* ✅ Dropdown Container */
-.dropdownContainer {
-  width: 100%;
-  text-align: left;
-}
-
-
-
-/* ✅ Button Group */
-.buttonGroup {
+/* Center Section (Search Button) */
+.centerContainer {
+  flex: 2;
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-top: 8px;
+  align-items: center;
+  max-width: 100%; /* Makes it wider */
 }
 
-/* ✅ Selection Buttons */
-.selectionButton {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--marketplaceColor);
-  background-color: var(--colorWhite);
+/* Search Button Styling */
+.searchButton {
+  width: 100%; /* Ensures it expands properly */
+  display: flex; /* Aligns icon and text */
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Adds space between icon and text */
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Light border */
+  border-radius: 25px;
+  background-color: white; /* White background */
+  color: #777777; /* Dark grey font */
   font-size: 14px;
   font-weight: 500;
+  text-align: center;
   cursor: pointer;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow */
   transition: all 0.2s ease-in-out;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); /* ✅ Matches input box */
 }
 
 
 
-/* ✅ Selected Button Styling */
-.selectionButton.selected {
-  background-color: var(--marketplaceColor);
-  border-color: var(--marketplaceColor);
-  color: var(--colorWhite);
-  font-weight: bold;
-  border: 1px solid var(--marketplaceColorDark);
-  box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.15); /* ✅ Elevation Effect */
+.searchIcon {
+  width: 18px; /* Adjust size */
+  height: 18px;
+  weight: 400px;
+  fill: #777777; /* Matches text color */
 }
 
-/* ✅ Border Effect When Date is Selected */
-.selectionButton.dateSelected {
-  border-color: var(--marketplaceColor);
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* ✅ Subtle elevation */
+
+/* Right Section (Menu Button) */
+.rightContainer {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 15%; /* Keeps it from taking too much space */
+  align-items: center;
 }
 
+/* Fixes spacing for links without filters */
+.linksWithoutFilters > a {
+  color: white !important;
+  font-weight: 500;
+  position: relative;
+  top: 0px !important;
+  right: 14px !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .topbarContainer {
+  }
+
+  .centerContainer {
+    max-width: 70%; /* Expands center container on smaller screens */
+  }
+
+ 
+}

@@ -16,6 +16,7 @@
   /* Layout */
   width: 100%;
   height: 100%;
+  padding-top: 0px;
 
   display: flex;
   flex-direction: column;
@@ -93,6 +94,22 @@
 
 .modalMessage {
   composes: marketplaceModalParagraphStyles from global;
+}
+
+.customField {
+  margin-bottom: 24px;
+
+  @media (--viewportMedium) {
+    margin-bottom: 32px;
+  }
+  & > ul {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    @media (--viewportSmall) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 }
 
 .customFieldMultiEnum {
