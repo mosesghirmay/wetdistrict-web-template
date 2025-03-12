@@ -1,8 +1,35 @@
 @import '../../../styles/customMediaQueries.css';
 
 .labelPlain {
+  transition: color 0.1s ease;
 }
 
 .labelPlainSelected {
   color: var(--marketplaceColor);
+  font-weight: 600;
+}
+
+/* Match the styling with SelectMultipleFilter for consistent UI */
+:global(.FieldSelect) {
+  min-width: 200px;
+}
+
+:global(.FieldSelect__control) {
+  border-radius: 8px !important;
+  border-color: var(--colorGrey300) !important;
+  transition: all 0.1s ease !important;
+}
+
+:global(.FieldSelect__control--is-focused) {
+  border-color: var(--marketplaceColor) !important;
+  box-shadow: 0 0 0 2px rgba(var(--marketplaceColorRgba), 0.2) !important;
+}
+
+:global(.FieldSelect__option--is-selected) {
+  background-color: var(--marketplaceColorLight) !important;
+  color: var(--marketplaceColor) !important;
+}
+
+:global(.FieldSelect__option:hover) {
+  background-color: rgba(var(--marketplaceColorRgba), 0.1) !important;
 }

@@ -1,0 +1,23 @@
+{
+  "customLinks": [
+    {
+      "text": "How it works",
+      "href": "/p/how-it-works",
+      "type": "internal",
+      "group": "primary"
+    },
+    {
+      "text": "About us",
+      "href": "/about",
+      "type": "internal",
+      "group": "primary"
+    },
+    {
+      "text": "Contact",
+      "href": "/contact",
+      "type": "internal",
+      "group": "secondary"
+    }
+  ],
+  "logoLink": null
+}

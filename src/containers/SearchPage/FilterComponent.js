@@ -91,19 +91,41 @@ const FilterComponent = props => {
       );
 
     // **✅ Reverting to Sharetribe's Default Date Range Picker**
-    case 'dates': {
-      return (
-        <BookingDateRangeFilter
-          id={componentId}
-          label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
-          queryParamNames={[key]}
-          initialValues={initialValues([key], liveEdit)}
-          onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          isSearchFiltersMobile={rest.isSearchFiltersMobile}
-          {...rest}
-        />
-      );
-    }
+    // Modify just the dates case in FilterComponent.js
+   // In src/containers/SearchPage/FilterComponent.js, update the 'dates' case:
+
+case 'dates': {
+  return (
+    <BookingDateRangeFilter
+      id={componentId}
+      label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
+      queryParamNames={[key]}
+      initialValues={initialValues([key], liveEdit)}
+      onSubmit={getHandleChangedValueFn(useHistoryPush)}
+      forceSingleDay={true}
+      isSearchFiltersMobile={rest.isSearchFiltersMobile}
+      {...rest}
+    />
+  );
+}
+
+case 'StartTime': {
+  const { scope, enumOptions, filterConfig = {} } = config;
+  const queryParamNames = [`pub_StartTime`]; // Matches the publicData field
+  return (
+    <SelectSingleFilter
+      id={componentId}
+      label={filterConfig.label}
+      queryParamNames={queryParamNames}
+      initialValues={initialValues(queryParamNames, liveEdit)}
+      onSelect={getHandleChangedValueFn(useHistoryPush)}
+      options={createFilterOptions(enumOptions)}
+      isSearchFiltersMobile={isSearchFiltersMobile}
+      {...rest}
+    />
+  );
+}
+
 
     case 'seats': {
       return (

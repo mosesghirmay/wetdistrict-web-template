@@ -6,7 +6,7 @@ import { intlShape } from '../../util/reactIntl';
 import { propTypes } from '../../util/types';
 import * as validators from '../../util/validators';
 
-import { FieldSelect } from '../../components';
+import { FieldSelectOne } from '../../components/FieldSelect/FieldSelectOne';
 
 import css from './AuthenticationPage.module.css';
 
@@ -21,7 +21,7 @@ const FieldHidden = props => {
 };
 
 /**
- * Return React Final Form Field that allows selecting user type.
+ * Return React Final Form Field that allows selecting user type with buttons instead of a dropdown.
  *
  * @component
  * @param {Object} props
@@ -40,25 +40,17 @@ const FieldSelectUserType = props => {
 
   return hasMultipleUserTypes && !hasExistingUserType ? (
     <>
-      <FieldSelect
+      <FieldSelectOne
         id={name}
         name={name}
         className={classes}
         label={intl.formatMessage({ id: 'FieldSelectUserType.label' })}
+        options={userTypes.map(config => ({
+          value: config.userType,
+          label: config.label,
+        }))}
         validate={validators.required(intl.formatMessage({ id: 'FieldSelectUserType.required' }))}
-      >
-        <option disabled value="">
-          {intl.formatMessage({ id: 'FieldSelectUserType.placeholder' })}
-        </option>
-        {userTypes.map(config => {
-          const type = config.userType;
-          return (
-            <option key={type} value={type}>
-              {config.label}
-            </option>
-          );
-        })}
-      </FieldSelect>
+      />
     </>
   ) : (
     <>

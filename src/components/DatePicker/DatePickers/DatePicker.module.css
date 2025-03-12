@@ -281,49 +281,49 @@ height: auto;
   &:hover .renderedDay,
   & .renderedDay {
     border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: calc(37px / 2);
-    border-bottom-right-radius: calc(37px / 2);
+    border-radius: 10px;
     color: var(--colorWhite);
+    border-color: var(--marketplaceColor);
   }
 
   &:hover .renderedDay {
-    background-color: var(--datepickerSelectedHoveredBgColor);
-    color: var(--datepickerSelectedHoveredFgColor);
+    background-color: var(--colorWhite);
+    color: var(--colorBlack);
   }
 }
 
 .dateStart {
   &:hover .renderedDay,
   & .renderedDay {
-    border-top-left-radius: calc(37px / 2);
-    border-bottom-left-radius: calc(37px / 2);
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    color: var(--colorWhite);
+    border-radius: 10px;
+    color: var(--colorBlack)
+    
   }
 
   &:hover .renderedDay {
-    background-color: var(--datepickerSelectedHoveredBgColor);
-    color: var(--datepickerSelectedHoveredFgColor);
+    background-color: var(--colorWhite);
+    color: var(--colorBlack);
   }
 }
 
 .dateStart.dateEnd {
   & .renderedDay {
-    border-radius: calc(37px / 2);
+    border-radius: 10px;
+    background-color: var(--colorWhite);
+    color: var(--colorBlack);
+    font: bold;
   }
 }
 
 .dateInRange {
   & .renderedDay {
-    background-color: var(--datepickerSelectedBgColor);
-    color: var(--datepickerSelectedFgColor);
+    background-color: var(--colorWhite);
+    color: var(--colorBlack);
   }
 
   &:hover .renderedDay {
-    background-color: var(--datepickerSelectedHoveredBgColor);
-    color: var(--datepickerSelectedHoveredFgColor);
+    background-color: var(--colorWhite);
+    color: var(--colorBlack);
   }
 }
 

@@ -21,7 +21,12 @@ const ContextFunctions = (props) => {
   );
 };
 
-// Custom hook to use the shared context functions
-export const useMyContextFunctions = () => useContext(MyContextFunctions);
+export const useMyContextFunctions = () => {
+  const { onOpenMobileSearchFilterModal } = useMyContext();
+  
+  return {
+    onOpenMobileSearchFilterModal,
+  };
+};
 
 export default ContextFunctions;

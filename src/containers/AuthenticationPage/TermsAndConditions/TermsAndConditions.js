@@ -1,7 +1,9 @@
 import React from 'react';
+import { Field } from 'react-final-form';
+import classNames from 'classnames';
 
 import { requiredFieldArrayCheckbox } from '../../../util/validators';
-import { FieldCheckboxGroup } from '../../../components';
+import { ValidationError } from '../../../components';
 
 import { FormattedMessage, intlShape } from '../../../util/reactIntl';
 
@@ -58,25 +60,44 @@ const TermsAndConditions = props => {
     </span>
   );
 
+  const fieldId = formId ? `${formId}.terms-accepted` : 'terms-accepted';
+  const errorMessage = intl.formatMessage({ id: 'AuthenticationPage.termsAndConditionsAcceptRequired' });
+
   return (
     <div className={css.root}>
-      <FieldCheckboxGroup
+      <Field
         name="terms"
-        id={formId ? `${formId}.terms-accepted` : 'terms-accepted'}
-        optionLabelClassName={css.finePrint}
-        options={[
-          {
-            key: 'tos-and-privacy',
-            label: intl.formatMessage(
-              { id: 'AuthenticationPage.termsAndConditionsAcceptText' },
-              { termsLink, privacyLink }
-            ),
-          },
-        ]}
-        validate={requiredFieldArrayCheckbox(
-          intl.formatMessage({ id: 'AuthenticationPage.termsAndConditionsAcceptRequired' })
-        )}
-      />
+        validate={requiredFieldArrayCheckbox(errorMessage)}
+        type="checkbox"
+        value="tos-and-privacy"
+      >
+        {({ input, meta }) => {
+          const { checked, ...inputProps } = input;
+          return (
+            <div>
+              <label htmlFor={fieldId} className={css.finePrint}>
+                <span
+                  className={classNames(css.customCheckbox, { [css.checked]: checked })}
+                ></span>
+                <span className={css.termsText}>
+                  {intl.formatMessage(
+                    { id: 'AuthenticationPage.termsAndConditionsAcceptText' },
+                    { termsLink, privacyLink }
+                  )}
+                </span>
+                <input
+                  id={fieldId}
+                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                  {...inputProps}
+                />
+              </label>
+              {meta.touched && meta.error ? (
+                <ValidationError fieldMeta={meta} />
+              ) : null}
+            </div>
+          );
+        }}
+      </Field>
     </div>
   );
 };

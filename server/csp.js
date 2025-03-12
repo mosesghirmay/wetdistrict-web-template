@@ -66,7 +66,7 @@ const defaultDirectives = {
     '*.sentry.io',
     '*.stripe.com',
   ],
-  fontSrc: [self, data, 'assets-sharetribecom.sharetribe.com', 'fonts.gstatic.com'],
+  fontSrc: [self, data, 'assets-sharetribecom.sharetribe.com', 'fonts.gstatic.com', 'fonts.googleapis.com'],
   formAction: [self],
   frameSrc: [
     self,

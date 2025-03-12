@@ -5,27 +5,17 @@
 
   position: sticky !important;
   top: 0 !important;
-  z-index: 2;
+  z-index: ;
+  margin-bottom: -10px;
 }
 
 .container {
-  /* Size */
-  width: 100%;
-  height: var(--topbarHeight);
-
-  /* Layout for child components */
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-
-  /* fill */
-  background: linear-gradient(
-    180deg,
-    #5d2bc0,
-    rgba(216, 44, 206, 1) 36%,
-    rgba(247, 200, 119, 1) 68%,
-    rgba(255, 255, 255, 1) 100%
+  background: none;
+  padding-bottom: 5px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.2sease-in-out;
+  backdrop-filter: blur(5px);
+  background: var(--colorgrey50)
   );
 
   /* shadows */
@@ -312,27 +302,32 @@
   max-width: 100%;
 }
 
+/* Special styling for search page topbar */
+.searchPageTopbar {
+  padding: 10px 15px;
+}
+
 /* Left Section (Logo) */
 .leftContainer {
   flex: 1;
   display: flex;
   justify-content: flex-start;
-  max-width: 15%; /* Limits logo width */
   align-items: center;
 }
 
 /* Center Section (Search Button) */
 .centerContainer {
-  flex: 2;
+  flex-grow: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  max-width: 100%; /* Makes it wider */
+  padding: 0 10px;
 }
 
 /* Search Button Styling */
 .searchButton {
-  width: 100%; /* Ensures it expands properly */
+  width: 280px; /* Fixed width that works well on mobile and desktop */
+  max-width: 100%; /* Ensures it doesn't overflow on small screens */
   display: flex; /* Aligns icon and text */
   align-items: center;
   justify-content: center;
@@ -347,16 +342,28 @@
   text-align: center;
   cursor: pointer;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  transition: all 0.2s ease-in-out;
+  transition: none; /* Remove transition */
+}
+
+/* Remove hover state changes by making hover state identical to normal state */
+.searchButton:hover,
+.searchButton:focus,
+.searchButton:active {
+  background-color: white;
+  color: #777777;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
 }
 
 
 
 .searchIcon {
-  width: 18px; /* Adjust size */
-  height: 18px;
-  weight: 400px;
+  width: 14px; /* Match font size of text (14px) */
+  height: 14px;
   fill: #777777; /* Matches text color */
+  stroke: #777777; /* Ensures SVG strokes also match */
+  color: #777777; /* For any potential text/icon color inheritance */
 }
 
 
@@ -365,7 +372,6 @@
   flex: 1;
   display: flex;
   justify-content: flex-end;
-  max-width: 15%; /* Keeps it from taking too much space */
   align-items: center;
 }
 

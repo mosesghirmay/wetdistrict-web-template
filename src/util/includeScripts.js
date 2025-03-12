@@ -147,6 +147,12 @@ export const IncludeScripts = props => {
     }
   };
 
-  const allScripts = [...analyticsLibraries, ...mapLibraries];
+  const fontScript = (
+    <style key="font">
+      {`@import url('https://fonts.googleapis.com/css2?family=Barlow&display=swap');`}
+    </style>
+  )
+
+  const allScripts = [...analyticsLibraries, ...mapLibraries, fontScript];
   return <Helmet onChangeClientState={onChangeClientState}>{allScripts}</Helmet>;
 };

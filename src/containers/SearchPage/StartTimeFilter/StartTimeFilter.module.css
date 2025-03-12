@@ -1,18 +1,14 @@
-.filterWrapper {
-    margin-top: 15px;
+.root {
+  margin-bottom: 24px;
+}
+
+.select {
+  width: 100%;
+  font-size: 16px;
+}
+
+@media screen and (min-width: 768px) {
+  .select {
+    width: 200px;
   }
-  
-  .filterLabel {
-    font-size: 14px;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  .filterSelect {
-    width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 4px;
-  }
-  
+}

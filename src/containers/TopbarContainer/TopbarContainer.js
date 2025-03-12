@@ -45,12 +45,10 @@ export const TopbarContainerComponent = ({
       const newState = !prevState;
       console.log("🔹 handleMobileFilterToggle - New State:", newState);
   
-      // 🔹 Force a slight delay to make React register the state change before UI updates
-      setTimeout(() => {
-        if (onOpenMobileSearchFilterModal) {
-          onOpenMobileSearchFilterModal(newState);
-        }
-      }, 10);
+      // Call the modal function immediately without setTimeout
+      if (onOpenMobileSearchFilterModal) {
+        onOpenMobileSearchFilterModal(newState);
+      }
   
       return newState;
     });

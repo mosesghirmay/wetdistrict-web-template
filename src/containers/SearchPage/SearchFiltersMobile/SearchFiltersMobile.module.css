@@ -9,10 +9,8 @@
 .searchResultSummary {
   composes: h3 from global;
   margin-top: 6px;
-
   display: flex;
   justify-content: space-between;
-
   background-color: var(--colorGrey50);
 
   @media (--viewportMedium) {
@@ -47,17 +45,27 @@
 }
 
 .modalHeadingWrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 20px;
+  padding: 0 24px 20px 24px;
+  height: 70px;
 }
 
-.modalHeading {
-  composes: h4 from global;
-  color: var(--colorGrey900);
-  margin: 0;
-  padding: 0;
+.logoContainer {
+  position: absolute;
+  top: -2px;
+  left: 0px;
+  width: 180px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.logoImage {
+  width: 180px;
+  height: auto;
 }
 
 .resetAllButton {
@@ -104,6 +112,7 @@
   box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.1);
   z-index: 11;
 }
+
 .leftactionBtns {
   display: flex;
   flex-direction: column;
@@ -111,6 +120,7 @@
   align-items: center;
   flex-grow: 0.5;
 }
+
 .showListingsButton {
   background-color: var(--secondaryColor);
   color: var(--colorBlack);
@@ -124,6 +134,7 @@
   padding: 14px 20px;
   border-radius: 6px;
 }
+
 .closeBtn {
   border: solid 2px var(--colorGrey800);
   display: inline-flex;
@@ -150,18 +161,27 @@
     height: 24px;
   }
 }
+
+/* Modified to display in mobile while keeping original functionality */
 .dateSection {
-  display: none;
-  visibility: hidden;
+  /* These two properties handle mobile visibility */
+  display: block !important; /* Keep it visible always */
+  visibility: visible !important; /* Ensure visibility */
+  
   align-items: stretch;
   justify-content: space-between;
-  gap: 4px;
+  gap: 44px;
   width: 100%;
   max-width: 100%;
-
-  /* margin-top: 12px; */
-
+  
+  /* Keep it hidden in the topbar flow, but allow it to work in modal */
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  
+  /* But show it in larger screens as normal */
   @media (--viewportLarge) {
+    position: static;
     max-width: 40%;
     margin-top: 0px;
   }
@@ -209,7 +229,7 @@
   }
 
   & .count {
-    width: 20px;
+    width: 60px;
     height: 20px;
     display: inline-flex;
     align-items: center;
@@ -236,31 +256,26 @@
     }
   }
 }
+
+/* Fix DateRangePicker visibility in modal */
 @media (max-width: 767px) {
-  & :global(.DateInput_input__focused) {
-    display: contents !important;
-    width: 1px !important;
-    border: none !important;
+  :global(.DateInput_input__focused) {
+    display: initial !important;
+    width: auto !important;
+    border: 1px solid #dbdbdb !important;
   }
 
-  & :global(.DateRangePickerInput__withBorder) {
-    background: transparent !important;
-    width: 1px !important;
-    border: none !important;
+  :global(.DateRangePickerInput__withBorder) {
+    background: white !important;
+    width: auto !important;
+    border: 1px solid #dbdbdb !important;
   }
 
-  & :global(.DateRangePickerInput_arrow_svg) {
+  :global(.DateRangePickerInput_arrow_svg) {
     background: transparent !important;
-    width: 1px !important;
+    width: auto !important;
     border: none !important;
   }
-}
-.extraFilters {
-  background: white;
-  border-radius: 10px;
-  border: 1px solid black;
-  max-height: 60px;
-  padding: 0px 12px;
 }
 
 .extraFilters {
@@ -320,3 +335,6 @@
   background: white;
   border-radius: 5px;
 }
+
+
+

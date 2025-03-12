@@ -136,16 +136,17 @@ export const titleToAbbr = title => {
 };
 
 /**
- * Converts an object with `length`, `make`, and `model` properties into a formatted listing title string.
+ * Converts an object with `length` and `make` properties into a formatted listing title string.
  * The function constructs a string that combines these properties, ensuring the `make` is trimmed of any leading or trailing whitespace,
  * and appends an inch symbol (") directly after the `length` value for display purposes.
+ * Note: The `model` property is intentionally omitted from the title as per design requirements.
  *
- * @param {Object} param0 An object containing the keys: `length`, `make`, and `model`.
+ * @param {Object} param0 An object containing the keys: `length`, `make`, and `model` (though model is not used).
  * @param {number} param0.length The length of the item, expected to be a number.
  * @param {string} param0.make The make of the item, expected to be a string. The function trims this value.
- * @param {number} param0.model The model year of the item, expected to be a number.
- * @returns {string} A formatted string representing the listing title, e.g., "22" Test 2024.
+ * @param {number} param0.model The model year of the item (not used in the title).
+ * @returns {string} A formatted string representing the listing title, e.g., "22" Test".
  */
 export const abbrToTitle = ({ length, make, model }) => {
-  return `${length}" ${make?.trim()} ${model}`;
+  return `${length}" ${make?.trim()}`;
 };

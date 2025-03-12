@@ -121,3 +121,22 @@
   word-break: break-word;
   hyphens: auto;
 }
+
+.category {
+  /* Font */
+  composes: textSmall from global;
+  font-size: 14px;
+  color: var(--marketplaceColor);
+  margin: 0;
+  margin-top: 4px;
+}
+
+.guests {
+  /* Font */
+  composes: textSmall from global;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  margin: 0;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}

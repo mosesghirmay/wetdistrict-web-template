@@ -315,7 +315,9 @@ render() {
           onLogout={this.handleLogout}
           currentPage={resolvedCurrentPage}
         />
-        <div className={css.topbarContainer}>
+        <div className={classNames(css.topbarContainer, {
+          [css.searchPageTopbar]: location.pathname === '/s'
+        })}>
   {/* Left: Logo */}
   <div className={css.leftContainer}>
     <LinkedLogo
@@ -326,14 +328,18 @@ render() {
     />
   </div>
 
-  {/* Center: Search Button */}
-  <div className={css.centerContainer}>
-  <Button className={css.searchButton} type="button" onClick={handleMobileFilterToggle}>
-  <Icons name="calendar" className={css.searchIcon} /> 
-  Choose a date
-</Button>
-
-  </div>
+  {location.pathname === '/s' && (
+    <div className={css.centerContainer}>
+      <Button 
+        className={css.searchButton} 
+        type="button" 
+        onClick={this.props.handleMobileFilterToggle} // Use props directly
+      >
+        <Icons name="calendar" className={css.searchIcon} /> 
+        Choose a date
+      </Button>
+    </div>
+  )}
 
   {/* Right: Menu Button */}
   <div className={css.rightContainer}>

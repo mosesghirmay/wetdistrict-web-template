@@ -5,8 +5,13 @@
 
 .topbar {
   position: sticky;
-  top: 0;
-  z-index: var(--zIndexTopbar);
+    top: 0;
+    background-color: var(--colorGrey50);
+    z-index: var(--zIndexTopbar);
+    padding-bottom: 5px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
+    transition: all 0.2sease -in-out;
+    backdrop-filter: blur(5px);
 }
 
 .main {

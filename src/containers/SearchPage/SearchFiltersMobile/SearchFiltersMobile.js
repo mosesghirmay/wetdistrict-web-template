@@ -11,7 +11,6 @@ import { createResourceLocatorString } from '../../../util/routes';
 import { ModalInMobile, Button, } from '../../../components';
 import Icons from '../../../components/Icons/Icons';
 
-
 import { useMyContext } from '../../../context/StateHolder';
 
 import css from './SearchFiltersMobile.module.css';
@@ -22,8 +21,49 @@ import moment from 'moment';
 import carIcon from './images/car.png';
 import boatIcon from './images/boat.png';
 import peopleIcon from './images/people.png';
+import writtenLogo from '../../../assets/WrittenLogo.png';
 
 const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768;
+
+// Fixed position style for time filter bar
+const timeFilterBarStyle = {
+  position: 'fixed',
+  top: '80px',
+  left: 0,
+  right: 0,
+  zIndex: 100,
+  backgroundColor: 'white',
+  padding: '10px',
+  display: 'flex',
+  justifyContent: 'center',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+};
+
+// Container for time filter buttons
+const timeFilterContainerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  gap: '10px',
+  maxWidth: '600px',
+  width: '100%'
+};
+
+// Base style for time filter buttons
+const timeFilterButtonStyle = {
+  padding: '8px 12px',
+  border: '1px solid #ddd',
+  borderRadius: '4px',
+  backgroundColor: 'white',
+  cursor: 'pointer'
+};
+
+// Active style for time filter buttons
+const activeTimeFilterStyle = {
+  ...timeFilterButtonStyle,
+  backgroundColor: '#e6f7f7',
+  borderColor: '#007E8A',
+  fontWeight: 'bold'
+};
 
 const SearchFiltersMobile = ({
   rootClassName,
@@ -53,18 +93,22 @@ const SearchFiltersMobile = ({
     endDate: null,
   });
   const [focusedInput, setFocusedInput] = useState(null);
+  const [showTimeFilterBar, setShowTimeFilterBar] = useState(true);
 
   const history = useHistory();
   const { isMobileSearchFilerOpen } = useMyContext();
   const routeConfiguration = useRouteConfiguration();
 
   const openFilters = () => {
-    onOpenModal();
-    setIsFiltersOpenOnMobile(true);
-    setInitialQueryParams(urlQueryParams);
+    if (!isFiltersOpenOnMobile) {
+      onOpenModal();
+      setIsFiltersOpenOnMobile(true);
+      setInitialQueryParams(urlQueryParams);
+    }
   };
 
   const urlQueryParamsDates = urlQueryParams?.dates;
+  const urlQueryParamsStartTime = urlQueryParams?.pub_StartTime;
 
   useEffect(() => {
     if (urlQueryParamsDates) {
@@ -74,11 +118,9 @@ const SearchFiltersMobile = ({
         startDate: moment(startDate),
         endDate: moment(endDate),
       });
-      console.log(startDate);
     }
   }, [urlQueryParamsDates]);
 
-  console.log(urlQueryParams);
   useEffect(() => {
     if (isMobileSearchFilerOpen) {
       openFilters();
@@ -87,6 +129,21 @@ const SearchFiltersMobile = ({
       onCloseModal();
     }
   }, [isMobileSearchFilerOpen]);
+
+  // Handle scroll to hide/show time filter bar
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Show the bar when scrolling up, hide when scrolling down
+      setShowTimeFilterBar(scrollY < lastScrollY || scrollY < 100);
+      lastScrollY = scrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const cancelFilters = () => {
     history.push(
@@ -100,13 +157,6 @@ const SearchFiltersMobile = ({
   const closeFilters = () => {
     onCloseModal();
     setIsFiltersOpenOnMobile(false);
-  };
-
-  const resetAllFilters = e => {
-    resetAll(e);
-    if (e && e.currentTarget) {
-      e.currentTarget.blur();
-    }
   };
 
   const classes = classNames(rootClassName || css.root, className);
@@ -152,8 +202,22 @@ const SearchFiltersMobile = ({
     else setFocusedInput(null); // This will hide the picker
   };
 
+  // Check if a specific start time is currently selected
+  const isStartTimeActive = time => {
+    return urlQueryParamsStartTime === time;
+  };
+
+  // This is the simple SortBy section to be added to the modal filter
+  const sortBySection = (
+    <div className={css.sortBySection}>
+      <div>Sort By</div>
+      {sortByComponent}
+    </div>
+  );
+
   return (
     <div className={classes}>
+      {/* Original dateSection (may be hidden on mobile) */}
       <div className={css.dateSection}>
         <div className={css.moreFilters} onClick={togglePicker}>
           <Icons name="calendar" />{' '}
@@ -161,7 +225,7 @@ const SearchFiltersMobile = ({
             ? `${moment(dates?.startDate).format('DD/MM')}-${moment(dates?.endDate).format(
                 'DD/MM'
               )}`
-            : 'Choose a Date'}
+            : 'Choose a date'}
           {isPickerOpen ? (
             <DateRangePicker
               startDate={dates?.startDate}
@@ -178,11 +242,41 @@ const SearchFiltersMobile = ({
                 if (!focused) setIsPickerOpen(false); // Automatically hide picker if focus is lost
               }}
               orientation={isMobileLayout ? 'vertical' : 'horizontal'}
-              navPrev=<Icons name="leftAngle" />
-              navNext=<Icons name="rightAngle" />
+              navPrev={<Icons name="leftAngle" />}
+              navNext={<Icons name="rightAngle" />}
             />
           ) : null}
         </div>
+
+        {/* StartTime filter buttons */}
+        <div 
+          className={classNames(css.extraFilters, isStartTimeActive('10:00 AM') && css.activeFilter)}
+          onClick={() => handleExtraFilters({ pub_StartTime: '10:00 AM' })}
+        >
+          <Icons name="calendar" />
+          <div>10:00 AM</div>
+        </div>
+        <div 
+          className={classNames(css.extraFilters, isStartTimeActive('2:00 PM') && css.activeFilter)}
+          onClick={() => handleExtraFilters({ pub_StartTime: '2:00 PM' })}
+        >
+          <Icons name="calendar" />
+          <div>2:00 PM</div>
+        </div>
+        <div 
+          className={classNames(css.extraFilters, isStartTimeActive('6:00 PM') && css.activeFilter)}
+          onClick={() => handleExtraFilters({ pub_StartTime: '6:00 PM' })}
+        >
+          <Icons name="calendar" />
+          <div>6:00 PM</div>
+        </div>
+        
+        {/* Add SortBy component right after the time filter buttons */}
+        <div className={css.extraFilters}>
+          {sortByComponent}
+        </div>
+        
+        {/* Vessel Type Filters */}
         <div
           className={css.extraFilters}
           role="button"
@@ -221,22 +315,24 @@ const SearchFiltersMobile = ({
         isFilterMobileModal={true}
       >
         <div className={css.modalHeadingWrapper}>
-          <span className={css.modalHeading}>{filtersHeading}</span>
+          <div className={css.logoContainer}>
+            <img src={writtenLogo} alt="Written Logo" className={css.logoImage} />
+          </div>
         </div>
-        {isFiltersOpenOnMobile ? <div className={css.filtersWrapper}>{children}</div> : null}
+        
+        {isFiltersOpenOnMobile ? (
+          <div className={css.filtersWrapper}>
+            {/* Insert Sort By section here after the built-in Date and Start Time filters */}
+            {sortBySection}
+            
+            {children}
+          </div>
+        ) : null}
 
         <div className={css.showListingsContainer}>
-          <div className={css.leftactionBtns}>
-            <button className={css.resetAllButton} onClick={e => resetAllFilters(e)}>
-              <FormattedMessage id={'SearchFiltersMobile.resetAll'} />
-            </button>
-            <Button className={css.showListingsButton} onClick={closeFilters}>
-              {showListingsLabel}
-            </Button>
-          </div>
-          <span className={css.closeBtn} onClick={closeFilters}>
-            <Icons name="cross" />
-          </span>
+          <Button className={css.showListingsButton} onClick={closeFilters}>
+            {showListingsLabel}
+          </Button>
         </div>
       </ModalInMobile>
     </div>

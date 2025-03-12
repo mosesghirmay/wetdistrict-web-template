@@ -3,6 +3,7 @@ import { string, func, bool } from 'prop-types';
 import classNames from 'classnames';
 
 import { useConfiguration } from '../../context/configurationContext';
+
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import { displayPrice } from '../../util/configHelpers';
 import { lazyLoadWithDimensions } from '../../util/uiHelpers';
@@ -22,7 +23,11 @@ const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
 const priceData = (price, currency, intl) => {
   if (price && price.currency === currency) {
-    const formattedPrice = formatMoney(intl, price);
+    let formattedPrice = formatMoney(intl, price);
+
+    // Remove cents by rounding the price and formatting without decimals
+    formattedPrice = formattedPrice.replace(/\.\d{2}/, '');
+
     return { formattedPrice, priceTitle: formattedPrice };
   } else if (price) {
     return {
@@ -39,6 +44,7 @@ const priceData = (price, currency, intl) => {
   return {};
 };
 
+
 const LazyImage = lazyLoadWithDimensions(ResponsiveImage, { loadAfterInitialRendering: 3000 });
 
 const PriceMaybe = props => {
@@ -47,7 +53,6 @@ const PriceMaybe = props => {
   const validListingTypes = config.listing.listingTypes;
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const showPrice = displayPrice(foundListingTypeConfig);
-  
   if (!showPrice && price) {
     return null;
   }
@@ -62,6 +67,7 @@ const PriceMaybe = props => {
       </div>
       {isBookable ? (
         <div className={css.perUnit}>
+          {' '}
           <FormattedMessage id="ListingCard.perUnit" values={{ unitType: publicData?.unitType }} />
         </div>
       ) : null}
@@ -69,20 +75,25 @@ const PriceMaybe = props => {
   );
 };
 
-export const ListingCardComponent = ({
-  className = null,
-  rootClassName = null,
-  intl,
-  listing,
-  renderSizes = null,
-  setActiveListing = null,
-  showAuthorInfo = true,
-}) => {
+export const ListingCardComponent = props => {
   const config = useConfiguration();
+  const {
+    className,
+    rootClassName,
+    intl,
+    listing,
+    renderSizes,
+    setActiveListing,
+    showAuthorInfo,
+  } = props;
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureListing(listing);
   const id = currentListing.id.uuid;
-  const { title = '', price, publicData = {} } = currentListing.attributes;
+  let { title = '', price, publicData } = currentListing.attributes;
+  
+  // Replace double quotes with single quotes to signify feet
+  title = title.replace(/"/g, "'");
+
   const slug = createSlug(title);
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
@@ -104,12 +115,8 @@ export const ListingCardComponent = ({
         onMouseLeave: () => setActiveListing(null),
       }
     : null;
-
-  // ✅ Ensure maxGuests is correctly rendered
-  const maxGuests =
-    publicData?.maxGuests && publicData.maxGuests > 0
-      ? `${publicData.maxGuests} ${publicData.maxGuests > 1 ? 'guests' : 'guest'}`
-      : <FormattedMessage id="ListingCard.noGuestLimit" defaultMessage="No guest limit" />;
+  
+  console.log("Public Data:", publicData); // Debugging public data
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
@@ -135,22 +142,25 @@ export const ListingCardComponent = ({
               longWordClass: css.longWord,
             })}
           </div>
-          
-          {/* Display Category (if applicable) */}
-          {publicData?.vessels && (
-            <div className={css.category}>
-              {capitalizeFirstLetter(publicData?.vessels)}
-            </div>
-          )}
-  
-          {/* ✅ Corrected Guest Display Logic */}
-          <div className={css.guests}>{maxGuests}</div>
-
+          <div className={css.category}>
+            {publicData?.vessels ? capitalizeFirstLetter(publicData?.vessels) : ''}
+          </div>
+          <div className={css.guests}>
+            {publicData?.maxGuests ? `${publicData?.maxGuests} guests` : 'N/A'}
+          </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>
       </div>
     </NamedLink>
   );
+};
+
+ListingCardComponent.defaultProps = {
+  className: null,
+  rootClassName: null,
+  renderSizes: null,
+  setActiveListing: null,
+  showAuthorInfo: true,
 };
 
 ListingCardComponent.propTypes = {

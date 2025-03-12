@@ -8,10 +8,11 @@
   margin-left: auto;
 }
 
+
 .sortByMenuLabel {
   display: inline-block;
-  width: auto;
-  height: 35px;
+  width: 40%; /* Make it wider */
+  height: 40px;
   min-height: 35px;
 
   padding: 0 18px;
@@ -19,11 +20,12 @@
 
   transition: all var(--transitionStyleButton);
   cursor: pointer;
+  
 
   /* Font */
   font-weight: var(--fontWeightSemiBold);
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 28px;
   letter-spacing: 0.2px;
 
   /* Button text styles */
@@ -32,8 +34,8 @@
   text-decoration: none;
 
   /* Button borders */
-  border: 1px solid var(--colorGrey100);
-  border-radius: var(--borderRadiusMedium);
+  border: 1px solid var(--colorGrey300);
+  border-radius: 8px;
 
   background-color: var(--colorWhite);
 
@@ -42,7 +44,7 @@
     outline: none;
     box-shadow: var(--boxShadowFilterButton);
     text-decoration: none;
-    border-color: var(--colorGrey300);
+    border-color: var(--marketplaceColor); /* Change border color on hover */
   }
 
   &:disabled {
@@ -62,7 +64,89 @@
 
     &:hover,
     &:focus {
-      border-color: transparent;
+      border-color: var(--marketplaceColor); /* Keep the marketplace color on hover in desktop */
     }
   }
+}
+
+/* Custom styles for SortByPlain component */
+:global(.SortByPlain_root__1D6Md) {
+  width: 100%;
+}
+
+:global(.SortByPlain_filterLabel__1_8ES),
+:global(.SortByPlain_filterLabelSelected__1aX_6) {
+  font-weight: var(--fontWeightBold);
+  color: var(--colorGrey700);
+  width: 100%;
+  display: block;
+  font-size: 14px;
+  line-height: 24px;
+  padding: 8px 0;
+}
+
+:global(.SortByPlain_filterLabelSelected__1aX_6) {
+  color: var(--marketplaceColor);
+}
+
+:global(.SortByPlain_optionsContainerOpen__3zxGD) {
+  width: 100%;
+  margin-top: 8px;
+}
+
+:global(.SortByPlain_option__2C0Sq),
+:global(.SortByPlain_optionSelected__1-qzm) {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  text-align: left;
+  background: white;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  font-weight: var(--fontWeightMedium);
+  transition: all 0.2s ease;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+:global(.SortByPlain_option__2C0Sq:hover) {
+  border-color: var(--marketplaceColor);
+  box-shadow: var(--boxShadowFilterButton);
+}
+
+:global(.SortByPlain_optionSelected__1-qzm) {
+  border-color: var(--marketplaceColor);
+  background-color: var(--secondaryColor);
+}
+
+:global(.SortByPlain_optionBorder__1tCLE),
+:global(.SortByPlain_optionBorderSelected__1zZ9c) {
+  display: none;
+}
+
+/* Styles for SortByPopup component */
+:global(.SortByPopup_menuContent__2P6i7) {
+  width: 100%;
+  min-width: 200px;
+}
+
+:global(.SortByPopup_menuItem__nWsUJ) {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-weight: var(--fontWeightMedium);
+  transition: all 0.2s ease;
+}
+
+:global(.SortByPopup_menuItem__nWsUJ:hover) {
+  border-color: var(--marketplaceColor);
+  box-shadow: var(--boxShadowFilterButton);
+}
+
+:global(.SortByPopup_menuItemBorderSelected__uQOKn) {
+  background-color: var(--secondaryColor);
+  border-color: var(--marketplaceColor);
 }
