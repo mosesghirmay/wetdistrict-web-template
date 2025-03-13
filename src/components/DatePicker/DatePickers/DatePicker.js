@@ -385,28 +385,10 @@ const DatePicker = props => {
 
     // Date range:
     if (range) {
-      const newValue =
-        currentValue?.[0] == null || hasStartAndEnd(currentValue)
-          ? [date]
-          : [currentValue[0], date];
-
-      // If range is in wrong order, reverse it
-      if (hasStartAndEnd(newValue) && newValue[0] > newValue[1]) {
-        newValue.reverse();
-      }
-
-      // If minimumNights requirement is not fulfilled, don't allow date to be selected
-      if (hasStartAndEnd(newValue) && !hasMinimumNights({ start: newValue[0], end: newValue[1] })) {
-        return;
-      }
-
-      // If there's a range with blocked day inside, discard the range
-      // and select the new date for starting point for the new range
-      if (newValue[0] && newValue[1] && isBlockedBetween(newValue)) {
-        onCurrentValueChange([date]);
-        return;
-      }
-
+      // Force single-date selection by immediately setting both start and end dates
+      // to the clicked date, rather than requiring two clicks to complete a range
+      const newValue = [date, date];
+      
       onCurrentValueChange(newValue);
     } else {
       // Don't allow selecting the same day.

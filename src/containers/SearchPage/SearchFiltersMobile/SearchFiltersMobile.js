@@ -8,62 +8,21 @@ import { FormattedMessage, intlShape } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
 import { createResourceLocatorString } from '../../../util/routes';
 
-import { ModalInMobile, Button, } from '../../../components';
+import { ModalInMobile, Button } from '../../../components';
+import EnhancedDatePicker from '../../../components/SearchFilters/EnhancedDatePicker';
 import Icons from '../../../components/Icons/Icons';
+import { DatePicker } from '../../../components/DatePicker';
 
 import { useMyContext } from '../../../context/StateHolder';
 
 import css from './SearchFiltersMobile.module.css';
-import { DateRangePicker } from 'react-dates';
+import '../../../components/DatePicker/DatePickers/DatePickerSingleDateStyle.css';
 import { stringifyDateToISO8601 } from '../../../util/dates';
 import moment from 'moment';
 
-import carIcon from './images/car.png';
-import boatIcon from './images/boat.png';
-import peopleIcon from './images/people.png';
 import writtenLogo from '../../../assets/WrittenLogo.png';
 
 const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768;
-
-// Fixed position style for time filter bar
-const timeFilterBarStyle = {
-  position: 'fixed',
-  top: '80px',
-  left: 0,
-  right: 0,
-  zIndex: 100,
-  backgroundColor: 'white',
-  padding: '10px',
-  display: 'flex',
-  justifyContent: 'center',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-};
-
-// Container for time filter buttons
-const timeFilterContainerStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  gap: '10px',
-  maxWidth: '600px',
-  width: '100%'
-};
-
-// Base style for time filter buttons
-const timeFilterButtonStyle = {
-  padding: '8px 12px',
-  border: '1px solid #ddd',
-  borderRadius: '4px',
-  backgroundColor: 'white',
-  cursor: 'pointer'
-};
-
-// Active style for time filter buttons
-const activeTimeFilterStyle = {
-  ...timeFilterButtonStyle,
-  backgroundColor: '#e6f7f7',
-  borderColor: '#007E8A',
-  fontWeight: 'bold'
-};
 
 const SearchFiltersMobile = ({
   rootClassName,
@@ -87,13 +46,11 @@ const SearchFiltersMobile = ({
 }) => {
   const [isFiltersOpenOnMobile, setIsFiltersOpenOnMobile] = useState(false);
   const [initialQueryParams, setInitialQueryParams] = useState(null);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [dates, setDates] = useState({
     startDate: null,
     endDate: null,
   });
-  const [focusedInput, setFocusedInput] = useState(null);
-  const [showTimeFilterBar, setShowTimeFilterBar] = useState(true);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   const history = useHistory();
   const { isMobileSearchFilerOpen } = useMyContext();
@@ -108,7 +65,6 @@ const SearchFiltersMobile = ({
   };
 
   const urlQueryParamsDates = urlQueryParams?.dates;
-  const urlQueryParamsStartTime = urlQueryParams?.pub_StartTime;
 
   useEffect(() => {
     if (urlQueryParamsDates) {
@@ -129,21 +85,6 @@ const SearchFiltersMobile = ({
       onCloseModal();
     }
   }, [isMobileSearchFilerOpen]);
-
-  // Handle scroll to hide/show time filter bar
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      // Show the bar when scrolling up, hide when scrolling down
-      setShowTimeFilterBar(scrollY < lastScrollY || scrollY < 100);
-      lastScrollY = scrollY;
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const cancelFilters = () => {
     history.push(
@@ -181,30 +122,43 @@ const SearchFiltersMobile = ({
     return start && end ? `${start},${end}` : null;
   };
 
-  const handleDateChange = ({ startDate, endDate }) => {
-    setDates({ startDate, endDate });
-    const dates = formatValue({ startDate, endDate });
-    const extraParams = urlQueryParams ? { ...urlQueryParams, dates } : { dates };
-    startDate &&
-      endDate &&
-      history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
+  const handleDateChange = selectedDates => {
+    if (!selectedDates || !selectedDates.length || !selectedDates[0]) return;
+    
+    // Use the first selected date for both startDate and endDate
+    const selectedDate = moment(selectedDates[0]).startOf('day').toDate();
+    
+    // Set both dates to the same value
+    setDates({ 
+      startDate: selectedDate, 
+      endDate: selectedDate 
+    });
+    
+    // Format and update URL
+    const formattedDate = moment(selectedDate).format('YYYY-MM-DD');
+    const dateParam = `${formattedDate},${formattedDate}`;
+    const extraParams = urlQueryParams 
+      ? { ...urlQueryParams, dates: dateParam } 
+      : { dates: dateParam };
+    
+    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
+    
+    // Close the picker immediately
+    setIsPickerOpen(false);
+  };
+
+  const handleClearDate = () => {
+    setDates({ startDate: null, endDate: null });
+    
+    // Remove dates parameter from URL
+    const paramsWithoutDates = { ...urlQueryParams };
+    delete paramsWithoutDates.dates;
+    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, paramsWithoutDates));
   };
 
   const handleExtraFilters = values => {
     const extraParams = urlQueryParams ? { ...urlQueryParams, ...values } : { ...values };
     history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
-  };
-
-  const togglePicker = () => {
-    setIsPickerOpen(!isPickerOpen);
-    // Automatically focus on the start date input when opening the picker
-    if (!isPickerOpen) setFocusedInput('startDate');
-    else setFocusedInput(null); // This will hide the picker
-  };
-
-  // Check if a specific start time is currently selected
-  const isStartTimeActive = time => {
-    return urlQueryParamsStartTime === time;
   };
 
   // This is the simple SortBy section to be added to the modal filter
@@ -217,88 +171,9 @@ const SearchFiltersMobile = ({
 
   return (
     <div className={classes}>
-      {/* Original dateSection (may be hidden on mobile) */}
-      <div className={css.dateSection}>
-        <div className={css.moreFilters} onClick={togglePicker}>
-          <Icons name="calendar" />{' '}
-          {dates?.startDate
-            ? `${moment(dates?.startDate).format('DD/MM')}-${moment(dates?.endDate).format(
-                'DD/MM'
-              )}`
-            : 'Choose a date'}
-          {isPickerOpen ? (
-            <DateRangePicker
-              startDate={dates?.startDate}
-              startDateId="start_date"
-              endDate={dates?.endDate}
-              endDateId="end_date"
-              onDatesChange={handleDateChange}
-              focusedInput={focusedInput}
-              hideKeyboardShortcutsPanel
-              numberOfMonths={1}
-              isOutsideRange={day => day.isBefore(moment().startOf('day'))}
-              onFocusChange={focused => {
-                setFocusedInput(focused);
-                if (!focused) setIsPickerOpen(false); // Automatically hide picker if focus is lost
-              }}
-              orientation={isMobileLayout ? 'vertical' : 'horizontal'}
-              navPrev={<Icons name="leftAngle" />}
-              navNext={<Icons name="rightAngle" />}
-            />
-          ) : null}
-        </div>
-
-        {/* StartTime filter buttons */}
-        <div 
-          className={classNames(css.extraFilters, isStartTimeActive('10:00 AM') && css.activeFilter)}
-          onClick={() => handleExtraFilters({ pub_StartTime: '10:00 AM' })}
-        >
-          <Icons name="calendar" />
-          <div>10:00 AM</div>
-        </div>
-        <div 
-          className={classNames(css.extraFilters, isStartTimeActive('2:00 PM') && css.activeFilter)}
-          onClick={() => handleExtraFilters({ pub_StartTime: '2:00 PM' })}
-        >
-          <Icons name="calendar" />
-          <div>2:00 PM</div>
-        </div>
-        <div 
-          className={classNames(css.extraFilters, isStartTimeActive('6:00 PM') && css.activeFilter)}
-          onClick={() => handleExtraFilters({ pub_StartTime: '6:00 PM' })}
-        >
-          <Icons name="calendar" />
-          <div>6:00 PM</div>
-        </div>
-        
-        {/* Add SortBy component right after the time filter buttons */}
-        <div className={css.extraFilters}>
-          {sortByComponent}
-        </div>
-        
-        {/* Vessel Type Filters */}
-        <div
-          className={css.extraFilters}
-          role="button"
-          onClick={() => handleExtraFilters({ pub_vessels: 'cruiser' })}
-        >
-          <img src={boatIcon} alt="Boat Icon" />
-          <div>Rentals</div>
-        </div>
-        <div
-          className={classNames(css.extraFilters, css.peopleIcon)}
-          onClick={() => handleExtraFilters({ pub_vessels: 'yacht' })}
-        >
-          <img src={peopleIcon} alt="People Icon" />
-          <div>Yacht Fest</div>
-        </div>
-        <div
-          className={css.extraFilters}
-          onClick={() => handleExtraFilters({ pub_vessels: 'jet-car' })}
-        >
-          <img src={carIcon} alt="Car Icon" />
-          <div>Jet Cars</div>
-        </div>
+      {/* Hide the date section completely - we'll only use the modal version */}
+      <div className={css.hiddenSection}>
+        {/* This section is now completely hidden */}
       </div>
 
       {noResultsInfo ? noResultsInfo : null}
@@ -322,9 +197,73 @@ const SearchFiltersMobile = ({
         
         {isFiltersOpenOnMobile ? (
           <div className={css.filtersWrapper}>
-            {/* Insert Sort By section here after the built-in Date and Start Time filters */}
+            {/* Sort By section - moved to top */}
             {sortBySection}
             
+            {/* Enhanced Date Picker for Date Selection */}
+            <div className={css.modalDatePickerContainer}>
+              <h3 className={css.modalSectionTitle}>Select a Date</h3>
+              <div className={css.calendarOnlyWrapper}>
+                <button 
+                  type="button"
+                  onClick={() => setIsPickerOpen(true)}
+                  className={css.calendarButton}
+                >
+                  <Icons name="calendar" className={css.calendarIcon} />
+                  <span className={css.buttonText}>
+                    {dates?.startDate 
+                      ? intl.formatDate(dates.startDate, { weekday: 'short', month: 'short', day: 'numeric' })
+                      : intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
+                  </span>
+                </button>
+                
+                {isPickerOpen && (
+                  <div className={css.datePickerModal} onClick={() => setIsPickerOpen(false)}>
+                    <div className={css.datePickerModalContent} onClick={e => e.stopPropagation()}>
+                      <div className={css.datePickerModalHeader}>
+                        <div className={css.datePickerModalTitle}>
+                          {intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
+                        </div>
+                        <button className={css.closeButton} onClick={() => setIsPickerOpen(false)}>
+                          <Icons name="cross" />
+                        </button>
+                      </div>
+                      
+                      <div className={css.datePickerWrapper}>
+                        <DatePicker 
+                          value={[dates?.startDate, dates?.endDate]}
+                          onChange={handleDateChange}
+                          isDayBlocked={() => false}
+                          isOutsideRange={day => day.isBefore(moment().startOf('day'))}
+                          range={true}
+                          showMonthStepper={true}
+                          theme="light"
+                        />
+                      </div>
+                      
+                      <div className={css.actionButtons}>
+                        {dates?.startDate && (
+                          <button 
+                            className={css.clearButton}
+                            onClick={() => {
+                              handleClearDate();
+                              setIsPickerOpen(false);
+                            }}
+                          >
+                            {intl.formatMessage({ id: 'FieldDateAndTimeInput.clear' })}
+                          </button>
+                        )}
+                        <button className={css.cancelButton} onClick={() => setIsPickerOpen(false)}>
+                          {intl.formatMessage({ id: 'FieldDateAndTimeInput.cancel' })}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Children for additional filters */}
             {children}
           </div>
         ) : null}
