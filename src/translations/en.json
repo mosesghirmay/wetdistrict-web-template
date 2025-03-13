@@ -1123,6 +1123,10 @@
   "ListingCard.noGuestLimit": "No guest limit",
 "FieldDateAndTimeInput.startDate": "Start Date",
   "FieldDateAndTimeInput.selectDate": "Select a Date",
+  "FieldDateAndTimeInput.startTime": "Start Time",
+  "FieldDateAndTimeInput.endTime": "End Time",
+  "FieldDateAndTimeInput.cancel": "Cancel",
+  "FieldDateAndTimeInput.apply": "Apply",
   "BookingTimeForm.selectTime": "Select a Start Time",
   "BookingTimeForm.selectEndTime": "Select an End Time",
   "BookingTimeForm.noAvailableTimes": "No available times"

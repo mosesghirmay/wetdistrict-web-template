@@ -32,6 +32,10 @@ export const dateRangeFilter = {
   availability: 'time-full', // time-partial
   // Options: day/night. This affects counting and whether single day picking is possible.
   dateRangeMode: 'day',
+  // Enable the enhanced calendar-only mode that uses a popup modal
+  filterConfig: {
+    calendarOnly: true
+  },
 };
 
 /**

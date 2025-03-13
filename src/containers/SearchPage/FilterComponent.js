@@ -12,6 +12,7 @@ import KeywordFilter from './KeywordFilter/KeywordFilter';
 import PriceFilter from './PriceFilter/PriceFilter';
 import IntegerRangeFilter from './IntegerRangeFilter/IntegerRangeFilter';
 import SeatsFilter from './SeatsFilter/SeatsFilter';
+import StartTimeFilter from './StartTimeFilter/StartTimeFilter';
 
 // Debugging to confirm component renders
 console.log("✅ FilterComponent is rendering in Topbar!");
@@ -95,35 +96,69 @@ const FilterComponent = props => {
    // In src/containers/SearchPage/FilterComponent.js, update the 'dates' case:
 
 case 'dates': {
-  return (
-    <BookingDateRangeFilter
-      id={componentId}
-      label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
-      queryParamNames={[key]}
-      initialValues={initialValues([key], liveEdit)}
-      onSubmit={getHandleChangedValueFn(useHistoryPush)}
-      forceSingleDay={true}
-      isSearchFiltersMobile={rest.isSearchFiltersMobile}
-      {...rest}
-    />
-  );
+  // Check if we should use the calendar-only mode
+  const calendarOnly = config.filterConfig?.calendarOnly || false;
+  
+  if (calendarOnly) {
+    return (
+      <StartTimeFilter
+        id={componentId}
+        label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
+        queryParamNames={[key]}
+        initialValues={initialValues([key], liveEdit)}
+        onSubmit={getHandleChangedValueFn(useHistoryPush)}
+        useCalendarOnly={true}
+        {...rest}
+      />
+    );
+  } else {
+    return (
+      <BookingDateRangeFilter
+        id={componentId}
+        label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
+        queryParamNames={[key]}
+        initialValues={initialValues([key], liveEdit)}
+        onSubmit={getHandleChangedValueFn(useHistoryPush)}
+        forceSingleDay={true}
+        isSearchFiltersMobile={rest.isSearchFiltersMobile}
+        {...rest}
+      />
+    );
+  }
 }
 
 case 'StartTime': {
   const { scope, enumOptions, filterConfig = {} } = config;
   const queryParamNames = [`pub_StartTime`]; // Matches the publicData field
-  return (
-    <SelectSingleFilter
-      id={componentId}
-      label={filterConfig.label}
-      queryParamNames={queryParamNames}
-      initialValues={initialValues(queryParamNames, liveEdit)}
-      onSelect={getHandleChangedValueFn(useHistoryPush)}
-      options={createFilterOptions(enumOptions)}
-      isSearchFiltersMobile={isSearchFiltersMobile}
-      {...rest}
-    />
-  );
+  
+  // Check if we should use the calendar-only mode from StartTimeFilter
+  const useCalendarOnly = filterConfig?.calendarOnly || false;
+  
+  if (useCalendarOnly) {
+    return (
+      <StartTimeFilter
+        id={componentId}
+        label={filterConfig.label}
+        queryParamNames={queryParamNames}
+        initialValues={initialValues(queryParamNames, liveEdit)}
+        onSubmit={getHandleChangedValueFn(useHistoryPush)}
+        useCalendarOnly={true}
+        {...rest}
+      />
+    );
+  } else {
+    return (
+      <SelectSingleFilter
+        id={componentId}
+        label={filterConfig.label}
+        queryParamNames={queryParamNames}
+        initialValues={initialValues(queryParamNames, liveEdit)}
+        onSubmit={getHandleChangedValueFn(useHistoryPush)}
+        options={enumOptions}
+        {...rest}
+      />
+    );
+  }
 }
 
 

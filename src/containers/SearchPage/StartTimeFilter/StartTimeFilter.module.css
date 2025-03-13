@@ -7,8 +7,25 @@
   font-size: 16px;
 }
 
+.calendarInput {
+  width: 100%;
+}
+
+/* Styles for the calendar-only mode */
+.inputsMobile {
+  width: 100%;
+}
+
+.inputs {
+  width: 100%;
+}
+
 @media screen and (min-width: 768px) {
   .select {
+    width: 200px;
+  }
+  
+  .calendarInput {
     width: 200px;
   }
 }

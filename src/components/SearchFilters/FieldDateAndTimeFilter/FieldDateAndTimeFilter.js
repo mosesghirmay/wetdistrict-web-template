@@ -1,13 +1,118 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import classNames from 'classnames';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
+import { createPortal } from 'react-dom';
 
-// Corrected import paths
+// Imports
 import FieldSelect from '../../FieldSelect/FieldSelect';
 import FieldSingleDatePicker from '../../DatePicker/FieldSingleDatePicker/FieldSingleDatePicker';
+import { IconCalendar, IconClose } from '../../Icons/Icons';
 
 import css from './FieldDateAndTimeFilter.module.css';
+
+const CalendarOnlyFilter = props => {
+  const {
+    bookingStartDate,
+    onBookingStartDateChange,
+    formId,
+    intl,
+    classes,
+  } = props;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tempDate, setTempDate] = useState(bookingStartDate);
+  const startOfToday = new Date();
+  const modalRef = useRef(null);
+
+  const openCalendarModal = () => {
+    setTempDate(bookingStartDate);
+    setIsModalOpen(true);
+  };
+
+  const closeCalendarModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleApply = () => {
+    onBookingStartDateChange(tempDate);
+    closeCalendarModal();
+  };
+
+  const handleCancel = () => {
+    setTempDate(bookingStartDate);
+    closeCalendarModal();
+  };
+
+  const buttonLabel = bookingStartDate 
+    ? intl.formatDate(bookingStartDate, { weekday: 'short', month: 'short', day: 'numeric' })
+    : intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' });
+
+  // Create a modal portal for the calendar
+  const CalendarModal = () => {
+    if (!isModalOpen) return null;
+    
+    return createPortal(
+      <div className={css.calendarOnlyModal} onClick={handleCancel}>
+        <div className={css.modalContent} onClick={e => e.stopPropagation()} ref={modalRef}>
+          <div className={css.modalHeader}>
+            <div className={css.modalTitle}>
+              {intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
+            </div>
+            <button className={css.closeButton} onClick={closeCalendarModal}>
+              <IconClose />
+            </button>
+          </div>
+          
+          <FieldSingleDatePicker
+            className={css.fieldDatePicker}
+            inputClassName={css.fieldDateInput}
+            popupClassName={css.fieldDatePopup}
+            name="bookingStartDate"
+            id={formId ? `${formId}.bookingStartDate` : 'bookingStartDate'}
+            placeholderText={intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
+            value={tempDate}
+            isDayBlocked={() => false}
+            isOutsideRange={date => date < startOfToday} // Prevent past dates
+            onChange={date => {
+              setTempDate(date);
+            }}
+          />
+          
+          <div className={css.actionButtons}>
+            <button className={css.cancelButton} onClick={handleCancel}>
+              {intl.formatMessage({ id: 'FieldDateAndTimeInput.cancel' })}
+            </button>
+            <button 
+              className={css.applyButton} 
+              onClick={handleApply}
+              disabled={!tempDate}
+            >
+              {intl.formatMessage({ id: 'FieldDateAndTimeInput.apply' })}
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <div className={classes}>
+      <div className={css.formRow}>
+        <button 
+          type="button"
+          onClick={openCalendarModal}
+          className={css.calendarOnlyButton}
+        >
+          <IconCalendar className={css.calendarIcon} />
+          <span className={css.buttonText}>{buttonLabel}</span>
+        </button>
+      </div>
+      <CalendarModal />
+    </div>
+  );
+};
 
 const FieldDateAndTimeFilter = props => {
   console.log("🚀 Rendering FieldDateAndTimeFilter with props:", props);
@@ -24,6 +129,7 @@ const FieldDateAndTimeFilter = props => {
     formId,
     intl,
     classes,
+    calendarOnly = false, // New prop to toggle calendar-only mode
   } = props;
 
   // State to store the available times when a date is selected
@@ -34,6 +140,19 @@ const FieldDateAndTimeFilter = props => {
   if (!intl) {
     console.error("❌ `intl` is undefined. Ensure it is correctly injected and used.");
     return <div style={{ color: 'red' }}>Error: Missing `intl` object</div>;
+  }
+
+  // If calendar-only mode is enabled, render the simplified calendar component
+  if (calendarOnly) {
+    return (
+      <CalendarOnlyFilter
+        bookingStartDate={bookingStartDate}
+        onBookingStartDateChange={onBookingStartDateChange}
+        formId={formId}
+        intl={intl}
+        classes={classes}
+      />
+    );
   }
 
   const startOfToday = new Date();
@@ -158,6 +277,7 @@ FieldDateAndTimeFilter.propTypes = {
   timeZone: PropTypes.string,
   formId: PropTypes.string,
   classes: PropTypes.string,
+  calendarOnly: PropTypes.bool,
 };
 
 // Wrap the component with injectIntl for translations

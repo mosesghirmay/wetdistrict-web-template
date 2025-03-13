@@ -29,6 +29,105 @@
   }
 }
 
+/* Calendar-only mode styles */
+.calendarOnlyButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.calendarOnlyButton:hover {
+  border-color: var(--marketplaceColor);
+}
+
+.calendarOnlyButton:focus {
+  outline: none;
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 3px rgba(var(--marketplaceColorDark), 0.2);
+}
+
+.calendarIcon {
+  margin-right: 8px;
+}
+
+.buttonText {
+  font-weight: 600;
+}
+
+.calendarOnlyModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin: 0;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.applyButton, .cancelButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.applyButton {
+  background-color: var(--marketplaceColor);
+  color: white;
+}
+
+.cancelButton {
+  background-color: var(--colorGrey100);
+  color: var(--colorGrey700);
+}
+
 .field {
   display: flex;
   align-items: flex-end;
