@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 // Imports
 import FieldSelect from '../../FieldSelect/FieldSelect';
 import FieldSingleDatePicker from '../../DatePicker/FieldSingleDatePicker/FieldSingleDatePicker';
-import { IconCalendar, IconClose } from '../../Icons/Icons';
+import Icons from '../../Icons/Icons';
 
 import css from './FieldDateAndTimeFilter.module.css';
 

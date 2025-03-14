@@ -9,9 +9,8 @@ import { propTypes } from '../../../util/types';
 import { createResourceLocatorString } from '../../../util/routes';
 
 import { ModalInMobile, Button } from '../../../components';
-import EnhancedDatePicker from '../../../components/SearchFilters/EnhancedDatePicker';
 import Icons from '../../../components/Icons/Icons';
-import { DatePicker } from '../../../components/DatePicker';
+import { FieldSingleDatePicker } from '../../../components/DatePicker';
 
 import { useMyContext } from '../../../context/StateHolder';
 
@@ -175,9 +174,9 @@ const SearchFiltersMobile = ({
       <div className={css.hiddenSection}>
         {/* This section is now completely hidden */}
       </div>
-
+  
       {noResultsInfo ? noResultsInfo : null}
-
+  
       <ModalInMobile
         id="SearchFiltersMobile.filters"
         isModalOpenOnMobile={isFiltersOpenOnMobile}
@@ -194,80 +193,62 @@ const SearchFiltersMobile = ({
             <img src={writtenLogo} alt="Written Logo" className={css.logoImage} />
           </div>
         </div>
-        
+  
         {isFiltersOpenOnMobile ? (
           <div className={css.filtersWrapper}>
             {/* Sort By section - moved to top */}
             {sortBySection}
-            
-            {/* Enhanced Date Picker for Date Selection */}
-            <div className={css.modalDatePickerContainer}>
-              <h3 className={css.modalSectionTitle}>Select a Date</h3>
-              <div className={css.calendarOnlyWrapper}>
-                <button 
-                  type="button"
-                  onClick={() => setIsPickerOpen(true)}
-                  className={css.calendarButton}
-                >
-                  <Icons name="calendar" className={css.calendarIcon} />
-                  <span className={css.buttonText}>
-                    {dates?.startDate 
-                      ? intl.formatDate(dates.startDate, { weekday: 'short', month: 'short', day: 'numeric' })
-                      : intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
-                  </span>
-                </button>
-                
-                {isPickerOpen && (
-                  <div className={css.datePickerModal} onClick={() => setIsPickerOpen(false)}>
-                    <div className={css.datePickerModalContent} onClick={e => e.stopPropagation()}>
-                      <div className={css.datePickerModalHeader}>
-                        <div className={css.datePickerModalTitle}>
-                          {intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
-                        </div>
-                        <button className={css.closeButton} onClick={() => setIsPickerOpen(false)}>
-                          <Icons name="cross" />
-                        </button>
-                      </div>
-                      
-                      <div className={css.datePickerWrapper}>
-                        <DatePicker 
-                          value={[dates?.startDate, dates?.endDate]}
-                          onChange={handleDateChange}
-                          isDayBlocked={() => false}
-                          isOutsideRange={day => day.isBefore(moment().startOf('day'))}
-                          range={true}
-                          showMonthStepper={true}
-                          theme="light"
-                        />
-                      </div>
-                      
-                      <div className={css.actionButtons}>
-                        {dates?.startDate && (
-                          <button 
-                            className={css.clearButton}
-                            onClick={() => {
-                              handleClearDate();
-                              setIsPickerOpen(false);
-                            }}
-                          >
-                            {intl.formatMessage({ id: 'FieldDateAndTimeInput.clear' })}
-                          </button>
-                        )}
-                        <button className={css.cancelButton} onClick={() => setIsPickerOpen(false)}>
-                          {intl.formatMessage({ id: 'FieldDateAndTimeInput.cancel' })}
-                        </button>
-                      </div>
+  
+            {/* Enhanced Date Picker Modal Only (removed button trigger above picker) */}
+            {isPickerOpen && (
+              <div className={css.datePickerModal} onClick={() => setIsPickerOpen(false)}>
+                <div className={css.datePickerModalContent} onClick={e => e.stopPropagation()}>
+                  <div className={css.datePickerModalHeader}>
+                    <div className={css.datePickerModalTitle}>
+                      {intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
                     </div>
+                    <button className={css.closeButton} onClick={() => setIsPickerOpen(false)}>
+                      <Icons name="close" />
+                    </button>
                   </div>
-                )}
+  
+                  <div className={css.datePickerWrapper}>
+                    <DatePicker
+                      value={[dates?.startDate, dates?.endDate]}
+                      onChange={handleDateChange}
+                      isDayBlocked={() => false}
+                      isOutsideRange={day => day.isBefore(moment().startOf('day'))}
+                      range={true}
+                      showMonthStepper={true}
+                      theme="light"
+                    />
+                  </div>
+  
+                  <div className={css.actionButtons}>
+                    {dates?.startDate && (
+                      <button
+                        className={css.clearButton}
+                        onClick={() => {
+                          handleClearDate();
+                          setIsPickerOpen(false);
+                        }}
+                      >
+                        {intl.formatMessage({ id: 'FieldDateAndTimeInput.clear' })}
+                      </button>
+                    )}
+                    <button className={css.cancelButton} onClick={() => setIsPickerOpen(false)}>
+                      {intl.formatMessage({ id: 'FieldDateAndTimeInput.cancel' })}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-            
+            )}
+  
             {/* Children for additional filters */}
             {children}
           </div>
         ) : null}
-
+  
         <div className={css.showListingsContainer}>
           <Button className={css.showListingsButton} onClick={closeFilters}>
             {showListingsLabel}

@@ -1,0 +1,233 @@
+/**
+ * Global calendar styles for the DateRangePicker component
+ * This file targets the react-dates library components directly
+ */
+
+/* Make the calendar container clean and borderless */
+.DateRangePicker_picker {
+  top: 50px !important;
+  left: 0px !important;
+  background-color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15) !important;
+  z-index: 100 !important;
+}
+
+/* Remove border from the day picker */
+.DayPicker {
+  background-color: white !important;
+  border: none !important;
+  border-radius: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Fix calendar month table centering */
+.CalendarMonth_table {
+  margin: 0 auto !important;
+}
+
+/* Make all calendar days circular */
+.CalendarDay {
+  border-radius: 50% !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  
+  /* Center text inside day cells */
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  
+  /* Ensure hover effect is subtle */
+  transition: background 0.2s ease !important;
+}
+
+/* Style the selected date(s) */
+.CalendarDay__selected, 
+.CalendarDay__selected:active, 
+.CalendarDay__selected:hover {
+  background-color: var(--marketplaceColor, #008f7a) !important;
+  color: white !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--marketplaceColor, #008f7a) !important;
+}
+
+/* Style the selected start and end dates */
+.CalendarDay__selected_start, 
+.CalendarDay__selected_end {
+  background-color: var(--marketplaceColor, #008f7a) !important;
+  color: white !important;
+  border-radius: 50% !important;
+}
+
+/* Style dates in range - hide range styling for single date mode */
+.CalendarDay__selected_span {
+  background-color: transparent !important;
+  color: inherit !important;
+  border: 1px solid transparent !important;
+}
+
+/* Disable hover effect for dates in range for single date mode */
+.CalendarDay__hovered_span,
+.CalendarDay__after_hovered_start {
+  background-color: transparent !important;
+  color: inherit !important;
+  border: 1px solid transparent !important;
+}
+
+/* Style today's date */
+.CalendarDay__today {
+  border: 2px solid var(--marketplaceColor, #008f7a) !important;
+  border-radius: 50% !important;
+  color: initial !important;
+  background: transparent !important;
+}
+
+/* Style disabled dates */
+.CalendarDay__blocked_calendar, 
+.CalendarDay__blocked_out_of_range {
+  color: #999 !important;
+  pointer-events: none !important;
+  opacity: 0.6 !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+/* Force calendar to work in single date mode */
+.CalendarDay__selected_start,
+.CalendarDay__selected_end {
+  border-top-left-radius: 50% !important;
+  border-bottom-left-radius: 50% !important;
+  border-top-right-radius: 50% !important;
+  border-bottom-right-radius: 50% !important;
+}
+
+/* Hide the date range selection functionality */
+.DayPickerKeyboardShortcuts_buttonReset {
+  display: none !important;
+}
+
+/* Navigation buttons */
+.DayPickerNavigation_button {
+  border: none !important;
+  border-radius: 50% !important;
+  background: white !important;
+  color: #008f7a !important;
+  outline: none !important;
+}
+
+.DayPickerNavigation_button:hover {
+  background: rgba(0, 143, 122, 0.1) !important;
+}
+
+/* Month caption */
+.CalendarMonth_caption {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding-bottom: 10px !important;
+}
+
+/* Week header */
+.DayPicker_weekHeader {
+  color: #4a4a4a !important;
+  font-weight: 500 !important;
+}
+
+/* Input styling */
+.DateRangePickerInput {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Hide the second input and the separator for single date mode */
+.DateRangePickerInput_arrow,
+.DateRangePickerInput > div:nth-child(3),
+.DateRangePickerInput > div:nth-child(4) {
+  display: none !important;
+}
+
+.DateInput {
+  width: auto !important;
+  background: transparent !important;
+}
+
+.DateInput_input {
+  font-size: 14px !important;
+  border-bottom: none !important;
+  background: transparent !important;
+  color: #4a4a4a !important;
+}
+
+.DateInput_input__focused {
+  border-bottom: none !important;
+}
+
+/* When using datepicker-input class, hide default inputs */
+.datepicker-container .SingleDatePickerInput,
+.datepicker-container .DateRangePickerInput {
+  display: none !important; /* Hide default inputs */
+}
+
+/* Specific overrides for datepicker-container calendar */
+.datepicker-container .DateRangePicker {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Allow calendar picker to display properly in the datepicker-popup */
+.datepicker-popup .DateRangePicker_picker {
+  position: static !important; /* Don't use absolute positioning within our container */
+  top: auto !important;
+  left: auto !important;
+  z-index: 1 !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 767px) {
+  .DateRangePicker_picker {
+    top: 52px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 90% !important;
+    max-width: 350px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Full screen portal needs different styling */
+  .DateRangePicker_picker__fullScreenPortal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    background-color: white !important;
+  }
+  
+  /* Fix portal positioning */
+  .ReactDates__Portal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    z-index: 999 !important;
+  }
+}

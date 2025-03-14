@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FieldDateAndTimeFilter } from '../SearchFilters/FieldDateAndTimeFilter/FieldDateAndTimeFilter';
+import FieldDateAndTimeFilter from '../SearchFilters/FieldDateAndTimeFilter/FieldDateAndTimeFilter';
 
 /**
  * Wrapper component that integrates FieldDateAndTimeFilter from SearchFilters 
