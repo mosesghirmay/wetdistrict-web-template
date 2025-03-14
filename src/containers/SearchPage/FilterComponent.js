@@ -115,7 +115,7 @@ case 'dates': {
     return (
       <BookingDateRangeFilter
         id={componentId}
-        label="Date" // Changed from "Dates" to "Date" (singular)
+        label="Date:" // Changed from "Date" to "Date:" with colon
         queryParamNames={[key]}
         initialValues={initialValues([key], liveEdit)}
         onSubmit={getHandleChangedValueFn(useHistoryPush)}

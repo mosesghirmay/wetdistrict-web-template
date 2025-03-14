@@ -34,8 +34,12 @@ class FilterPlainComponent extends Component {
     super(props);
 
     // Ensure DatePicker starts closed, all other filters start open
+    const isDatesFilter = props.id === "datesFilter" || 
+                         props.id.includes("dates") ||
+                         props.plainClassName === "datesFilterHeader";
+    
     this.state = {
-      isOpen: props.id === "datesFilter" ? false : true,
+      isOpen: isDatesFilter ? false : true,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -48,7 +52,11 @@ class FilterPlainComponent extends Component {
     onSubmit(values);
 
     // Auto-close DatePicker after selection
-    if (this.props.id === "datesFilter") {
+    const isDatesFilter = this.props.id === "datesFilter" || 
+                         this.props.id.includes("dates") ||
+                         this.props.plainClassName === "datesFilterHeader";
+    
+    if (isDatesFilter) {
       this.setState({ isOpen: false });
     }
   }
@@ -117,7 +125,7 @@ class FilterPlainComponent extends Component {
             liveEdit
             onChange={this.handleChange}
             initialValues={initialValues}
-            keepDirtyOnReinitialize={keepDirtyOnReinitialize}
+            keepDirtyOnReinitialize={keepDirtyOnReinitialize} 
           >
             {children}
           </FilterForm>

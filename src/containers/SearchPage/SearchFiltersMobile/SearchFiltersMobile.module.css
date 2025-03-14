@@ -153,7 +153,7 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   /* Add border around the entire filter header */
   border: 1px solid var(--colorGrey300);
   border-radius: 6px;
-  padding: 16px 20px;
+  padding: 14px 14px 10px;
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -161,6 +161,13 @@ button.SearchFiltersMobile_backButton__Gi3wr,
 :global(.datesFilterHeader):hover {
   border-color: var(--marketplaceColor);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Make date filter clickable */
+:global(.datesFilterHeader) :global(.FilterPlain_filterHeader),
+:global(.datesFilterHeader) :global(.FilterPlain_labelButton),
+:global(.datesFilterHeader) :global(.FilterPlain_labelWrapper) {
+  cursor: pointer;
 }
 
 /* Make date filter clickable */
@@ -183,6 +190,18 @@ button.SearchFiltersMobile_backButton__Gi3wr,
 /* Force filter closed */
 .force-closed [class*="FilterPlain_plain"] {
   display: none !important;
+}
+
+/* Ensure date filter stays closed on mobile devices */
+@media (max-width: 767px) {
+  :global(.datesFilterHeader.force-closed) [class*="FilterPlain_plain"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 /* Style for the wrapper of the date input */
@@ -250,11 +269,6 @@ button.SearchFiltersMobile_backButton__Gi3wr,
 /* Ensure placeholder text is gray */
 :global(.datesFilterHeader) :global(.FilterPlain_labelButtonContent) {
   color: var(--colorGrey500);
-}
-
-/* When date is selected, make text marketplace color */
-:global(.datesFilterHeader) :global(.FilterPlain_labelSelected + .FilterPlain_labelButtonContent) {
-  color: var(--marketplaceColor);
 }
 
 /* Hide the expand/collapse indicator */

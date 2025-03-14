@@ -191,21 +191,26 @@ const SearchFiltersMobile = ({
     // First close the modal picker
     setIsPickerOpen(false);
     
-    // Then try multiple approaches to close the FilterPlain
+    // Use a setTimeout with 300ms delay to ensure UI has time to update
     setTimeout(() => {
-      // APPROACH 1: Find and remove isOpen class directly
-      const openFilters = document.querySelectorAll('[class*="FilterPlain_isOpen"]');
-      openFilters.forEach(filter => {
-        const classNames = filter.className.split(" ");
-        filter.className = classNames.filter(name => !name.includes("isOpen")).join(" ");
-      });
+      // Specifically target the datesFilter element
+      const datesFilterHeader = document.querySelector('.datesFilterHeader');
       
-      // APPROACH 2: Add class that forces closed with CSS
-      document.querySelector('.datesFilterHeader')?.classList.add('force-closed');
-      
-      // APPROACH 3: Set inline style to hide it
-      const plainContent = document.querySelector('.datesFilterHeader [class*="FilterPlain_plain"]');
-      if (plainContent) plainContent.style.display = 'none';
+      if (datesFilterHeader) {
+        // Add the force-closed class to ensure it stays closed
+        datesFilterHeader.classList.add('force-closed');
+        
+        // Find the plain element inside specifically to hide it
+        const plainElement = datesFilterHeader.querySelector('[class*="FilterPlain_plain"]');
+        if (plainElement) {
+          // Remove any "isOpen" classes that might be present
+          plainElement.classList.remove('FilterPlain_isOpen__uD61R');
+          plainElement.classList.remove('FilterPlain_isOpen');
+          
+          // Hide it with direct DOM manipulation
+          plainElement.style.display = 'none';
+        }
+      }
     }, 300);
   };
 

@@ -117,7 +117,8 @@ export class BookingDateRangeFilterComponent extends Component {
     const endDate = isSelected ? initialDates.dates.endDate : null;
 
     const format = {
-      month: 'short',
+      weekday: 'short',
+      month: 'long',
       day: 'numeric',
     };
 
@@ -240,6 +241,7 @@ export class BookingDateRangeFilterComponent extends Component {
         {...onClearPlainMaybe}
         initialValues={initialDates}
         plainClassName="datesFilterHeader"
+        style={{ width: '100%' }}
         {...rest}
       >
         <FieldDateRangeController
