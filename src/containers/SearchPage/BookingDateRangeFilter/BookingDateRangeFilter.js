@@ -19,11 +19,29 @@ const getDatesQueryParamName = queryParamNames => {
     : 'dates';
 };
 
-// Parse query parameter, which should look like "2020-05-28,2020-05-31"
+// Parse query parameter, which could be either "2020-05-28,2020-05-28" for single date or "2020-05-28,2020-05-31" for range
 const parseValue = value => {
-  const rawValuesFromParams = value ? value.split(',') : [];
-  const [startDate, endDate] = rawValuesFromParams.map(v => parseDateFromISO8601(v));
-  return value && startDate && endDate ? { dates: { startDate, endDate } } : { dates: null };
+  if (!value) return { dates: null };
+  
+  // Always split by comma, assuming the comma format is used
+  const rawValuesFromParams = value.split(',');
+  
+  // If we have at least one value
+  if (rawValuesFromParams.length > 0) {
+    const startDate = parseDateFromISO8601(rawValuesFromParams[0]);
+    let endDate = null;
+    
+    // If we have a second value and it's different, use it, otherwise set same as startDate
+    if (rawValuesFromParams.length > 1) {
+      endDate = parseDateFromISO8601(rawValuesFromParams[1]);
+    } else {
+      endDate = startDate; // For single date selection, both dates are the same
+    }
+    
+    return startDate ? { dates: { startDate, endDate: startDate } } : { dates: null };
+  }
+  
+  return { dates: null };
 };
 // Format dateRange value for the query. It's given by FieldDateRangeInput:
 // { dates: { startDate, endDate } }
@@ -31,8 +49,10 @@ const formatValue = (dateRange, queryParamName) => {
   const hasDates = dateRange && dateRange.dates;
   const { startDate, endDate } = hasDates ? dateRange.dates : {};
   const start = startDate ? stringifyDateToISO8601(startDate) : null;
-  const end = endDate ? stringifyDateToISO8601(endDate) : null;
-  const value = start && end ? `${start},${end}` : null;
+  
+  // Use the startDate for both start and end in the URL to maintain compatibility
+  const value = start ? `${start},${start}` : null;
+  
   return { [queryParamName]: value };
 };
 
@@ -58,7 +78,6 @@ export class BookingDateRangeFilterComponent extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { isOpen: true };
 
     this.popupControllerRef = null;
     this.plainControllerRef = null;
@@ -109,7 +128,8 @@ export class BookingDateRangeFilterComponent extends Component {
       ? intl.formatMessage(
           { id: 'BookingDateRangeFilter.labelSelectedPlain' },
           {
-            dates: `${formattedStartDate} - ${formattedEndDate}`,
+            // For single date selection, just show the start date without the range indicator
+            dates: formattedStartDate,
           }
         )
       : label
@@ -120,7 +140,8 @@ export class BookingDateRangeFilterComponent extends Component {
       ? intl.formatMessage(
           { id: 'BookingDateRangeFilter.labelSelectedPopup' },
           {
-            dates: `${formattedStartDate} - ${formattedEndDate}`,
+            // For single date selection, just show the start date without the range indicator
+            dates: formattedStartDate,
           }
         )
       : label
@@ -131,7 +152,8 @@ export class BookingDateRangeFilterComponent extends Component {
       ? intl.formatMessage(
           { id: 'BookingDateRangeFilter.labelSelectedPopup' },
           {
-            dates: `${formattedStartDate} - ${formattedEndDate}`,
+            // For single date selection, just show the start date without the range indicator
+            dates: formattedStartDate,
           }
         )
       : null;
@@ -210,13 +232,14 @@ export class BookingDateRangeFilterComponent extends Component {
         rootClassName={rootClassName}
         label={label}
         labelSelection={labelSelection}
-        labelSelectionSeparator=":"
+        labelSelectionSeparator=""
         isSelected={isSelected}
         id={`${id}.plain`}
         liveEdit
         onSubmit={handleSubmit}
         {...onClearPlainMaybe}
         initialValues={initialDates}
+        plainClassName="datesFilterHeader"
         {...rest}
       >
         <FieldDateRangeController

@@ -1,7 +1,7 @@
 @import '../../../styles/customMediaQueries.css';
 
 .sortBy {
-  margin-right: 9px;
+  margin-right: 0px;
 }
 
 .sortByDesktop {
@@ -11,11 +11,10 @@
 
 .sortByMenuLabel {
   display: inline-block;
-  width: 40%; /* Make it wider */
-  height: 40px;
+  width: 100%; /* Make it wider */
+  height: 43px;
   min-height: 35px;
 
-  padding: 0 18px;
   margin: 0 9px 0 0;
 
   transition: all var(--transitionStyleButton);

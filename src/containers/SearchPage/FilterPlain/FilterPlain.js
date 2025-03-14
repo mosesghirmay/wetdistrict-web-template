@@ -32,7 +32,11 @@ import css from './FilterPlain.module.css';
 class FilterPlainComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { isOpen: true };
+
+    // Ensure DatePicker starts closed, all other filters start open
+    this.state = {
+      isOpen: props.id === "datesFilter" ? false : true,
+    };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleClear = this.handleClear.bind(this);
@@ -42,6 +46,11 @@ class FilterPlainComponent extends Component {
   handleChange(values) {
     const { onSubmit } = this.props;
     onSubmit(values);
+
+    // Auto-close DatePicker after selection
+    if (this.props.id === "datesFilter") {
+      this.setState({ isOpen: false });
+    }
   }
 
   handleClear() {
@@ -72,7 +81,9 @@ class FilterPlainComponent extends Component {
       initialValues,
       keepDirtyOnReinitialize = false,
     } = this.props;
-    const classes = classNames(rootClassName || css.root, className);
+
+    // Ensure `plainClassName` is applied correctly to the root div
+    const classes = classNames(rootClassName || css.root, className, plainClassName);
 
     return (
       <div className={classes}>
@@ -96,7 +107,7 @@ class FilterPlainComponent extends Component {
         </div>
         <div
           id={id}
-          className={classNames(plainClassName, css.plain, { [css.isOpen]: this.state.isOpen })}
+          className={classNames(css.plain, { [css.isOpen]: this.state.isOpen })}
           ref={node => {
             this.filterContent = node;
           }}

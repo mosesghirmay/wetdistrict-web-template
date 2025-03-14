@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { bool, func, object, node, number, shape, string, arrayOf } from 'prop-types';
 import classNames from 'classnames';
 import { useHistory } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { createResourceLocatorString } from '../../../util/routes';
 import { ModalInMobile, Button } from '../../../components';
 import Icons from '../../../components/Icons/Icons';
 import { FieldSingleDatePicker } from '../../../components/DatePicker';
+import DatePicker from '../../../components/DatePicker/DatePickers/DatePicker';
 
 import { useMyContext } from '../../../context/StateHolder';
 
@@ -60,6 +61,8 @@ const SearchFiltersMobile = ({
       onOpenModal();
       setIsFiltersOpenOnMobile(true);
       setInitialQueryParams(urlQueryParams);
+      // Ensure date picker is closed when filters are opened
+      setIsPickerOpen(false);
     }
   };
 
@@ -67,11 +70,15 @@ const SearchFiltersMobile = ({
 
   useEffect(() => {
     if (urlQueryParamsDates) {
-      const startDate = urlQueryParamsDates.split(',')[0];
-      const endDate = urlQueryParamsDates.split(',')[1];
+      // Always use comma-separated format
+      const dates = urlQueryParamsDates.split(',');
+      const startDate = dates[0] ? moment(dates[0]) : null;
+      // For single date selection, use startDate for both
+      const endDate = startDate;
+      
       setDates({
-        startDate: moment(startDate),
-        endDate: moment(endDate),
+        startDate,
+        endDate,
       });
     }
   }, [urlQueryParamsDates]);
@@ -84,6 +91,40 @@ const SearchFiltersMobile = ({
       onCloseModal();
     }
   }, [isMobileSearchFilerOpen]);
+  
+  // Find the date filter element and add click handler after the modal opens
+  useEffect(() => {
+    if (isFiltersOpenOnMobile) {
+      // Wait for the DOM to update
+      setTimeout(() => {
+        // Find the date filter element by its class (added via 'plainClassName' property)
+        const dateFilterElem = document.querySelector('.datesFilterHeader');
+        
+        if (dateFilterElem) {
+          // Add direct click handler to open the date picker
+          const clickHandler = (e) => {
+            // Only open the date picker when clicking directly on the filter, not its children
+            if (e.target.closest('.datesFilterHeader') && 
+                !e.target.closest('.FilterPlain_plain')) {
+              setIsPickerOpen(true);
+              
+              // Prevent the filter from toggling when we're opening the date picker
+              e.stopPropagation();
+              e.preventDefault();
+            }
+          };
+          
+          // Add click event
+          dateFilterElem.addEventListener('click', clickHandler);
+          
+          // Clean up event listener when component unmounts or filters close
+          return () => {
+            dateFilterElem.removeEventListener('click', clickHandler);
+          };
+        }
+      }, 200); // Small delay to ensure DOM is updated
+    }
+  }, [isFiltersOpenOnMobile]);
 
   const cancelFilters = () => {
     history.push(
@@ -92,11 +133,15 @@ const SearchFiltersMobile = ({
     onCloseModal();
     setIsFiltersOpenOnMobile(false);
     setInitialQueryParams(null);
+    // Close date picker
+    setIsPickerOpen(false);
   };
 
   const closeFilters = () => {
     onCloseModal();
     setIsFiltersOpenOnMobile(false);
+    // Close date picker
+    setIsPickerOpen(false);
   };
 
   const classes = classNames(rootClassName || css.root, className);
@@ -115,35 +160,53 @@ const SearchFiltersMobile = ({
   );
 
   const formatValue = dates => {
-    const { startDate, endDate } = dates || {};
+    const { startDate } = dates || {};
     const start = startDate && stringifyDateToISO8601(startDate);
-    const end = endDate && stringifyDateToISO8601(endDate);
-    return start && end ? `${start},${end}` : null;
+    // Use the same date for both start and end for compatibility with existing code
+    return start ? `${start},${start}` : null;
   };
 
   const handleDateChange = selectedDates => {
     if (!selectedDates || !selectedDates.length || !selectedDates[0]) return;
     
-    // Use the first selected date for both startDate and endDate
+    // Only store the first selected date
     const selectedDate = moment(selectedDates[0]).startOf('day').toDate();
     
-    // Set both dates to the same value
+    // Set both dates to the same value for data consistency
     setDates({ 
-      startDate: selectedDate, 
+      startDate: selectedDate,
       endDate: selectedDate 
     });
     
-    // Format and update URL
+    // Format and update URL - using the same date for both start and end
     const formattedDate = moment(selectedDate).format('YYYY-MM-DD');
     const dateParam = `${formattedDate},${formattedDate}`;
     const extraParams = urlQueryParams 
       ? { ...urlQueryParams, dates: dateParam } 
       : { dates: dateParam };
     
+    // Push the URL update
     history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
     
-    // Close the picker immediately
+    // First close the modal picker
     setIsPickerOpen(false);
+    
+    // Then try multiple approaches to close the FilterPlain
+    setTimeout(() => {
+      // APPROACH 1: Find and remove isOpen class directly
+      const openFilters = document.querySelectorAll('[class*="FilterPlain_isOpen"]');
+      openFilters.forEach(filter => {
+        const classNames = filter.className.split(" ");
+        filter.className = classNames.filter(name => !name.includes("isOpen")).join(" ");
+      });
+      
+      // APPROACH 2: Add class that forces closed with CSS
+      document.querySelector('.datesFilterHeader')?.classList.add('force-closed');
+      
+      // APPROACH 3: Set inline style to hide it
+      const plainContent = document.querySelector('.datesFilterHeader [class*="FilterPlain_plain"]');
+      if (plainContent) plainContent.style.display = 'none';
+    }, 300);
   };
 
   const handleClearDate = () => {
@@ -160,13 +223,7 @@ const SearchFiltersMobile = ({
     history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
   };
 
-  // This is the simple SortBy section to be added to the modal filter
-  const sortBySection = (
-    <div className={css.sortBySection}>
-      <div>Sort By</div>
-      {sortByComponent}
-    </div>
-  );
+  // SortBy component is now placed next to the showListingsButton
 
   return (
     <div className={classes}>
@@ -196,24 +253,31 @@ const SearchFiltersMobile = ({
   
         {isFiltersOpenOnMobile ? (
           <div className={css.filtersWrapper}>
-            {/* Sort By section - moved to top */}
-            {sortBySection}
-  
-            {/* Enhanced Date Picker Modal Only (removed button trigger above picker) */}
+            {/* Enhanced Date Picker Modal */}
             {isPickerOpen && (
-              <div className={css.datePickerModal} onClick={() => setIsPickerOpen(false)}>
-                <div className={css.datePickerModalContent} onClick={e => e.stopPropagation()}>
+              <div 
+                className={css.datePickerModal} 
+                onClick={() => setIsPickerOpen(false)}
+              >
+                <div 
+                  className={css.datePickerModalContent} 
+                  onClick={e => e.stopPropagation()}
+                >
                   <div className={css.datePickerModalHeader}>
                     <div className={css.datePickerModalTitle}>
                       {intl.formatMessage({ id: 'FieldDateAndTimeInput.selectDate' })}
                     </div>
-                    <button className={css.closeButton} onClick={() => setIsPickerOpen(false)}>
+                    <button 
+                      className={css.closeButton} 
+                      onClick={() => setIsPickerOpen(false)}
+                    >
                       <Icons name="close" />
                     </button>
                   </div>
   
                   <div className={css.datePickerWrapper}>
                     <DatePicker
+                      id="mobileDatePicker"
                       value={[dates?.startDate, dates?.endDate]}
                       onChange={handleDateChange}
                       isDayBlocked={() => false}
@@ -236,7 +300,10 @@ const SearchFiltersMobile = ({
                         {intl.formatMessage({ id: 'FieldDateAndTimeInput.clear' })}
                       </button>
                     )}
-                    <button className={css.cancelButton} onClick={() => setIsPickerOpen(false)}>
+                    <button 
+                      className={css.cancelButton} 
+                      onClick={() => setIsPickerOpen(false)}
+                    >
                       {intl.formatMessage({ id: 'FieldDateAndTimeInput.cancel' })}
                     </button>
                   </div>
@@ -250,9 +317,17 @@ const SearchFiltersMobile = ({
         ) : null}
   
         <div className={css.showListingsContainer}>
-          <Button className={css.showListingsButton} onClick={closeFilters}>
-            {showListingsLabel}
-          </Button>
+          {/* Button takes 80% width */}
+          <div className={css.buttonWrapper}>
+            <Button className={css.showListingsButton} onClick={closeFilters}>
+              {showListingsLabel}
+            </Button>
+          </div>
+          
+          {/* Sort By takes 20% width */}
+          <div className={css.sortByWrapper}>
+            {sortByComponent}
+          </div>
         </div>
       </ModalInMobile>
     </div>

@@ -115,12 +115,12 @@ case 'dates': {
     return (
       <BookingDateRangeFilter
         id={componentId}
-        label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
+        label="Date" // Changed from "Dates" to "Date" (singular)
         queryParamNames={[key]}
         initialValues={initialValues([key], liveEdit)}
         onSubmit={getHandleChangedValueFn(useHistoryPush)}
         forceSingleDay={true}
-        isSearchFiltersMobile={rest.isSearchFiltersMobile}
+        isSearchFiltersMobile={true} // Always pass this as true to ensure our styling is applied
         {...rest}
       />
     );

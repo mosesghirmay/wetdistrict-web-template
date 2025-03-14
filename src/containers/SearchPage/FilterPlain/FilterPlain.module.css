@@ -17,6 +17,19 @@
   line-height: 24px;
 }
 
+/* Apply border only to the "Dates" filter header */
+div.FilterPlain_root__UR180:first-of-type div.FilterPlain_filterHeader__Hm7jV {
+  border: 1px solid var(--colorGrey300) !important;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+
+
 .labelButton {
   /* Override button styles */
   width: 100%;
@@ -51,8 +64,6 @@
 .labelSelected {
   composes: marketplaceSmallFontStyles from global;
   font-weight: var(--fontWeightBold);
-
-  /* Baseline adjustment for label text */
   margin-top: 0;
   margin-bottom: 12px;
 
@@ -68,6 +79,8 @@
 .labelSelected {
   color: var(--marketplaceColor);
   margin-left: 5px;
+  display: inline-block;
+  padding-left: 5px;
 }
 
 .openSign {
@@ -81,8 +94,6 @@
   font-weight: var(--fontWeightMedium);
   color: var(--colorGrey300);
   padding: 2px 0 4px 12px;
-
-  /* Override button styles */
   outline: none;
   text-align: left;
   border: none;
