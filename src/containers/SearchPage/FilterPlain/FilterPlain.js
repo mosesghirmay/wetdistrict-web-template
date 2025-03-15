@@ -91,7 +91,10 @@ class FilterPlainComponent extends Component {
     } = this.props;
 
     // Ensure `plainClassName` is applied correctly to the root div
-    const classes = classNames(rootClassName || css.root, className, plainClassName);
+    // Also add isSelected class when a date is selected
+    const classes = classNames(rootClassName || css.root, className, plainClassName, {
+      isSelected: isSelected,
+    });
 
     return (
       <div className={classes}>
@@ -104,6 +107,8 @@ class FilterPlainComponent extends Component {
                   {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
                   {labelSelection ? (
                     <span className={css.labelSelected}>{labelSelection}</span>
+                  ) : this.props.placeholderText ? (
+                    <span className={css.placeholderText}>{this.props.placeholderText}</span>
                   ) : null}
                 </span>
               </span>

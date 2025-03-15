@@ -122,9 +122,13 @@ export class BookingDateRangeFilterComponent extends Component {
       day: 'numeric',
     };
 
-    const formattedStartDate = isSelected ? intl.formatDate(startDate, format) : null;
+    // Get current date for default display
+    const currentDate = new Date();
+    
+    const formattedStartDate = isSelected ? intl.formatDate(startDate, format) : intl.formatDate(currentDate, format);
     const formattedEndDate = isSelected ? intl.formatDate(endDate, format) : null;
 
+    // When no date is selected, show the current date in a placeholder format
     const labelForPlain = isSelected
       ? intl.formatMessage(
           { id: 'BookingDateRangeFilter.labelSelectedPlain' },
@@ -134,8 +138,11 @@ export class BookingDateRangeFilterComponent extends Component {
           }
         )
       : label
-      ? label
+      ? `${label}`  // Only show "Date:" as the label
       : intl.formatMessage({ id: 'BookingDateRangeFilter.labelPlain' });
+      
+    // Only display current date as placeholder when not selected
+    const placeholderDate = !isSelected ? formattedStartDate : null;
 
     const labelForPopup = isSelected
       ? intl.formatMessage(
@@ -146,7 +153,7 @@ export class BookingDateRangeFilterComponent extends Component {
           }
         )
       : label
-      ? label
+      ? `${label}`  // Only show "Date:" as the label
       : intl.formatMessage({ id: 'BookingDateRangeFilter.labelPopup' });
 
     const labelSelection = isSelected
@@ -242,6 +249,7 @@ export class BookingDateRangeFilterComponent extends Component {
         initialValues={initialDates}
         plainClassName="datesFilterHeader"
         style={{ width: '100%' }}
+        placeholderText={placeholderDate}
         {...rest}
       >
         <FieldDateRangeController

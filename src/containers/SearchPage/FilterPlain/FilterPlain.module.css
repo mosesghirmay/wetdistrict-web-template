@@ -67,7 +67,7 @@ div.FilterPlain_root__UR180:first-of-type div.FilterPlain_filterHeader__Hm7jV {
   composes: marketplaceSmallFontStyles from global;
   font-weight: var(--fontWeightBold);
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 
   @media (--viewportMedium) {
     margin-bottom: 4px;
@@ -80,10 +80,18 @@ div.FilterPlain_root__UR180:first-of-type div.FilterPlain_filterHeader__Hm7jV {
 }
 
 .labelSelected {
-  color: var(--marketplaceColor);
+  color: var(--black);
   margin-left: 0;
   display: inline-block;
   padding-left: 5px;
+}
+
+.placeholderText {
+  color: var(--colorGrey500);
+  margin-left: 5px;
+  display: inline-block;
+  padding-left: 5px;
+  font-weight: normal;
 }
 
 .openSign {

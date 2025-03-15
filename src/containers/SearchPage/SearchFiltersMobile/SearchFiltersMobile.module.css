@@ -266,9 +266,20 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   font-weight: 500;
 }
 
-/* Ensure placeholder text is gray */
+/* Ensure placeholder text is gray, but turn black when selected */
 :global(.datesFilterHeader) :global(.FilterPlain_labelButtonContent) {
   color: var(--colorGrey500);
+}
+
+/* When date is selected, style the content differently */
+:global(.datesFilterHeader.isSelected) :global(.FilterPlain_labelButtonContent) {
+  color: var(--colorGrey900);
+}
+
+/* When date is selected, change the border color */
+:global(.datesFilterHeader.isSelected) {
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 1px var(--marketplaceColor);
 }
 
 /* Hide the expand/collapse indicator */
