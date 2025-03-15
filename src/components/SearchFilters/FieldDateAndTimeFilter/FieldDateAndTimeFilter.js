@@ -66,7 +66,7 @@ const CalendarOnlyFilter = props => {
           
           <FieldSingleDatePicker
             className={css.fieldDatePicker}
-            inputClassName={css.fieldDateInput}
+            inputClassName={css.FieldSingleDatePicker}
             popupClassName={css.fieldDatePopup}
             name="bookingStartDate"
             id={formId ? `${formId}.bookingStartDate` : 'bookingStartDate'}
@@ -179,7 +179,7 @@ const FieldDateAndTimeFilter = props => {
         <div className={classNames(css.field, css.startDate)}>
           <FieldSingleDatePicker
             className={css.fieldDatePicker}
-            inputClassName={css.fieldDateInput}
+            inputClassName={css.FieldSingleDatePicker}
             popupClassName={css.fieldDatePopup}
             name="bookingStartDate"
             id={formId ? `${formId}.bookingStartDate` : 'bookingStartDate'}

@@ -230,11 +230,43 @@ export class SearchPageComponent extends Component {
       listingFieldsConfig,
       activeListingTypes
     );
-    const availableFilters = [
+    // Combine all filters
+    let availableFilters = [
       ...customPrimaryFilters,
       ...defaultFilters,
       ...customSecondaryFilters,
     ];
+
+    // Reorder filters to ensure date, time, guests sequence
+    // First, find indexes of date, time, and guests filters
+    const dateFilterIndex = availableFilters.findIndex(filter => filter.schemaType === 'dates');
+    const timeFilterIndex = availableFilters.findIndex(filter => 
+      filter.key === 'availability' || filter.key === 'availabilityTime' || 
+      filter.key.toLowerCase().includes('time')
+    );
+    const guestsFilterIndex = availableFilters.findIndex(filter => 
+      filter.key === 'seats' || filter.key === 'guests' || 
+      filter.key.toLowerCase().includes('guest') || filter.key.toLowerCase().includes('seat')
+    );
+
+    // If we found all three filters, reorder them
+    if (dateFilterIndex !== -1 && timeFilterIndex !== -1 && guestsFilterIndex !== -1) {
+      // Extract the filters we want to reorder
+      const dateFilter = availableFilters[dateFilterIndex];
+      const timeFilter = availableFilters[timeFilterIndex];
+      const guestsFilter = availableFilters[guestsFilterIndex];
+
+      // Remove the filters from their original positions
+      // We need to be careful about indices changing after removal
+      // So we remove from highest index to lowest
+      const indicesToRemove = [dateFilterIndex, timeFilterIndex, guestsFilterIndex].sort((a, b) => b - a);
+      indicesToRemove.forEach(index => {
+        availableFilters.splice(index, 1);
+      });
+
+      // Add them back in the desired order at the beginning of the array
+      availableFilters = [dateFilter, timeFilter, guestsFilter, ...availableFilters];
+    }
 
     // Selected aka active filters
     const selectedFilters = validFilterParams(

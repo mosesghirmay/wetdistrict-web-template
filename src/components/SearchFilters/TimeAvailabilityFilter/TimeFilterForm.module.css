@@ -1,0 +1,83 @@
+
+.root {
+  padding: 24px 30px 25px 30px;
+  background-color: var(--colorWhite);
+  margin-top: 9px;
+  margin-bottom: 9px;
+  box-shadow: var(--boxShadowFilterPopup);
+  border-radius: 4px;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 24px;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.fieldReadOnly {
+  flex: 1;
+  margin-bottom: 0;
+  opacity: 0.8;
+}
+
+.fieldLabel {
+  font-size: 16px;  /* Replacing `@apply --marketplaceH5FontStyles` */
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+  margin-top: 0;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.endTimeDisplay {
+  padding: 8px 16px;
+  margin: 0;
+  border: 1px solid var(--colorGrey100);
+  border-radius: 4px;
+  background-color: var(--colorGrey50);
+  color: var(--colorGrey700);
+  width: 100%;
+  height: 39px; /* Match the height of the select input */
+}
+
+.toSeparator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+}
+
+.durationNote {
+  color: var(--colorGrey500);
+  font-size: 14px;
+  font-style: italic;
+  margin-top: -16px;
+  margin-bottom: 16px;
+}
+
+.submitButton {
+  margin-top: 16px;
+}
+
+/* ✅ Fixed Media Queries */
+@media (min-width: 768px) { /* Assuming --viewportMedium is 768px */
+  .root {
+    margin-top: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
+}
+
+@media (min-width: 1024px) { /* Assuming --viewportLarge is 1024px */
+  .root {
+    padding: 30px 30px 35px 30px;
+  }
+}

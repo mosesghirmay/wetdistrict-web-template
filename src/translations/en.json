@@ -361,7 +361,7 @@
   "FieldBoolean.yes": "Yes",
   "FieldDateAndTimeInput.endTime": "End time",
   "FieldDateAndTimeInput.startTime": "Start time",
-  "FieldDateInput.screenReaderInputMessage": "Date input",
+  "FieldSingleDatePicker.screenReaderInputMessage": "Date input",
   "FieldDateRangeInput.endDatePlaceholderText": "Add end date",
   "FieldDateRangeInput.invalidEndDate": "The end date is not valid",
   "FieldDateRangeInput.invalidStartDate": "The start date is not valid",
@@ -1129,5 +1129,17 @@
   "FieldDateAndTimeInput.apply": "Apply",
   "BookingTimeForm.selectTime": "Select a Start Time",
   "BookingTimeForm.selectEndTime": "Select an End Time",
-  "BookingTimeForm.noAvailableTimes": "No available times"
+  "BookingTimeForm.noAvailableTimes": "No available times",
+
+  "TimeAvailabilityFilter.label": "Available times",
+  "TimeAvailabilityFilter.clear": "Clear",
+  "TimeFilterForm.dateLabel": "Date",
+  "TimeFilterForm.datePlaceholder": "Select a date",
+  "TimeFilterForm.startTimeLabel": "Start time",
+  "TimeFilterForm.startTimePlaceholder": "Choose start time",
+  "TimeFilterForm.endTimeLabel": "End time",
+  "TimeFilterForm.fixedDurationLabel": "3 hours later",
+  "TimeFilterForm.fixedDurationNote": "All rentals are 3 hours.",
+  "TimeFilterForm.toLabel": "to",
+  "TimeFilterForm.submitButtonLabel": "Apply"
 }

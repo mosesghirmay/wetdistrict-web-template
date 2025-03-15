@@ -560,5 +560,43 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   border-radius: 5px;
 }
 
+/* Container for the time filter that gets inserted after the date filter */
+.timeFilterContainer {
+  padding: 10px 0;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  width: 100%;
+}
 
+/* Placeholder for the time filter in the original location */
+.timeFilterPlaceholder {
+  display: none;
+}
+
+/* Hide datepickers and time filters on mobile */
+.hiddenSection {
+  display: none;
+}
+
+/* Time picker wrapper in modal */
+.timePickerWrapper {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  border-top: 1px solid var(--colorGrey100);
+  padding-top: 20px;
+}
+
+.timePickerTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--colorGrey700);
+  margin-bottom: 16px;
+}
+
+/* Standalone time filter styling */
+.standaloneTimeFilter {
+  margin: 16px 0;
+  padding: 0;
+}
 

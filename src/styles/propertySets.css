@@ -1,0 +1,72 @@
+/* Common styling properties for components */
+
+/* Button styles */
+@value buttonPrimary: {
+  font-family: "Montserrat", Helvetica, Arial, sans-serif;
+  font-weight: var(--fontWeightMedium);
+  font-size: 18px;
+  padding: 18px 0;
+  border-radius: 4px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Field styling */
+@value fieldCommon: {
+  margin-bottom: 24px;
+}
+
+@value formRow: {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+/* Calendar styling */
+@value datepickerCommon: {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* Label styling */
+@value labelFont: {
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* Filter styling */
+@value filterButton: {
+  display: inline-flex;
+  align-items: center;
+  height: auto;
+  padding: 8px 16px;
+  margin-right: 10px;
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  border-radius: 4px;
+  color: var(--colorGrey700);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.1s ease-in-out;
+}
+
+@value filterButtonSelected: {
+  border-color: var(--marketplaceColor);
+  color: var(--marketplaceColor);
+}
+
+/* Time picker specific styles */
+@value timePickerCommon: {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+@value timePickerField: {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--colorGrey300);
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 24px;
+}

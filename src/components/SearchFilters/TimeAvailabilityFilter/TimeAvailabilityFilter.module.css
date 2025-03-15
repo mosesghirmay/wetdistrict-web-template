@@ -1,0 +1,68 @@
+@import '../../../styles/propertySets.css';
+
+.root {
+  position: relative;
+}
+
+.filterLabel {
+  @apply --marketplaceButtonStylesSecondary;
+  @apply --marketplaceSearchFilterLabelFontStyles;
+
+  display: flex;
+  align-items: center;
+  padding: 6px 16px 6px 16px;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  border-radius: 4px;
+  margin: 3px 0;
+}
+
+.filterLabelSelected {
+  color: var(--colorBlack);
+  border-color: var(--colorBlack);
+  background-color: var(--colorWhite);
+}
+
+.clearButton {
+  @apply --marketplaceButtonStylesInline;
+  margin-left: 8px;
+  padding: 4px;
+}
+
+.content {
+  width: 100%;
+  background-color: var(--colorWhite);
+  margin-top: 9px;
+  border-radius: 4px;
+  box-shadow: var(--boxShadowFilterPopup);
+}
+
+.popupContent {
+  min-width: 400px;
+  position: absolute;
+  z-index: var(--zIndexPopup);
+  background-color: var(--colorWhite);
+  margin-top: 9px;
+  border-radius: 4px;
+  box-shadow: var(--boxShadowPopup);
+  left: 0;
+}
+
+@media (--viewportMedium) {
+  .filterLabel {
+    margin: 2px 0;
+  }
+}
+
+@media (--viewportLarge) {
+  /* Buttons are bigger in desktop layout */
+  .filterLabel {
+    padding: 9px 16px 9px 16px;
+  }
+
+  /* Containter grows but doesn't overflow */
+  .popupContent {
+    max-width: 100%;
+  }
+}

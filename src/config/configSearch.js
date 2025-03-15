@@ -93,3 +93,12 @@ export const sortConfig = {
     },
   ],
 };
+
+
+export default {
+  // ... existing config
+  custom: {
+    // ... other custom settings
+    enableTimeAvailabilityFilter: true,
+  },
+};

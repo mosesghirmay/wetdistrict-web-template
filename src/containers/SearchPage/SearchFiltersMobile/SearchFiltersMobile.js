@@ -21,6 +21,8 @@ import { stringifyDateToISO8601 } from '../../../util/dates';
 import moment from 'moment';
 
 import writtenLogo from '../../../assets/WrittenLogo.png';
+import { TimeAvailabilityFilter } from '../../../components/SearchFilters/TimeAvailabilityFilter';
+import config from '../../../config/configSearch';
 
 const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -65,6 +67,35 @@ const SearchFiltersMobile = ({
       setIsPickerOpen(false);
     }
   };
+
+  // Handler for time filter submissions
+  const handleTimeFilterSubmit = values => {
+    const extraParams = urlQueryParams ? { ...urlQueryParams, ...values } : { ...values };
+    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
+  };
+
+  // Time availability filter component
+  const timeAvailabilityFilter = config.custom?.enableTimeAvailabilityFilter ? (
+    <TimeAvailabilityFilter
+      id="MobileTimeAvailabilityFilter"
+      label="When"
+      queryParams={urlQueryParams}
+      timeZone="Etc/UTC"
+      showAsPopup={false} // Show inline in mobile view
+      onSubmit={handleTimeFilterSubmit}
+      onClear={() => {
+        const paramsWithoutTimeFilter = { ...urlQueryParams };
+        delete paramsWithoutTimeFilter.availability;
+        delete paramsWithoutTimeFilter.start;
+        delete paramsWithoutTimeFilter.end;
+        delete paramsWithoutTimeFilter.availabilityDate;
+        delete paramsWithoutTimeFilter.availabilityStartTime;
+        delete paramsWithoutTimeFilter.availabilityEndTime;
+        history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, paramsWithoutTimeFilter));
+      }}
+      intl={intl}
+    />
+  ) : null;
 
   const urlQueryParamsDates = urlQueryParams?.dates;
 
@@ -292,6 +323,33 @@ const SearchFiltersMobile = ({
                       theme="light"
                     />
                   </div>
+                  
+                  {/* Render TimeAvailabilityFilter directly under DatePicker */}
+                  {config.custom?.enableTimeAvailabilityFilter && dates?.startDate && (
+                    <div className={css.timePickerWrapper}>
+                      <h3 className={css.timePickerTitle}>
+                        {intl.formatMessage({ id: 'TimeAvailabilityFilter.label' })}
+                      </h3>
+                      <TimeAvailabilityFilter
+                        id="MobileTimePickerInline"
+                        queryParams={urlQueryParams}
+                        timeZone="Etc/UTC"
+                        showAsPopup={false}
+                        onSubmit={handleTimeFilterSubmit}
+                        onClear={() => {
+                          const paramsWithoutTimeFilter = { ...urlQueryParams };
+                          delete paramsWithoutTimeFilter.availability;
+                          delete paramsWithoutTimeFilter.start;
+                          delete paramsWithoutTimeFilter.end;
+                          delete paramsWithoutTimeFilter.availabilityDate;
+                          delete paramsWithoutTimeFilter.availabilityStartTime;
+                          delete paramsWithoutTimeFilter.availabilityEndTime;
+                          history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, paramsWithoutTimeFilter));
+                        }}
+                        intl={intl}
+                      />
+                    </div>
+                  )}
   
                   <div className={css.actionButtons}>
                     {dates?.startDate && (
@@ -316,6 +374,13 @@ const SearchFiltersMobile = ({
               </div>
             )}
   
+            {/* Time availability filter rendered directly in filters section */}
+            {config.custom?.enableTimeAvailabilityFilter && !isPickerOpen && (
+              <div className={css.standaloneTimeFilter}>
+                {timeAvailabilityFilter}
+              </div>
+            )}
+            
             {/* Children for additional filters */}
             {children}
           </div>

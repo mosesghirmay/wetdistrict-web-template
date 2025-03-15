@@ -35,16 +35,25 @@ const callLoadData = props => {
     typeof loadData === 'function' && canShowComponent(props) && !logoutInProgress;
 
   if (shouldLoadData) {
-    dispatch(loadData(match.params, location.search, config))
-      .then(() => {
-        if (props.logLoadDataCalls) {
-          // This gives good input for debugging issues on live environments, but with test it's not needed.
-          console.log(`loadData success for ${name} route`);
-        }
-      })
-      .catch(e => {
-        log.error(e, 'load-data-failed', { routeName: name });
-      });
+    // Store the result of the dispatch call which should return a Promise
+    const result = dispatch(loadData(match.params, location.search, config));
+    
+    // Check if the result is a Promise before calling .then()
+    if (result && typeof result.then === 'function') {
+      result
+        .then(() => {
+          if (props.logLoadDataCalls) {
+            // This gives good input for debugging issues on live environments, but with test it's not needed.
+            console.log(`loadData success for ${name} route`);
+          }
+        })
+        .catch(e => {
+          log.error(e, 'load-data-failed', { routeName: name });
+        });
+    } else {
+      // If the result is not a Promise, log a warning
+      console.warn(`Route ${name} loadData function did not return a Promise.`);
+    }
   }
 };
 

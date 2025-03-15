@@ -1,18 +1,20 @@
 import moment from 'moment-timezone/builds/moment-timezone-with-data-10-year-range.min';
 
+// Set fixed time slot duration to 3 hours (180 minutes)
 const timeSlotMinutes = 180;
 
 /**
  * Find the next boundary based on custom slot duration.
- * Uses `timeSlotMinutes` instead of defaulting to 1 hour.
+ * Uses timeSlotMinutes instead of defaulting to 1 hour.
  */
-export const findNextCustomBoundary = (currentMomentOrDate, timeZone) =>
-  moment(currentMomentOrDate)
+export const findNextCustomBoundary = (currentMomentOrDate, timeZone) => {
+  return moment(currentMomentOrDate)
     .clone()
     .tz(timeZone)
     .add(timeSlotMinutes, 'minutes')
     .startOf('minute')
-    .toDate();/**
+    .toDate();
+};/**
  * Input names for the DateRangePicker from DatePicker.
  */
 export const START_DATE = 'startDate';
@@ -695,52 +697,33 @@ export const findNextBoundary = (currentMomentOrDate, timeUnit, timeZone) =>
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
 /**
- * Generate available booking slots based on `timeSlotMinutes` (180 minutes).
+ * Generate available booking slots based on fixed times
  */
 export const getSharpHours = (startTime, endTime, timeZone, intl) => {
-  const startMoment = moment(startTime).tz(timeZone).startOf('day'); 
+  const startMoment = moment(startTime).tz(timeZone).startOf('day');
   const endMoment = moment(endTime).tz(timeZone);
-
+  
   // Define fixed start times: 10AM, 2PM, 6PM
   const allowedTimes = [10, 14, 18]; 
-
   let sharpHours = [];
-
+  
   allowedTimes.forEach(hour => {
     const slotMoment = startMoment.clone().hour(hour).minute(0);
-    console.log("🕒 Checking slot:", slotMoment.format('YYYY-MM-DD HH:mm'));
-
+    
     if (slotMoment.isBefore(endMoment)) {
       sharpHours.push({
         timestamp: slotMoment.valueOf(),
         timeOfDay: intl.formatTime(slotMoment.toDate(), {
-          hour: 'numeric', // Removes leading zeroes
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: true, // ✅ Forces AM/PM format
+          hour12: true,
         }),
       });
     }
   });
-
-  console.log("✅ Generated Sharp Hours:", sharpHours);
-  return sharpHours;
-
-
-
-
   
-
-const millisecondBeforeStartTime = new Date(startTime.getTime() - 1);
-  return findBookingUnitBoundaries({
-    currentBoundary: findNextCustomBoundary(millisecondBeforeStartTime, timeZone),
-    startMoment: moment(startTime),
-    endMoment: moment(endTime),
-    nextBoundaryFn: findNextCustomBoundary,
-    cumulatedResults: [],
-    intl,
-    timeZone,
-  });
-};
+  return sharpHours;
+}
 
 /**
  * Find sharp start hours for bookable time units (hour) inside given time window.
@@ -770,26 +753,20 @@ const millisecondBeforeStartTime = new Date(startTime.getTime() - 1);
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
 /**
- * Generate available start times based on `timeSlotMinutes` (3-hour slots).
+ * Generate available start times at fixed slots
  */
 export const getStartHours = (startTime, endTime, timeZone, intl) => {
-  // Define allowed fixed pickup times
-  const allowedTimes = ['10:00', '14:00', '18:00']; // 10 AM, 2 PM, 6 PM
-
+  // Fixed allowed start times
+  const allowedHours = [10, 14, 18]; // 10 AM, 2 PM, 6 PM
+  
   // Get all available time slots
   const hours = getSharpHours(startTime, endTime, timeZone, intl);
-
-  // Ensure times are correctly formatted before filtering
-  const formattedHours = hours.map(time =>
-    intl.formatTime(time.timestamp, { hour: '2-digit', minute: '2-digit', hour12: false })
-  );
-
+  
   // Filter to only allowed start times
-  const filteredHours = hours.filter((time, index) => allowedTimes.includes(formattedHours[index]));
-
-  console.log("✅ Available start hours:", filteredHours); // Debugging
-
-  return filteredHours;
+  return hours.filter(time => {
+    const hour = moment(time.timestamp).tz(timeZone).hour();
+    return allowedHours.includes(hour);
+  });
 };
 
 
@@ -821,21 +798,27 @@ export const getStartHours = (startTime, endTime, timeZone, intl) => {
  * @returns {Array} an array of objects with keys timestamp and timeOfDay.
  */
 /**
- * Generate available end times based on `timeSlotMinutes` (3-hour slots).
+ * Generate end time based on start time (fixed 3-hour duration)
  */
 export const getEndHours = (startTime, endTime, timeZone, intl) => {
   if (!startTime) return []; // Ensure a start time is selected
-
-  const endMoment = moment(startTime).tz(timeZone).add(3, 'hours'); // Exactly 3 hours later
-
+  
+  // The end time is always exactly 3 hours after the start time
+  const endMoment = moment(startTime).tz(timeZone).add(3, 'hours');
+  
+  // Prevent selecting times beyond available hours
   if (endMoment.isAfter(moment(endTime).tz(timeZone))) {
-    return []; // Prevent selecting times beyond available hours
+    return [];
   }
-
+  
   return [
     {
       timestamp: endMoment.valueOf(),
-      timeOfDay: intl.formatTime(endMoment.toDate(), { hour: 'numeric', minute: '2-digit', hour12: true })
+      timeOfDay: intl.formatTime(endMoment.toDate(), {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      })
     }
   ];
 };

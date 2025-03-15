@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { createImageVariantConfig } from '../../util/sdkLoader';
 import { isErrorUserPendingApproval, isForbiddenError, storableError } from '../../util/errors';
 import { convertUnitToSubUnit, unitDivisor } from '../../util/currency';
@@ -14,11 +15,16 @@ import { hasPermissionToViewData, isUserAuthorized } from '../../util/userHelper
 import { parse } from '../../util/urlHelpers';
 
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
+import { getTimeAvailabilityFilterParams } from '../../util/timeAvailabilitySearch';
 
 // Pagination page size might need to be dynamic on responsive page layouts
 // Current design has max 3 columns 12 is divisible by 2 and 3
 // So, there's enough cards to fill all columns on full pagination pages
 const RESULT_PAGE_SIZE = 24;
+
+// Cache for storing search results
+const searchCache = new Map();
+const CACHE_TTL = 60000; // 1 minute cache lifetime
 
 // ================ Action types ================ //
 
@@ -101,6 +107,68 @@ export const searchListingsError = e => ({
   error: true,
   payload: e,
 });
+
+// Implement fetchWithRetry for handling 429 errors with exponential backoff
+const fetchWithRetry = async (sdk, params, maxRetries = 3, initialDelay = 1000) => {
+  let retries = 0;
+  
+  while (retries < maxRetries) {
+    try {
+      return await sdk.listings.query(params);
+    } catch (error) {
+      if (error.status === 429 && retries < maxRetries - 1) {
+        // If rate limited, wait with exponential backoff
+        const delay = initialDelay * Math.pow(2, retries);
+        console.log(`Rate limited. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        retries++;
+      } else {
+        throw error;
+      }
+    }
+  }
+};
+
+// Implement debounced search to avoid excessive API calls
+const debouncedSearch = debounce((dispatch, sdk, params, config) => {
+  const cacheKey = JSON.stringify(params);
+  const now = Date.now();
+  const cachedItem = searchCache.get(cacheKey);
+  
+  // Use cached results if available and not expired
+  if (cachedItem && now - cachedItem.timestamp < CACHE_TTL) {
+    dispatch(addMarketplaceEntities(cachedItem.response, {
+      listingFields: config?.listing?.listingFields
+    }));
+    dispatch(searchListingsSuccess(cachedItem.response));
+    return Promise.resolve(cachedItem.response);
+  }
+
+  return fetchWithRetry(sdk, params)
+    .then(response => {
+      // Cache the response
+      searchCache.set(cacheKey, {
+        response,
+        timestamp: now
+      });
+      
+      dispatch(addMarketplaceEntities(response, {
+        listingFields: config?.listing?.listingFields
+      }));
+      dispatch(searchListingsSuccess(response));
+      return response;
+    })
+    .catch(e => {
+      const error = storableError(e);
+      dispatch(searchListingsError(error));
+      if (!(isErrorUserPendingApproval(error) || isForbiddenError(error))) {
+        // Return a rejected promise instead of throwing
+        return Promise.reject(error);
+      }
+      // Return a resolved promise for handled errors
+      return Promise.resolve();
+    });
+}, 500); // 500ms debounce
 
 export const searchListings = (searchParams, config) => (dispatch, getState, sdk) => {
   dispatch(searchListingsRequest(searchParams));
@@ -248,6 +316,9 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   const stockMaybe = stockFilters(datesMaybe);
   const seatsMaybe = seatsSearchParams(seats, datesMaybe);
   const sortMaybe = sort === config.search.sortConfig.relevanceKey ? {} : { sort };
+  
+  // Get time availability filter params
+  const timeAvailabilityParams = getTimeAvailabilityFilterParams(restOfParams);
 
   const params = {
     // The rest of the params except invalid nested category-related params
@@ -259,26 +330,13 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     ...seatsMaybe,
     ...sortMaybe,
     ...searchValidListingTypes(config.listing.listingTypes),
+    // Add time availability filter params
+    ...timeAvailabilityParams,
     perPage,
   };
 
-  return sdk.listings
-    .query(params)
-    .then(response => {
-      const listingFields = config?.listing?.listingFields;
-      const sanitizeConfig = { listingFields };
-
-      dispatch(addMarketplaceEntities(response, sanitizeConfig));
-      dispatch(searchListingsSuccess(response));
-      return response;
-    })
-    .catch(e => {
-      const error = storableError(e);
-      dispatch(searchListingsError(error));
-      if (!(isErrorUserPendingApproval(error) || isForbiddenError(error))) {
-        throw e;
-      }
-    });
+  // Use the debounced search to prevent excessive API calls
+  return debouncedSearch(dispatch, sdk, params, config);
 };
 
 export const setActiveListing = listingId => ({
