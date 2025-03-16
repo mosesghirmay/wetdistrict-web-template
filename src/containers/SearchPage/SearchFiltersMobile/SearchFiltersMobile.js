@@ -286,7 +286,7 @@ const SearchFiltersMobile = ({
             <img src={writtenLogo} alt="Written Logo" className={css.logoImage} />
           </div>
         </div>
-  
+
         {isFiltersOpenOnMobile ? (
           <div className={css.filtersWrapper}>
             {/* Enhanced Date Picker Modal */}
@@ -374,15 +374,30 @@ const SearchFiltersMobile = ({
               </div>
             )}
   
-            {/* Time availability filter rendered directly in filters section */}
-            {config.custom?.enableTimeAvailabilityFilter && !isPickerOpen && (
-              <div className={css.standaloneTimeFilter}>
-                {timeAvailabilityFilter}
-              </div>
-            )}
-            
-            {/* Children for additional filters */}
-            {children}
+            {/* This extracts the children and renders them in the desired order */}
+            {React.Children.map(children, (child, index) => {
+              // Check if this is the date filter (first filter)
+              const isDateFilter = index === 0;
+              
+              if (isDateFilter) {
+                // Render date filter first
+                return (
+                  <>
+                    {child}
+                    
+                    {/* Render time filter immediately after date filter */}
+                    {config.custom?.enableTimeAvailabilityFilter && !isPickerOpen && (
+                      <div className={css.standaloneTimeFilter}>
+                        {timeAvailabilityFilter}
+                      </div>
+                    )}
+                  </>
+                );
+              }
+              
+              // Render all other children normally
+              return child;
+            })}
           </div>
         ) : null}
   

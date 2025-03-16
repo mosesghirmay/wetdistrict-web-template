@@ -402,21 +402,71 @@ export class SearchPageComponent extends Component {
   routeConfiguration={this.props.routeConfiguration} // ✅ ADD THIS
   history={this.props.history} // ✅ ADD THIS
 >
-  {availableFilters.map(config => (
-    <FilterComponent
-      key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
-      idPrefix="SearchFiltersMobile"
-      config={config}
-      marketplaceCurrency={marketplaceCurrency}
-      urlQueryParams={validQueryParams}
-      initialValues={initialValues(this.props, this.state.currentQueryParams)}
-      getHandleChangedValueFn={this.getHandleChangedValueFn}
-      intl={intl}
-      liveEdit
-      showAsPopup={false}
-      isSearchFiltersMobile={true}
-    />
-  ))}
+  {/* 1. Date filter */}
+  {availableFilters
+    .filter(config => config.key === 'dates')
+    .map(config => (
+      <FilterComponent
+        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+        idPrefix="SearchFiltersMobile"
+        id="datesFilter"
+        config={config}
+        marketplaceCurrency={marketplaceCurrency}
+        urlQueryParams={validQueryParams}
+        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+        getHandleChangedValueFn={this.getHandleChangedValueFn}
+        intl={intl}
+        liveEdit
+        showAsPopup={false}
+        isSearchFiltersMobile={true}
+        plainClassName="datesFilterHeader"
+      />
+    ))}
+  
+  {/* 2. Time filter is rendered by SearchFiltersMobile directly */}
+  
+  {/* 3. Guests filter */}
+  {availableFilters
+    .filter(config => config.key === 'seats')
+    .map(config => (
+      <FilterComponent
+        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+        idPrefix="SearchFiltersMobile"
+        id="maxguestFilter"
+        config={config}
+        marketplaceCurrency={marketplaceCurrency}
+        urlQueryParams={validQueryParams}
+        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+        getHandleChangedValueFn={this.getHandleChangedValueFn}
+        intl={intl}
+        liveEdit
+        showAsPopup={false}
+        isSearchFiltersMobile={true}
+        plainClassName="guestsFilterHeader"
+      />
+    ))}
+    
+  {/* All other filters except date and seats */}
+  {availableFilters
+    .filter(config => 
+      config.key !== 'dates' && 
+      config.key !== 'seats'
+    )
+    .map(config => (
+      <FilterComponent
+        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+        idPrefix="SearchFiltersMobile"
+        config={config}
+        marketplaceCurrency={marketplaceCurrency}
+        urlQueryParams={validQueryParams}
+        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+        getHandleChangedValueFn={this.getHandleChangedValueFn}
+        intl={intl}
+        liveEdit
+        showAsPopup={false}
+        isSearchFiltersMobile={true}
+      />
+    ))}
 </SearchFiltersMobile>
 
               </div>

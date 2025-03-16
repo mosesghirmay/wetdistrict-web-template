@@ -1,67 +1,124 @@
 @import '../../../styles/propertySets.css';
 
+/* Styled to match DatePicker component */
 .root {
   position: relative;
+  margin-bottom: 20px;
+}
+
+/* Match the styling of the date filter in mobile search filters */
+:global(.standaloneTimeFilter) .root {
+  margin-bottom: 0;
+  border: none;
 }
 
 .filterLabel {
-  @apply --marketplaceButtonStylesSecondary;
-  @apply --marketplaceSearchFilterLabelFontStyles;
-
   display: flex;
   align-items: center;
   padding: 6px 16px 6px 16px;
   width: auto;
   height: auto;
   min-height: 0;
-  border-radius: 4px;
-  margin: 3px 0;
+  border-radius: 6px;
+  margin: 8px 0;
+  border: 1px solid var(--colorGrey300);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--colorWhite);
+  font-size: 14px;
+  color: var(--colorGrey800);
+}
+
+.filterLabel:hover {
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .filterLabelSelected {
-  color: var(--colorBlack);
-  border-color: var(--colorBlack);
+  color: var(--marketplaceColor);
+  border-color: var(--marketplaceColor);
   background-color: var(--colorWhite);
+  font-weight: 500;
 }
 
 .clearButton {
-  @apply --marketplaceButtonStylesInline;
   margin-left: 8px;
   padding: 4px;
+  background: none;
+  border: none;
+  color: var(--colorGrey700);
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  color: var(--marketplaceColor);
 }
 
 .content {
   width: 100%;
   background-color: var(--colorWhite);
-  margin-top: 9px;
-  border-radius: 4px;
-  box-shadow: var(--boxShadowFilterPopup);
+  margin-top: 0;
+  border-radius: 6px;
+  box-shadow: none;
+  padding: 0;
 }
 
 .popupContent {
-  min-width: 400px;
+  min-width: 300px;
   position: absolute;
   z-index: var(--zIndexPopup);
   background-color: var(--colorWhite);
   margin-top: 9px;
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: var(--boxShadowPopup);
   left: 0;
+  border: 1px solid var(--colorGrey300);
 }
 
-@media (--viewportMedium) {
+/* Style for display in SearchFiltersMobile */
+:global(.standaloneTimeFilter) {
+  margin: 0 0 20px 0;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--colorGrey300);
+  background-color: var(--colorWhite);
+}
+
+:global(.standaloneTimeFilter):hover {
+  border-color: var(--marketplaceColor);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.standaloneTimeFilter) .filterLabel {
+  border: none;
+  margin: 0;
+  padding: 14px 14px 0;
+  width: 100%;
+  display: block;
+  border-radius: 0;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .root {
+    margin: 8px 0;
+  }
+  
+  .filterLabel {
+    margin: 0;
+  }
+  
+  :global(.standaloneTimeFilter) {
+    margin-bottom: 16px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
   .filterLabel {
     margin: 2px 0;
-  }
-}
-
-@media (--viewportLarge) {
-  /* Buttons are bigger in desktop layout */
-  .filterLabel {
-    padding: 9px 16px 9px 16px;
+    padding: 9px 16px;
   }
 
-  /* Containter grows but doesn't overflow */
   .popupContent {
     max-width: 100%;
   }

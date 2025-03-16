@@ -414,8 +414,76 @@ export class SearchPageComponent extends Component {
               noResultsInfo={noResultsInfo}
               isMapVariant
             >
-              {availableFilters.map(config => {
-                return (
+              {/* Filter order: date, time, guests */}
+              {/* 1. Date filter */}
+              {availableFilters
+                .filter(config => config.key === 'dates')
+                .map(config => (
+                  <FilterComponent
+                    key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                    idPrefix="SearchFiltersMobile"
+                    id="datesFilter"
+                    config={config}
+                    marketplaceCurrency={marketplaceCurrency}
+                    urlQueryParams={validQueryParams}
+                    initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                    getHandleChangedValueFn={this.getHandleChangedValueFn}
+                    intl={intl}
+                    liveEdit
+                    showAsPopup={false}
+                    plainClassName="datesFilterHeader"
+                  />
+                ))}
+              
+              {/* 2. Time filter */}
+              {availableFilters
+                .filter(config => config.key === 'pub_StartTime' || config.key === 'StartTime')
+                .map(config => (
+                  <FilterComponent
+                    key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                    idPrefix="SearchFiltersMobile"
+                    id="timeFilter"
+                    config={config}
+                    marketplaceCurrency={marketplaceCurrency}
+                    urlQueryParams={validQueryParams}
+                    initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                    getHandleChangedValueFn={this.getHandleChangedValueFn}
+                    intl={intl}
+                    liveEdit
+                    showAsPopup={false}
+                    plainClassName="timeFilterHeader"
+                  />
+                ))}
+              
+              {/* 3. Guests filter */}
+              {availableFilters
+                .filter(config => config.key === 'seats')
+                .map(config => (
+                  <FilterComponent
+                    key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                    idPrefix="SearchFiltersMobile"
+                    id="maxguestFilter"
+                    config={config}
+                    marketplaceCurrency={marketplaceCurrency}
+                    urlQueryParams={validQueryParams}
+                    initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                    getHandleChangedValueFn={this.getHandleChangedValueFn}
+                    intl={intl}
+                    liveEdit
+                    showAsPopup={false}
+                    plainClassName="guestsFilterHeader"
+                  />
+                ))}
+                
+              {/* All other filters */}
+              {availableFilters
+                .filter(config => 
+                  config.key !== 'dates' && 
+                  config.key !== 'pub_StartTime' && 
+                  config.key !== 'StartTime' && 
+                  config.key !== 'seats'
+                )
+                .map(config => (
                   <FilterComponent
                     key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
                     idPrefix="SearchFiltersMobile"
@@ -428,8 +496,7 @@ export class SearchPageComponent extends Component {
                     liveEdit
                     showAsPopup={false}
                   />
-                );
-              })}
+                ))}
             </SearchFiltersMobile>
             <MainPanelHeader
               className={css.mainPanelMapVariant}

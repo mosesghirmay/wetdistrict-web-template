@@ -151,16 +151,17 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   margin-top: 8px;
   
   /* Add border around the entire filter header */
-  border: 1px solid var(--colorGrey300);
-  border-radius: 6px;
+  border: 1px solid var(--colorGrey200);
+  border-radius: 10px;
   padding: 14px 14px 10px;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 :global(.datesFilterHeader):hover {
-  border-color: var(--marketplaceColor);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  border-color: var(--colorGrey300);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 /* Make date filter clickable */
@@ -278,8 +279,8 @@ button.SearchFiltersMobile_backButton__Gi3wr,
 
 /* When date is selected, change the border color */
 :global(.datesFilterHeader.isSelected) {
-  border-color: var(--marketplaceColor);
-  box-shadow: 0 0 0 1px var(--marketplaceColor);
+  border: 1px solid var(--colorGrey300);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 /* Hide the expand/collapse indicator */
@@ -594,9 +595,8 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   margin-bottom: 16px;
 }
 
-/* Standalone time filter styling */
+/* Simple standalone time filter styling - all margins handled by component */
 .standaloneTimeFilter {
-  margin: 16px 0;
-  padding: 0;
+  /* No additional styling needed as TimeFilterForm now has its own margins */
 }
 

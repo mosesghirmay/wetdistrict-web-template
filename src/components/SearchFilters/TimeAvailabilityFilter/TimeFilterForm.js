@@ -25,6 +25,11 @@ const generateFixedTimeOptions = (intl) => {
   });
 };
 
+// Find the 2 PM option index for default selection
+const find2PMOptionIndex = (options) => {
+  return options.findIndex(option => option.value === '14:00');
+};
+
 // Calculate end time based on start time (3 hour fixed duration)
 const calculateEndTime = (startTimeStr) => {
   if (!startTimeStr) return null;
@@ -63,6 +68,18 @@ const TimeFilterFormComponent = props => {
   // Generate fixed time options - memoized to prevent unnecessary recalculation
   const timeOptions = useMemo(() => generateFixedTimeOptions(intl), [intl]);
   
+  // Set default to 2PM when component initializes
+  useEffect(() => {
+    if (!startTime) {
+      const defaultTimeIndex = find2PMOptionIndex(timeOptions);
+      const defaultTime = defaultTimeIndex !== -1 ? timeOptions[defaultTimeIndex].value : timeOptions[0]?.value;
+      
+      if (defaultTime) {
+        setStartTime(defaultTime);
+      }
+    }
+  }, [timeOptions]);
+  
   // Automatically calculate end time when start time changes (3-hour fixed duration)
   useEffect(() => {
     if (startTime) {
@@ -82,36 +99,58 @@ const TimeFilterFormComponent = props => {
     }
   }, [startTime, onSubmit, lastSubmittedTime]);
 
-  const classes = classNames(rootClassName || css.root, className);
+  const isTimeSelected = !!startTime;
+
+  const classes = classNames(
+    rootClassName || css.root, 
+    className,
+    { [css.selected]: isTimeSelected }
+  );
+  
   const formClasses = classNames(
     css.form,
     { [css.disabledForm]: isLoading }
   );
 
-  // Get the end time display option
-  const endTimeOption = endTime ? findTimeOption(timeOptions, endTime) : null;
-  
-  // If endTime doesn't match our fixed options (e.g. "13:00"), create a custom display option
-  const customEndTimeOption = endTime && !endTimeOption ? {
-    key: endTime,
-    label: intl.formatTime(new Date().setHours(
-      parseInt(endTime.split(':')[0], 10),
-      parseInt(endTime.split(':')[1] || '0', 10),
-      0
-    ), {
+  // Format end time to show 5 PM if start time is 2 PM, or placeholder if no time selected
+  const formatEndTime = () => {
+    if (!endTime) {
+      // Format default end time (5:00 PM) if nothing is selected
+      const defaultDate = new Date();
+      defaultDate.setHours(17, 0, 0); // 5:00 PM
+      
+      return intl.formatTime(defaultDate, {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    }
+    
+    const hour = parseInt(endTime.split(':')[0], 10);
+    const minute = parseInt(endTime.split(':')[1] || '0', 10);
+    
+    // Create date object for formatting
+    const date = new Date();
+    date.setHours(hour, minute, 0);
+    
+    return intl.formatTime(date, {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }),
-    value: endTime
-  } : null;
+    });
+  };
+  
+  const formattedEndTime = formatEndTime();
   
   return (
     <div className={classes}>
       <div className={formClasses}>
+        {/* Add a "Time:" label at the top to match DatePicker styling */}
+       
+        
         <div className={css.formRow}>
           <div className={css.field}>
-            <label htmlFor="availability-start-time" className={css.fieldLabel}>
+            <label className={css.innerLabel}>
               {intl.formatMessage({ id: 'TimeFilterForm.startTimeLabel' })}
             </label>
             <select
@@ -119,12 +158,9 @@ const TimeFilterFormComponent = props => {
               name="availabilityStartTime"
               id="availability-start-time"
               onChange={e => setStartTime(e.target.value)}
-              value={startTime || ''}
+              value={startTime || timeOptions[0]?.value || ''}
               disabled={isLoading}
             >
-              <option value="">
-                {intl.formatMessage({ id: 'TimeFilterForm.startTimePlaceholder' })}
-              </option>
               {timeOptions.map(option => (
                 <option key={option.key} value={option.value}>
                   {option.label}
@@ -134,20 +170,16 @@ const TimeFilterFormComponent = props => {
           </div>
         
           <div className={css.toSeparator}>
-            <FormattedMessage id="TimeFilterForm.toLabel" />
+            -
           </div>
           
           {/* Read-only end time field (automatically calculated) */}
           <div className={css.fieldReadOnly}>
-            <label className={css.fieldLabel}>
+            <label className={css.innerLabel}>
               {intl.formatMessage({ id: 'TimeFilterForm.endTimeLabel' })}
             </label>
             <div className={css.endTimeDisplay}>
-              {customEndTimeOption 
-                ? customEndTimeOption.label 
-                : endTimeOption 
-                  ? endTimeOption.label 
-                  : intl.formatMessage({ id: 'TimeFilterForm.fixedDurationLabel' })}
+              {formattedEndTime}
             </div>
             <input 
               type="hidden" 
@@ -157,9 +189,11 @@ const TimeFilterFormComponent = props => {
           </div>
         </div>
         
-        <div className={css.durationNote}>
-          <FormattedMessage id="TimeFilterForm.fixedDurationNote" />
-        </div>
+        {startTime && (
+          <div className={css.durationNote}>
+            <FormattedMessage id="TimeFilterForm.fixedDurationNote" />
+          </div>
+        )}
       </div>
     </div>
   );
