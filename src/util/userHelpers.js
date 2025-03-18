@@ -148,7 +148,35 @@ export const hasPermissionToPostListings = currentUser => {
       '"effectivePermissionSet" relationship is not defined or included to the fetched currentUser entity.'
     );
   }
-  return currentUser?.effectivePermissionSet?.attributes?.postListings === 'permission/allow';
+  
+  const hasPermission = currentUser?.effectivePermissionSet?.attributes?.postListings === 'permission/allow';
+  
+  // Log permission status to help with debugging
+  if (!hasPermission && process.env.NODE_ENV === 'development') {
+    console.warn('User does not have permission to post listings:');
+    console.warn('- User ID:', currentUser?.id?.uuid);
+    console.warn('- Current postListings status:', currentUser?.effectivePermissionSet?.attributes?.postListings);
+    console.warn('- EffectivePermissionSet included:', !!currentUser?.effectivePermissionSet?.id);
+    
+    // If the effectivePermissionSet is missing, log how to fix it
+    if (!currentUser?.effectivePermissionSet?.id) {
+      console.warn('SOLUTION: Make sure to include "effectivePermissionSet" when fetching the current user:');
+      console.warn(`
+        sdk.currentUser.show({
+          include: ['effectivePermissionSet', ...otherIncludes]
+        })
+      `);
+    }
+    
+    // If the permission is not "permission/allow", log how to fix it
+    if (currentUser?.effectivePermissionSet?.id && 
+        currentUser?.effectivePermissionSet?.attributes?.postListings !== 'permission/allow') {
+      console.warn('SOLUTION: Update the user\'s postListings permission to "permission/allow" in the Sharetribe Console:');
+      console.warn('https://console.sharetribe.com/ > Users > [your user] > Permissions');
+    }
+  }
+  
+  return hasPermission;
 };
 
 /**

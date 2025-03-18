@@ -34,3 +34,37 @@
 .wizard {
   flex-grow: 1;
 }
+
+/* Permission error styles */
+.permissionErrorContainer {
+  padding: 24px;
+  border-radius: 8px;
+  background-color: #fff4f4;
+  border: 1px solid #ffcdd2;
+  margin: 48px auto;
+  max-width: 800px;
+}
+
+.permissionErrorContainer h1 {
+  color: #d32f2f;
+  margin-top: 0;
+  font-size: 24px;
+}
+
+.permissionErrorContainer p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.permissionErrorContainer div {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+}
+
+.permissionErrorContainer div p:last-child {
+  margin-top: 16px;
+  font-style: italic;
+}

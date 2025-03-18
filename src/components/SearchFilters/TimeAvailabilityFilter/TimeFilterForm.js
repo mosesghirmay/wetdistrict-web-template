@@ -64,6 +64,7 @@ const TimeFilterFormComponent = props => {
   const [startTime, setStartTime] = useState(initialValues.availabilityStartTime || null);
   const [endTime, setEndTime] = useState(initialValues.availabilityEndTime || null);
   const [lastSubmittedTime, setLastSubmittedTime] = useState(null);
+  const [userSelected, setUserSelected] = useState(false);
 
   // Generate fixed time options - memoized to prevent unnecessary recalculation
   const timeOptions = useMemo(() => generateFixedTimeOptions(intl), [intl]);
@@ -89,17 +90,21 @@ const TimeFilterFormComponent = props => {
       // Prevent duplicate submissions of the same time
       if (calculatedEndTime && startTime !== lastSubmittedTime) {
         setLastSubmittedTime(startTime);
-        onSubmit({
-          availabilityStartTime: startTime,
-          availabilityEndTime: calculatedEndTime
-        });
+        
+        // Only submit if user has made an explicit selection
+        if (userSelected) {
+          onSubmit({
+            availabilityStartTime: startTime,
+            availabilityEndTime: calculatedEndTime
+          });
+        }
       }
     } else {
       setEndTime(null);
     }
-  }, [startTime, onSubmit, lastSubmittedTime]);
+  }, [startTime, onSubmit, lastSubmittedTime, userSelected]);
 
-  const isTimeSelected = !!startTime;
+  const isTimeSelected = userSelected;
 
   const classes = classNames(
     rootClassName || css.root, 
@@ -157,7 +162,10 @@ const TimeFilterFormComponent = props => {
               className={css.selectField}
               name="availabilityStartTime"
               id="availability-start-time"
-              onChange={e => setStartTime(e.target.value)}
+              onChange={e => {
+                setStartTime(e.target.value);
+                setUserSelected(true);
+              }}
               value={startTime || timeOptions[0]?.value || ''}
               disabled={isLoading}
             >

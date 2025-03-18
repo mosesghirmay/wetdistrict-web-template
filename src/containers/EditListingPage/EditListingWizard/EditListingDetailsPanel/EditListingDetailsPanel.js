@@ -248,45 +248,18 @@ const EditListingDetailsPanel = props => {
   const isPublished = listing?.id && state !== LISTING_STATE_DRAFT;
 
   const defaultAvailabilityPlan = {
+    type: 'availability-plan/time',
+    timezone: defaultTimeZone(),
     entries: [
-      {
-        dayOfWeek: 'mon',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'tue',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'wed',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'thu',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'fri',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'sat',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
-      {
-        dayOfWeek: 'sun',
-        startTime: '10:00',
-        endTime: '22:00',
-      },
+      { dayOfWeek: 'mon', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'tue', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'wed', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'thu', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'fri', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'sat', startTime: '10:00', endTime: '21:00', seats: 1 },
+      { dayOfWeek: 'sun', startTime: '10:00', endTime: '21:00', seats: 1 },
     ],
   };
-  
 
   const availabilityPlan = listingAttributes?.availabilityPlan || defaultAvailabilityPlan;
 

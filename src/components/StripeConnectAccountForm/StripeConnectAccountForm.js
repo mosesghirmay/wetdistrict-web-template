@@ -143,7 +143,7 @@ const UpdateStripeAccountFields = props => {
     <div className={css.savedInformation}>
       <label className={css.accountInformationTitle}>{accountTypeLabel}</label>
       <div className={css.savedCountry}>
-        <FormattedMessage id={`StripeConnectAccountForm.accountTypes.${savedAccountType}`} />
+        <FormattedMessage id={`StripeConnectAccountForm.accountTypes.${savedAccountType || 'individual'}`} />
       </div>
       <label className={css.accountInformationTitle}>{countryLabel}</label>
       <div className={css.savedCountry}>

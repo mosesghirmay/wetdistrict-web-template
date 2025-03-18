@@ -355,6 +355,12 @@ export const fetchCurrentUser = options => (dispatch, getState, sdk) => {
     return Promise.resolve({});
   }
 
+  // Use SDK debug method if available
+  if (typeof sdk.debugAuth === 'function') {
+    sdk.debugAuth();
+  }
+
+  // Always include effectivePermissionSet to properly check permissions
   const parameters = callParams || {
     include: ['effectivePermissionSet', 'profileImage', 'stripeAccount'],
     'fields.image': [
@@ -374,6 +380,9 @@ export const fetchCurrentUser = options => (dispatch, getState, sdk) => {
       fit: 'crop',
     }),
   };
+  
+  // Log that we're requesting the current user with effectivePermissionSet
+  console.log('Fetching current user with effectivePermissionSet');
 
   return sdk.currentUser
     .show(parameters)
@@ -417,6 +426,27 @@ export const fetchCurrentUser = options => (dispatch, getState, sdk) => {
     .catch(e => {
       // Make sure auth info is up to date
       dispatch(authInfo());
+      
+      // Enhanced error logging for authentication issues
+      if (e.status === 401) {
+        console.error('Authentication error (401) when fetching current user:');
+        console.error('- URL: https://flex-api.sharetribe.com/v1/api/current_user/show');
+        console.error('- Request params:', parameters);
+        
+        // Try to log token information
+        if (typeof sdk.debugAuth === 'function') {
+          console.error('- Token information:');
+          sdk.debugAuth();
+        }
+        
+        // Log additional information
+        console.error('- Is authenticated according to app state:', isAuthenticated);
+        console.error('- After login:', afterLogin);
+        
+        // Recommend action
+        console.error('ACTION NEEDED: The session token may be invalid or expired. Try logging out and logging back in.');
+      }
+      
       log.error(e, 'fetch-current-user-failed');
       dispatch(currentUserShowError(storableError(e)));
     });

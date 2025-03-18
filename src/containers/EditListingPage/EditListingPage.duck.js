@@ -14,7 +14,6 @@ import { uniqueBy } from '../../util/generators';
 import { storableError } from '../../util/errors';
 import * as log from '../../util/log';
 import { parse } from '../../util/urlHelpers';
-import { isUserAuthorized } from '../../util/userHelpers';
 import { isBookingProcessAlias } from '../../transactions/transaction';
 
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
@@ -124,7 +123,6 @@ const errorAction = actionType => payload => ({ type: actionType, payload, error
 
 export const MARK_TAB_UPDATED = 'app/EditListingPage/MARK_TAB_UPDATED';
 export const CLEAR_UPDATED_TAB = 'app/EditListingPage/CLEAR_UPDATED_TAB';
-export const CLEAR_PUBLISH_ERROR = 'app/EditListingPage/CLEAR_PUBLISH_ERROR';
 
 export const CREATE_LISTING_DRAFT_REQUEST = 'app/EditListingPage/CREATE_LISTING_DRAFT_REQUEST';
 export const CREATE_LISTING_DRAFT_SUCCESS = 'app/EditListingPage/CREATE_LISTING_DRAFT_SUCCESS';
@@ -219,8 +217,6 @@ export default function reducer(state = initialState, action = {}) {
       return { ...state, updatedTab: payload };
     case CLEAR_UPDATED_TAB:
       return { ...state, updatedTab: null, updateListingError: null };
-    case CLEAR_PUBLISH_ERROR:
-      return { ...state, publishListingError: null };
 
     case CREATE_LISTING_DRAFT_REQUEST:
       return {
@@ -477,10 +473,6 @@ export const clearUpdatedTab = () => ({
 export const removeListingImage = imageId => ({
   type: REMOVE_LISTING_IMAGE,
   payload: { imageId },
-});
-
-export const clearPublishError = () => ({
-  type: CLEAR_PUBLISH_ERROR,
 });
 
 // All the action creators that don't have the {Success, Error} suffix
@@ -915,15 +907,11 @@ export const savePayoutDetails = (values, isUpdateCall) => (dispatch, getState, 
 // existing listing, the listing must be fetched first.
 export const loadData = (params, search, config) => (dispatch, getState, sdk) => {
   dispatch(clearUpdatedTab());
-  dispatch(clearPublishError());
   const { id, type } = params;
-  const fetchCurrentUserOptions = {
-    updateNotifications: false,
-  };
 
   if (type === 'new') {
     // No need to listing data when creating a new listing
-    return Promise.all([dispatch(fetchCurrentUser(fetchCurrentUserOptions))])
+    return Promise.all([dispatch(fetchCurrentUser())])
       .then(response => {
         const currentUser = getState().user.currentUser;
         if (currentUser && currentUser.stripeAccount) {
@@ -937,27 +925,20 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
   }
 
   const payload = { id: new UUID(id) };
-  return Promise.all([
-    dispatch(requestShowListing(payload, config)),
-    dispatch(fetchCurrentUser(fetchCurrentUserOptions)),
-  ])
+  return Promise.all([dispatch(requestShowListing(payload, config)), dispatch(fetchCurrentUser())])
     .then(response => {
       const currentUser = getState().user.currentUser;
+      if (currentUser && currentUser.stripeAccount) {
+        dispatch(fetchStripeAccount());
+      }
 
-      // Do not fetch extra information if user is in pending-approval state.
-      if (isUserAuthorized(currentUser)) {
-        if (currentUser && currentUser.stripeAccount) {
-          dispatch(fetchStripeAccount());
-        }
-
-        // Because of two dispatch functions, response is an array.
-        // We are only interested in the response from requestShowListing here,
-        // so we need to pick the first one
-        const listing = response[0]?.data?.data;
-        const transactionProcessAlias = listing?.attributes?.publicData?.transactionProcessAlias;
-        if (listing && isBookingProcessAlias(transactionProcessAlias)) {
-          fetchLoadDataExceptions(dispatch, listing, search, config.localization.firstDayOfWeek);
-        }
+      // Because of two dispatch functions, response is an array.
+      // We are only interested in the response from requestShowListing here,
+      // so we need to pick the first one
+      const listing = response[0]?.data?.data;
+      const transactionProcessAlias = listing?.attributes?.publicData?.transactionProcessAlias;
+      if (listing && isBookingProcessAlias(transactionProcessAlias)) {
+        fetchLoadDataExceptions(dispatch, listing, search, config.localization.firstDayOfWeek);
       }
 
       return response;

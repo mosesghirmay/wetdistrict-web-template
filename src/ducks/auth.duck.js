@@ -157,15 +157,70 @@ export const authInfo = () => (dispatch, getState, sdk) => {
   dispatch(authInfoRequest());
   return sdk
     .authInfo()
-    .then(info => dispatch(authInfoSuccess(info)))
+    .then(info => {
+      // When debugging auth issues, log auth info details if available
+      if (process.env.NODE_ENV === 'development') {
+        if (info) {
+          console.log('Auth info received:', {
+            isAnonymous: info.isAnonymous,
+            isLoggedInAs: info.isLoggedInAs,
+            scopes: info.scopes,
+          });
+        } else {
+          console.log('Auth info is null - user is likely not authenticated');
+        }
+      }
+      return dispatch(authInfoSuccess(info));
+    })
     .catch(e => {
       // Requesting auth info just reads the token from the token
       // store (i.e. cookies), and should not fail in normal
       // circumstances. If it fails, it's due to a programming
       // error. In that case we mark the operation done and dispatch
       // `null` success action that marks the user as unauthenticated.
+      console.error('Auth info request failed with error:', e);
+      if (e.status === 401) {
+        console.error('Authentication error (401): Token is invalid or expired');
+        // Try SDK debug method if available
+        if (typeof sdk.debugAuth === 'function') {
+          sdk.debugAuth();
+        }
+      }
       log.error(e, 'auth-info-failed');
       dispatch(authInfoSuccess(null));
+    });
+};
+
+// This function can be used to test authentication status
+export const testAuthentication = () => (dispatch, getState, sdk) => {
+  console.log('Testing authentication status...');
+  
+  // First check the auth state
+  const { isAuthenticated } = getState().auth;
+  console.log('Current auth state - isAuthenticated:', isAuthenticated);
+  
+  // Use SDK debug method if available
+  if (typeof sdk.debugAuth === 'function') {
+    sdk.debugAuth();
+  }
+  
+  // Make a test request to auth info
+  return sdk
+    .authInfo()
+    .then(info => {
+      console.log('Auth info test successful:', {
+        isAnonymous: info.isAnonymous,
+        isLoggedInAs: info.isLoggedInAs,
+        scopes: info.scopes,
+      });
+      return info;
+    })
+    .catch(e => {
+      console.error('Auth info test failed with error:', e);
+      if (e.status === 401) {
+        console.error('Authentication error (401): Token is invalid or expired');
+      }
+      return null;
     });
 };
 

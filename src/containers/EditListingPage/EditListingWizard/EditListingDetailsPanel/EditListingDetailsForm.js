@@ -1,5 +1,5 @@
 import React from 'react';
-import { arrayOf, bool, func, shape, string } from 'prop-types';
+import { arrayOf, bool, func, number, shape, string } from 'prop-types';
 import { compose } from 'redux';
 import { Field, Form as FinalForm } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
@@ -308,10 +308,20 @@ EditListingDetailsFormComponent.propTypes = {
   updated: bool.isRequired,
   updateInProgress: bool.isRequired,
   fetchErrors: shape({
-    createListingDraftError: propTypes.error,
+    createListingDraftError: shape({
+      status: number,
+      statusText: string,
+      apiErrors: arrayOf(shape({
+        code: string,
+        message: string,
+        status: number,
+        path: string
+      }))
+    }),
     showListingsError: propTypes.error,
     updateListingError: propTypes.error,
   }),
+  
   selectableListingTypes: arrayOf(
     shape({
       listingType: string.isRequired,

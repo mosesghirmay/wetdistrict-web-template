@@ -17,6 +17,7 @@ import {
 } from '../../util/urlHelpers';
 import { LISTING_STATE_DRAFT, LISTING_STATE_PENDING_APPROVAL, propTypes } from '../../util/types';
 import { ensureOwnListing } from '../../util/data';
+import { hasPermissionToPostListings } from '../../util/userHelpers';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { manageDisableScrolling, isScrollingDisabled } from '../../ducks/ui.duck';
 import {
@@ -83,8 +84,25 @@ const pickRenderableImages = (
 
 // N.B. All the presentational content needs to be extracted to their own components
 export const EditListingPageComponent = props => {
+  // Check if user has permission to create listings
+  const { currentUser } = props;
+  const hasPostingPermission = hasPermissionToPostListings(currentUser);
+  
+  // Redirect to no-access page if user doesn't have permission
+  React.useEffect(() => {
+    if (currentUser && !hasPostingPermission) {
+      console.error('User does not have permission to post listings, redirecting...');
+      
+      // In a real implementation, you'd redirect to a no-access page
+      // This is commented out to avoid breaking the component
+      /*
+      const noAccessPagePath = '/no-access/post-listings';
+      props.history.push(noAccessPagePath);
+      */
+    }
+  }, [currentUser, hasPostingPermission]);
+  
   const {
-    currentUser,
     createStripeAccountError,
     fetchInProgress,
     fetchStripeAccountError,
@@ -196,6 +214,48 @@ export const EditListingPageComponent = props => {
     const title = isNewListingFlow
       ? intl.formatMessage({ id: 'EditListingPage.titleCreateListing' })
       : intl.formatMessage({ id: 'EditListingPage.titleEditListing' });
+      
+    // If the user doesn't have permission to post listings, show an error message
+    if (currentUser && !hasPostingPermission) {
+      return (
+        <Page
+          title={intl.formatMessage({ id: 'EditListingPage.unauthorizedTitle', defaultMessage: 'Permission Denied' })}
+          scrollingDisabled={scrollingDisabled}
+        >
+          <TopbarContainer
+            mobileRootClassName={css.mobileTopbar}
+            desktopClassName={css.desktopTopbar}
+            mobileClassName={css.mobileTopbar}
+          />
+          <div className={css.layoutWrapperContainer}>
+            <div className={css.layoutWrapper}>
+              <div className={css.permissionErrorContainer}>
+                <h1>
+                  Permission Denied
+                </h1>
+                <p>
+                  You don't have permission to create or edit listings.
+                </p>
+                <div>
+                  <p>
+                    <strong>Error:</strong> You don't have permission to create or edit listings.
+                  </p>
+                  <p>
+                    <strong>Status:</strong> {currentUser?.effectivePermissionSet?.attributes?.postListings || 'unknown'}
+                  </p>
+                  <p>
+                    <strong>Required:</strong> "permission/allow"
+                  </p>
+                  <p>
+                    Please contact the marketplace administrator to grant you the necessary permissions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Page>
+      );
+    }
 
     return (
       <Page title={title} scrollingDisabled={scrollingDisabled}>

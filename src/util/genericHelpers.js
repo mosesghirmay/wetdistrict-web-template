@@ -105,12 +105,16 @@ export const appendAverageReviews = reviews => {
 /**
  * Parses a title string to extract and convert information into an object containing the length, make, and model.
  * The function is designed to process a specific string format where the first part is the length with a potential non-numeric character (e.g., inches symbol),
- * followed by the make and model, each separated by spaces. The length and model are converted to integers, while non-digit characters are removed from the length.
+ * followed by the make, separated by a space. The length is converted to integer, while non-digit characters are removed from the length.
+ * 
+ * For backwards compatibility, model is still included in the return value but will be set to an empty string since
+ * it's no longer part of the title format.
  *
  * If the input is not a string, the function returns an object with empty strings for length, make, and model to indicate an error or invalid input gracefully.
  *
- * @param {string} title The title string to be parsed, expected in the format "length make model".
- * @returns {Object} An object with `length`, `make`, and `model` keys. Length and model are returned as integers, and make as a string. If the input is invalid, returns an object with empty string values for each key.
+ * @param {string} title The title string to be parsed, expected in the format "length" make".
+ * @returns {Object} An object with `length`, `make`, and `model` keys. Length is returned as integer, make as a string, 
+ * and model as an empty string. If the input is invalid, returns an object with empty string values for each key.
  */
 export const titleToAbbr = title => {
   if (typeof title !== 'string') {
@@ -121,17 +125,20 @@ export const titleToAbbr = title => {
     };
   }
 
-  const words = title.split(' ');
-
+  // Split by spaces, but limit to 2 parts (length and make)
+  const parts = title.split(' ');
+  
   // This regex matches any character that's not a digit and replaces it with an empty string
-  const length = words[0].replace(/[^\d]/g, '');
-  const make = words[1];
-  const model = words[2];
-
+  const length = parts[0]?.replace(/[^\d]/g, '') || '';
+  
+  // Join all remaining parts as the make (everything after the first space)
+  const make = parts.slice(1).join(' ').trim() || '';
+  
+  // We still return model for backwards compatibility but it's empty
   return {
-    length: parseInt(length, 10),
+    length: parseInt(length, 10) || '',
     make,
-    model: parseInt(model, 10),
+    model: '',
   };
 };
 
@@ -139,7 +146,7 @@ export const titleToAbbr = title => {
  * Converts an object with `length` and `make` properties into a formatted listing title string.
  * The function constructs a string that combines these properties, ensuring the `make` is trimmed of any leading or trailing whitespace,
  * and appends an inch symbol (") directly after the `length` value for display purposes.
- * Note: The `model` property is intentionally omitted from the title as per design requirements.
+ * Note: The `model` property is intentionally omitted from the title as per API requirements.
  *
  * @param {Object} param0 An object containing the keys: `length`, `make`, and `model` (though model is not used).
  * @param {number} param0.length The length of the item, expected to be a number.
@@ -148,5 +155,20 @@ export const titleToAbbr = title => {
  * @returns {string} A formatted string representing the listing title, e.g., "22" Test".
  */
 export const abbrToTitle = ({ length, make, model }) => {
-  return `${length}" ${make?.trim()}`;
+  // Debug what values are being passed to this function
+  console.log('DEBUG - abbrToTitle received:', { length, make, model });
+  
+  // Ensure length is a valid number
+  const validLength = length ? length : '0';
+  
+  // Ensure make is a valid string
+  const validMake = make ? make.trim() : 'Untitled';
+  
+  // Model is intentionally excluded from the title
+  const title = `${validLength}" ${validMake}`;
+  
+  // Debug final title
+  console.log('DEBUG - abbrToTitle returning:', title);
+  
+  return title;
 };

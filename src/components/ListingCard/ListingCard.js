@@ -116,7 +116,7 @@ export const ListingCardComponent = props => {
       }
     : null;
   
-  console.log("Public Data:", publicData); // Debugging public data
+  // Extract model from publicData to display as guest capacity
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
@@ -146,7 +146,13 @@ export const ListingCardComponent = props => {
             {publicData?.vessels ? capitalizeFirstLetter(publicData?.vessels) : ''}
           </div>
           <div className={css.guests}>
-            {publicData?.maxGuests ? `${publicData?.maxGuests} guests` : 'N/A'}
+            {publicData?.model ? (
+              <span>
+                <strong>{publicData.model}</strong> guests
+              </span>
+            ) : (
+              'N/A'
+            )}
           </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>
