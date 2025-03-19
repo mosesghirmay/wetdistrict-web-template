@@ -167,8 +167,9 @@ const TopbarDesktop = props => {
     <ProfileMenu currentPage={currentPage} currentUser={currentUser} onLogout={onLogout} />
   ) : null;
 
-  const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
-  const loginLinkMaybe = isAuthenticatedOrJustHydrated ? null : <LoginLink />;
+  // Don't show login/signup links when authenticated
+  const signupLinkMaybe = isAuthenticated ? null : <SignupLink />;
+  const loginLinkMaybe = isAuthenticated ? null : <LoginLink />;
 
   const searchFormMaybe = showSearchForm ? (
     <TopbarSearchForm
@@ -200,7 +201,7 @@ const TopbarDesktop = props => {
         currentPage={currentPage}
         customLinks={customLinks}
         intl={intl}
-        hasClientSideContentReady={authenticatedOnClientSide || !isAuthenticatedOrJustHydrated}
+        hasClientSideContentReady={authenticatedOnClientSide || mounted}
       />
 
       {inboxLinkMaybe}

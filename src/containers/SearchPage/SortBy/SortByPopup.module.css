@@ -25,6 +25,21 @@
   border-radius: var(--borderRadiusMedium);
 }
 
+/* Add this to your existing SortByPopup.module.css file */
+
+/* Upward opening menu content */
+.menuContentUpward {
+  margin-top: 0;
+  margin-bottom: 7px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  min-width: 300px;
+  border-radius: var(--borderRadiusMedium);
+  /* Position above the button */
+  position: absolute;
+  bottom: 100%;
+}
+
 /* left animated "border" like hover element */
 .menuItemBorder {
   position: absolute;

@@ -97,11 +97,9 @@ const TopbarMobileMenu = props => {
       </div>
 
       <div className={css.content}>
-        {isAuthenticated && user ? (
+        {isAuthenticated ? (
           <>
-          
-
-            {/* ✅ Correct menu for Owners & Renters */}
+            {/* ✅ Authenticated user menu */}
             <div className={css.accountLinksWrapper}>
               <NamedLink
                 className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}
@@ -131,13 +129,16 @@ const TopbarMobileMenu = props => {
               </NamedLink>
             </div>
             
-
             {/* ✅ Logout Button */}
             <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
               <FormattedMessage id="TopbarMobileMenu.logoutLink" />
             </InlineTextButton>
           </>
-        ) : null} 
+        ) : (
+          <>
+            {/* Non-authenticated user, showing nothing in content area */}
+          </>
+        )}
 
         
 {/* ✅ Custom links (Extra menu items) */}
@@ -146,9 +147,15 @@ const TopbarMobileMenu = props => {
       </div>
       
       <div className={css.footer}>
-        <NamedLink className={css.createNewListingLink} name="NewListingPage">
-          <FormattedMessage id="TopbarMobileMenu.newListingLink" />
-        </NamedLink>
+        {isAuthenticated ? (
+          <NamedLink className={css.createNewListingLink} name="NewListingPage">
+            <FormattedMessage id="TopbarMobileMenu.newListingLink" />
+          </NamedLink>
+        ) : (
+          <NamedLink className={css.createNewListingLink} name="LoginPage">
+            <FormattedMessage id="TopbarMobileMenu.loginLink" />
+          </NamedLink>
+        )}
       </div>
     </div>
   );

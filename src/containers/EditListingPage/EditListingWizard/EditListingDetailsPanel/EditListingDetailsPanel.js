@@ -358,7 +358,7 @@ EditListingDetailsPanel.propTypes = {
   submitButtonText: string.isRequired,
   panelUpdated: bool.isRequired,
   updateInProgress: bool.isRequired,
-  errors: object.isRequired,
+  errors: object.isRequired, 
 };
 
 export default EditListingDetailsPanel;

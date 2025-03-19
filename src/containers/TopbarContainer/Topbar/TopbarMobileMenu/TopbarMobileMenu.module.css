@@ -149,6 +149,17 @@
 
 .createNewListingLink {
   composes: buttonPrimary from global;
+  /* Initial state: marketplace color */
+  background-color: var(--marketplaceColor) !important;
+  color: var(--colorWhite) !important;
+}
+
+/* Hover state: maintain the marketplace color with just a shadow change */
+.createNewListingLink:hover,
+.createNewListingLink:focus {
+  background-color: var(--marketplaceColor) !important;
+  color: var(--colorWhite) !important;
+  box-shadow: var(--boxShadowButton);
 }
 
 .authenticationGreeting {

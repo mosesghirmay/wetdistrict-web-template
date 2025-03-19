@@ -359,6 +359,32 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   box-shadow: none;
 }
 
+/* Make sortby dropdown open upward in the footer */
+.showListingsContainer .sortByWrapper :global(.SortByPopup_menuContent) {
+  position: absolute !important;
+  bottom: 65px !important;
+  top: auto !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  box-shadow: none !important; /* Remove shadow completely */
+  border: 1px solid var(--colorGrey200) !important; /* Add subtle grey border */
+  border-radius: 6px !important; /* Add some border radius */
+}
+
+/* Fix position for the mobile dropdown in bottom toolbar */
+.showListingsContainer .sortByWrapper :global(div[id^="Menu-menuContent"]) {
+  position: fixed !important;
+  bottom: 80px !important;
+  top: auto !important;
+  max-height: 60vh !important;
+  overflow-y: auto !important;
+  z-index: 1000 !important; /* Ensure it's above other elements */
+  box-shadow: none !important; /* Remove shadow completely */
+  border: 1px solid var(--colorGrey200) !important; /* Add subtle grey border */
+  border-radius: 6px !important; /* Add some border radius */
+  background-color: white !important; /* Ensure background is white */
+}
+
 
 .closeBtn {
   border: solid 2px var(--colorGrey800);

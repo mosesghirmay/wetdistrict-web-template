@@ -1007,7 +1007,7 @@ textarea {
 .buttonDefault:hover {
   outline: none;
   box-shadow: var(--boxShadowButton);
-  background-color: var(--marketplaceColorDark);
+  background-color: var(--marketplaceColor);
 }
 .buttonDefault:disabled {
   box-shadow: none;
@@ -1017,7 +1017,7 @@ textarea {
   color: var(--colorWhite);
 }
 
-/**
+/**Dar
  * Styles for <PrimaryButton>
  */
 .buttonPrimary {
@@ -1112,7 +1112,7 @@ textarea {
   outline: none;
   box-shadow: var(--boxShadowButton);
   text-decoration: none;
-  background-color: var(--colorPrimaryButtonDark);
+  background-color: var(--marketplaceColor);
   color: var(--colorWhite);
 }
 .buttonPrimaryInline:disabled {

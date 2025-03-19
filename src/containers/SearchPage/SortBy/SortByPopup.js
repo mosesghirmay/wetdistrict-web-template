@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import classNames from 'classnames';
 
 import { Menu, MenuContent, MenuItem, MenuLabel } from '../../../components';
@@ -42,6 +42,8 @@ const SortByIcon = props => {
  */
 const SortByPopup = props => {
   const [isOpen, setIsOpen] = useState(false);
+  const menuLabelRef = useRef(null);
+  
   const {
     rootClassName,
     className,
@@ -53,6 +55,7 @@ const SortByPopup = props => {
     contentPlacementOffset = 0,
     onSelect,
   } = props;
+
 
   const onToggleActive = isOpenParam => {
     setIsOpen(isOpenParam);
@@ -69,6 +72,7 @@ const SortByPopup = props => {
   const classes = classNames(rootClassName || css.root, className);
   const menuLabelClasses = classNames(menuLabelRootClassName);
   const iconArrowClassName = isOpen ? css.iconArrowAnimation : null;
+  
 
   return (
     <Menu
@@ -80,11 +84,11 @@ const SortByPopup = props => {
       isOpen={isOpen}
       preferScreenWidthOnMobile
     >
-      <MenuLabel rootClassName={menuLabelClasses}>
+      <MenuLabel rootClassName={menuLabelClasses} ref={menuLabelRef}>
         {menuLabel}
         <SortByIcon className={iconArrowClassName} />
       </MenuLabel>
-      <MenuContent className={css.menuContent}>
+      <MenuContent className={classNames(css.menuContent, 'SortByPopup_menuContent')}>
         {options.map(option => {
           // check if this option is selected
           const selected = initialValue === option.key;
