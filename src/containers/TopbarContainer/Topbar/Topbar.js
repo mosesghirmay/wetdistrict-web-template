@@ -328,7 +328,7 @@ render() {
     />
   </div>
 
-  {location.pathname === '/s' && (
+  {(location.pathname === '/s' || location.pathname === '/') && (
     <div className={css.centerContainer}>
       <Button 
         className={css.searchButton} 

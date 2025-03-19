@@ -89,12 +89,11 @@ const TopbarMobileMenu = props => {
 
   return (
     <div className={css.root}>
-      {/* ✅ Header with Logo on the Left & Close Button on the Right */}
+      {/* Header with Logo exactly like SearchFiltersMobile */}
       <div className={css.header}>
         <div className={css.logoContainer}>
           <img src={WrittenLogo} alt="Wet District" className={css.writtenLogo} />
         </div>
-        
       </div>
 
       <div className={css.content}>

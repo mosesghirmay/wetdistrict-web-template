@@ -600,3 +600,55 @@ button.SearchFiltersMobile_backButton__Gi3wr,
   /* No additional styling needed as TimeFilterForm now has its own margins */
 }
 
+/* Date filter button container - always visible on homepage */
+.dateFilterButtonContainer {
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* Choose a Date Button */
+.chooseADateButton {
+  width: 100%;
+  max-width: 400px;
+  height: 52px;
+  background-color: white;
+  border: 2px solid var(--marketplaceColor);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0 20px;
+  position: relative;
+}
+
+.chooseADateButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.calendarIcon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  background-image: url('data:image/svg+xml;utf8,<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g stroke="%23000000" transform="translate(1 1)"><rect stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" x=".292" y="1.459" width="13.417" height="12.25" rx="1"/><path d="M3.208.292V3.21M10.792.292V3.21M.292 4.376h13.416" stroke-linecap="round" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="1" height="1" rx=".5"/><rect x="6.5" y="6.5" width="1" height="1" rx=".5"/><rect x="9.5" y="6.5" width="1" height="1" rx=".5"/><rect x="3.5" y="9.5" width="1" height="1" rx=".5"/><rect x="6.5" y="9.5" width="1" height="1" rx=".5"/><rect x="9.5" y="9.5" width="1" height="1" rx=".5"/></g></g></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.buttonText {
+  display: inline-block;
+  text-align: center;
+}
+
