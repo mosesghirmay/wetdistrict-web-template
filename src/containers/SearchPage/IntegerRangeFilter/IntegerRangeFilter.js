@@ -54,8 +54,8 @@ const formatToQueryParam = (range, queryParamName) => {
  */
 const IntegerRangeFilter = props => {
   const {
-    min,
-    max,
+    min: minProp,
+    max: maxProp,
     step,
     onSubmit,
     queryParamNames,
@@ -69,6 +69,12 @@ const IntegerRangeFilter = props => {
     showAsPopup = true,
     ...rest
   } = props;
+
+  // No special cases needed - use props directly
+  
+  // Use provided props for min and max
+  const min = minProp ?? 0;
+  const max = maxProp ?? 1000;
 
   const classes = classNames(rootClassName || css.root, className);
 

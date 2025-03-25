@@ -196,6 +196,86 @@
   background-color: transparent !important;
 }
 
+/* Desktop filter column calendar styles */
+@media (min-width: 768px) {
+  /* Fix popup container width and position for desktop sidebar */
+  .FilterPopupForSidebar_popup.FilterPopupForSidebar_isOpen {
+    width: 310px !important;
+    left: 0px !important;
+    right: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Fix calendar container dimensions */
+  .FilterPopupForSidebar_popup .DayPicker {
+    width: 300px !important;
+    max-width: 300px !important;
+    box-sizing: border-box !important;
+    padding: 0 10px !important;
+  }
+  
+  /* Fix calendar grid positioning */
+  .FilterPopupForSidebar_popup .DayPickerNavigation {
+    position: relative !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  
+  /* Fix calendar month alignment */
+  .FilterPopupForSidebar_popup .CalendarMonth {
+    padding: 0 !important;
+    width: 280px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Fix overall calendar size and position */
+  .FilterPopupForSidebar_popup .CalendarMonthGrid {
+    width: 280px !important;
+    margin: 0 auto !important;
+    left: 0px !important;
+    transform: none !important;
+  }
+  
+  /* Fix calendar grid positioning */
+  .FilterPopupForSidebar_popup .CalendarMonthGrid_month__horizontal {
+    display: block !important;
+    width: 280px !important;
+    padding: 0 !important;
+  }
+  
+  /* Fix calendar table width */
+  .FilterPopupForSidebar_popup .CalendarMonth_table {
+    width: 280px !important;
+    margin: 0 auto !important;
+    table-layout: fixed !important;
+  }
+  
+  /* Fix calendar header styling */
+  .FilterPopupForSidebar_popup .DayPicker_weekHeader {
+    top: 55px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+  
+  /* Fix week header positioning */
+  .FilterPopupForSidebar_popup .DayPicker_weekHeader_ul {
+    width: 280px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: space-around !important;
+  }
+  
+  /* Fix individual date cells */
+  .FilterPopupForSidebar_popup .CalendarDay {
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+  }
+}
+
 /* Mobile responsive styles */
 @media (max-width: 767px) {
   .DateRangePicker_picker {

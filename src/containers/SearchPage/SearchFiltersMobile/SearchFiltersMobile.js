@@ -27,21 +27,21 @@ import config from '../../../config/configSearch';
 const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768;
 
 const SearchFiltersMobile = ({
-  rootClassName,
-  className,
+  rootClassName = null,
+  className = null,
   urlQueryParams,
   children,
-  sortByComponent,
+  sortByComponent = null,
   listingsAreLoaded,
-  resultsCount,
-  searchInProgress,
+  resultsCount = null,
+  searchInProgress = false,
   showAsModalMaxWidth,
-  onMapIconClick,
+  onMapIconClick = () => {},
   onManageDisableScrolling,
-  selectedFiltersCount,
+  selectedFiltersCount = 0,
   noResultsInfo,
   intl,
-  isMapVariant,
+  isMapVariant = true,
   onOpenModal,
   onCloseModal,
   resetAll,
@@ -185,10 +185,8 @@ const SearchFiltersMobile = ({
   const filtersHeading = intl.formatMessage({ id: 'SearchFiltersMobile.heading' });
   const modalCloseButtonMessage = intl.formatMessage({ id: 'SearchFiltersMobile.cancel' });
 
-  const showListingsLabel = intl.formatMessage(
-    { id: 'SearchFiltersMobile.showListings' },
-    { count: resultsCount }
-  );
+  // Manually set to "Yacht" / "Yachts" with capital Y as requested
+  const showListingsLabel = `Show ${resultsCount} ${resultsCount === 1 ? 'Yacht' : 'Yachts'}`;
 
   const formatValue = dates => {
     const { startDate } = dates || {};
@@ -419,16 +417,7 @@ const SearchFiltersMobile = ({
   );
 };
 
-SearchFiltersMobile.defaultProps = {
-  rootClassName: null,
-  className: null,
-  sortByComponent: null,
-  resultsCount: null,
-  searchInProgress: false,
-  selectedFiltersCount: 0,
-  isMapVariant: true,
-  onMapIconClick: () => {},
-};
+// Default props have been moved to function parameters
 
 SearchFiltersMobile.propTypes = {
   rootClassName: string,

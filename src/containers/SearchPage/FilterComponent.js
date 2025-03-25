@@ -223,6 +223,24 @@ case 'StartTime': {
       );
 
     case SCHEMA_TYPE_LONG:
+      // For guest capacity filter, use specific min and max values
+      if (key === 'maxGuests' || key === 'capacity' || name === 'pub_maxGuests') {
+        return (
+          <IntegerRangeFilter
+            id={componentId}
+            label={config.filterConfig?.label || key}
+            name={name}
+            queryParamNames={[constructQueryParamName(key, config.scope)]}
+            initialValues={initialValues([constructQueryParamName(key, config.scope)], liveEdit)}
+            onSubmit={getHandleChangedValueFn(useHistoryPush)}
+            min={1}
+            max={24}
+            step={1}
+            {...rest}
+          />
+        );
+      }
+      
       return (
         <IntegerRangeFilter
           id={componentId}

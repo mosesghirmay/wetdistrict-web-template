@@ -5,26 +5,25 @@
 
   position: sticky !important;
   top: 0 !important;
-  z-index: ;
+  z-index: 1000 !important;
   margin-bottom: -10px;
 }
 
 .container {
-  background: none;
+  background: white;
   padding-bottom: 5px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
-  transition: all 0.2sease-in-out;
+  transition: all 0.2s ease-in-out;
   backdrop-filter: blur(5px);
-  background: var(--colorgrey50)
-  );
 
-  /* shadows */
-
+  /* Display for mobile and tablets, hide for desktop */
+  display: block;
+  
   @media (--viewportMedium) {
     height: var(--topbarHeightDesktop);
   }
-
-  @media (--viewportLarge) {
+  
+  @media (min-width: 1024px) {
     display: none;
   }
 }
@@ -49,7 +48,7 @@
 
   
 
-
+ 
   &:disabled {
     background-color: transparent;
     cursor: auto;
@@ -127,8 +126,9 @@
 .desktop {
   display: none;
 
-  @media (--viewportLarge) {
-    display: block;
+  /* Only show desktop topbar on large screens (1024px+) */
+  @media (min-width: 1024px) {
+    display: block !important;
   }
 }
 
@@ -295,11 +295,18 @@
 }
 /* Topbar Container */
 .topbarContainer {
-  display: flex;
+  display: flex !important; /* Force display at tablet and mobile sizes */
   align-items: center;
   justify-content: space-between; /* Ensures space between items */
   width: 100%;
   max-width: 100%;
+  background-color: white; /* Add explicit background */
+  z-index: 1000; /* High z-index to ensure visibility */
+  
+  /* Hide in desktop mode */
+  @media (min-width: 1024px) {
+    display: none !important;
+  }
 }
 
 /* Special styling for search page topbar */
@@ -384,14 +391,14 @@
   right: 14px !important;
 }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
+/* Mobile and tablet adjustments */
+@media (max-width: 1023px) {
   .topbarContainer {
+    display: flex !important; /* Force display for iPad/tablet */
+    z-index: 1000 !important;
   }
 
   .centerContainer {
     max-width: 70%; /* Expands center container on smaller screens */
   }
-
- 
 }

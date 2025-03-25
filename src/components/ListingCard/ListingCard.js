@@ -116,7 +116,16 @@ export const ListingCardComponent = props => {
       }
     : null;
   
-  // Extract model from publicData to display as guest capacity
+  // Get capacity directly from publicData
+  // Force to string before displaying to ensure it renders correctly
+  const capacityValue = publicData?.capacity;
+  
+  // For debugging - log the publicData to see what's available
+  console.log('ListingCard publicData:', publicData);
+  
+  const guestCapacity = capacityValue 
+    ? <span><strong>{capacityValue}</strong> guests</span> 
+    : <span><FormattedMessage id="ListingCard.noGuestLimit" /></span>;
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
@@ -146,13 +155,7 @@ export const ListingCardComponent = props => {
             {publicData?.vessels ? capitalizeFirstLetter(publicData?.vessels) : ''}
           </div>
           <div className={css.guests}>
-            {publicData?.model ? (
-              <span>
-                <strong>{publicData.model}</strong> guests
-              </span>
-            ) : (
-              'N/A'
-            )}
+            {guestCapacity}
           </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>
@@ -175,10 +178,7 @@ ListingCardComponent.propTypes = {
   intl: intlShape.isRequired,
   listing: propTypes.listing.isRequired,
   showAuthorInfo: bool,
-
-  // Responsive image sizes hint
   renderSizes: string,
-
   setActiveListing: func,
 };
 

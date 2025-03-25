@@ -31,7 +31,9 @@ import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
 
 import css from './Topbar.module.css';
 
-const MAX_MOBILE_SCREEN_WIDTH = 1024;
+// This is the breakpoint for determining mobile vs desktop layouts
+// We use 1100px so iPad Pro and other tablets get mobile UI
+const MAX_MOBILE_SCREEN_WIDTH = 1100;
 
 const redirectToURLWithModalState = (props, modalStateParam) => {
   const { history, location } = props;
@@ -263,6 +265,7 @@ render() {
     const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
 
     const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
+    // We treat anything below 1100px as mobile layout, including iPads/tablets
     const isMobileLayout = hasMatchMedia
       ? window.matchMedia(`(max-width: ${MAX_MOBILE_SCREEN_WIDTH}px)`)?.matches
       : true;

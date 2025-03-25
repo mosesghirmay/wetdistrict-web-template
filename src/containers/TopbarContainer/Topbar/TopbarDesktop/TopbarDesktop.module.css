@@ -18,6 +18,11 @@
 
   /* shadows */
   box-shadow: var(--boxShadowLight);
+  
+  /* Only display at large desktop sizes */
+  @media (max-width: 1099px) {
+    display: none !important;
+  }
 
   @media (--viewportLarge) {
     padding: 0 24px 0 0;
@@ -28,121 +33,145 @@
 .logoLink {
   border-bottom: 0px solid;
   transition: var(--transitionStyleButton);
-}
-.logoLink:hover {
-  border-bottom: 4px solid var(--marketplaceColor);
-  border-radius: 0;
-}
-
-/* Search */
-.searchLink {
-  min-width: 320px;
+  /* Fix logo dimensions as it can be overriden */
+  padding: 13px 24px 13px 24px;
   height: 100%;
-  border-left-style: solid;
-  border-left-width: 1px;
-  border-left-color: var(--colorGrey100);
-  margin-right: auto;
-}
-
-.spacer {
-  min-width: 320px;
-  height: 100%;
-  margin-right: auto;
-}
-
-.search {
-  font-weight: var(--fontWeightMedium);
-  font-size: 15px;
-  line-height: 24px;
-  letter-spacing: 0;
-  color: var(--colorGrey700);
-
-  display: inline-block;
-  margin: 28px 0;
-  text-decoration: inherit;
-
-  @media (--viewportMedium) {
-    font-weight: var(--fontWeightMedium);
-  }
-}
-
-.takeAvailableSpace {
-  flex-grow: 1;
-
-  /* At 1024px, the translations might need more space than what searchLink otherwise gets. */
-  min-width: 220px;
-}
-
-.topbarSearchWithLeftPadding {
-  padding-left: 24px;
-  padding-right: 24px;
-  height: var(--topbarHeightDesktop);
-
-  @media (--viewportLarge) {
-    padding-left: 34px;
-  }
-}
-
-/* These is used with Inbox, Sign up, and Log in */
-.topbarLink {
-  flex-shrink: 0;
-
-  border-bottom: 0px solid;
-  transition: var(--transitionStyleButton);
-
-  font-weight: var(--fontWeightMedium);
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0;
-  color: var(--colorGrey700);
-
-  height: 100%;
-  padding: 0 12px 0 12px;
-  margin: 0;
+  display: flex;
+  align-items: center;
 
   &:hover {
-    color: var(--colorBlack);
-    border-bottom: 4px solid var(--marketplaceColor);
-    border-radius: 0;
+    transition: var(--transitionStyleButton);
+    border-bottom: 0px solid;
     text-decoration: none;
-  }
-
-  @media (--viewportMedium) {
-    line-height: 16px;
-    margin: 0;
   }
 }
 
-.topbarLinkLabel {
-  composes: textSmall from global;
-  display: inline-block;
-  margin: 28px 0;
-  text-decoration: inherit;
+.navigation {
+  display: flex;
+  flex: 1;
+  padding: 0 24px 0 24px;
+}
+
+.home,
+.profile,
+.inbox,
+.listings,
+.createListing {
+  flex-shrink: 0;
+  margin-right: 24px;
+}
+
+.home {
+  display: none;
+
+  @media (--viewportLarge) {
+    display: block;
+  }
+}
+
+.createListingLink,
+.homeLink {
+  margin-right: 0;
+  align-self: center;
+
+  @media (--viewportLarge) {
+    margin-right: 0px;
+  }
+}
+
+/* left animated "border" like hover element */
+.createListing:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  transition: var(--transitionStyleButton);
+}
+
+.createListing:hover:after {
+  width: 6px;
+  transition: var(--transitionStyleButton);
+}
+
+/* Text links */
+.createListingLink,
+.homeLink,
+.inboxLink,
+.loginLink,
+.profileLink,
+.signupLink,
+.listingsLink {
+  height: var(--topbarHeightDesktop);
+
+  /* Text links should be centered vertically */
+  /* But padding isn't the best way for that */
+  /* Line-height + padding makes it better. */
+  line-height: 25px;
+  padding: 20px 0 20px 0;
+  border-bottom: 0px;
+  color: var(--colorGrey700);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--marketplaceColor);
+    border-bottom: 0px;
+  }
+}
+
+.inboxContainer,
+.currentPage {
   position: relative;
+  color: var(--marketplaceColor);
+  transition: var(--transitionStyleButton);
+
+  &:after {
+    content: '';
+    width: 100%;
+    height: 3px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: var(--matterColorAnti); /* grey (240, 240, 240) */
+    transform: translateY(1px);
+    transition: var(--transitionStyleButton);
+
+    @media (--viewportLarge) {
+      background-color: var(--marketplaceColor);
+    }
+  }
+
+  &:hover:after {
+    transform: translateY(0);
+  }
+}
+
+.currentPage {
+  &:after {
+    background-color: var(--marketplaceColor);
+    transform: translateY(0);
+  }
 }
 
 .notificationDot {
-  /* Dimensions */
   width: 7px;
   height: 7px;
   border-radius: 50%;
-
-  /* Position */
   position: absolute;
-  top: 2px;
+  top: 23px;
   right: -9px;
-
-  /* Style: red dot */
   background-color: var(--colorFail);
-
   animation-name: notificationPop;
   animation-duration: 0.1s;
   animation-delay: 0.1s;
   animation-fill-mode: forwards;
-
-  animation-timing-function: ease-in;
   opacity: 0;
   transform: scale(0);
+
+  @media (--viewportLarge) {
+    top: 19px;
+  }
 }
 
 @keyframes notificationPop {
@@ -156,154 +185,77 @@
   }
 }
 
-/* Profile menu */
-.profileMenuLabel {
-  border-bottom: 0px solid;
-  transition: var(--transitionStyleButton);
-
-  font-weight: var(--fontWeightMedium);
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0;
-  color: var(--colorGrey700);
-
-  flex-shrink: 0;
+.search {
+  /* Layout */
   display: flex;
-  align-items: center;
-  height: 100%;
+  width: 100%;
+  padding: 0;
   margin: 0;
-  padding: 0 12px 0 12px;
 
-  &:hover {
-    border-bottom: 4px solid var(--marketplaceColor);
-    border-radius: 0;
-    text-decoration: none;
+  /* Search should be placed on the right edge of content on desktop */
+  /* But it's still inside a flexbox, and gets different width based on window width */
+  flex-grow: 1;
+  height: 100%;
+
+  @media (--viewportMedium) {
+    flex-grow: 0;
+    margin: 8px 0 0;
+    width: 40%;
   }
 
-  &:active {
-    border-bottom: 0;
-  }
-}
-
-.profileMenuIsOpen {
-  &:hover {
-    border-bottom: 0;
+  @media (--viewportLarge) {
+    margin: 0;
+    width: 250px;
   }
 }
 
 .avatar {
-  margin: 16px 0;
+  position: relative;
+  margin: 16px 0 21px 0;
+  display: flex;
+
+  @media (--viewportMedium) {
+    margin: 21px 0 21px 24px;
+  }
 }
 
-.profileMenuContent {
-  min-width: 276px;
-  padding-top: 20px;
-}
-
-/* left animated "border" like hover element */
-.menuItemBorder {
+.avatarOverley {
   position: absolute;
-  top: 2px;
-  left: 0px;
-  height: calc(100% - 4px);
-  width: 0;
-  transition: width var(--transitionStyleButton);
+  bottom: 0;
+  right: 0;
 }
 
-.menuLink {
-  composes: textSmall from global;
-  position: relative;
-  display: block;
+.menu,
+.searchMenu {
+  display: none;
+}
 
-  /* Dimensions */
-  width: 100%;
-  min-width: 276px;
-  margin: 0;
-  padding: 4px 24px;
-
-  /* Layout details */
-  color: var(--colorGrey700);
-  text-align: left;
-  transition: var(--transitionStyleButton);
-
-  &:hover {
-    color: var(--colorBlack);
-    text-decoration: none;
-
-    & .menuItemBorder {
-      width: 6px;
-      background-color: var(--marketplaceColor);
-    }
-  }
+.topbarDesktop {
+  display: none;
 
   @media (--viewportMedium) {
-    margin: 0;
+    /* Size, flex-item */
+    padding: 0 12px 0 0;
+    height: var(--topbarHeightDesktop);
+    width: 100%;
+    flex-shrink: 0;
+
+    /* Layout for child components */
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    /* fill */
+    background-color: var(--colorWhite);
+
+    /* shadows */
+    box-shadow: var(--boxShadowLight);
   }
 }
 
-.logoutButton {
-  display: inline;
-
-  /* Text size should be inherited */
-  text-decoration: none;
-
-  /* Font is specific to this component */
-  font-weight: var(--fontWeightMedium);
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0;
-
-  /* Dimensions */
-  position: relative;
-  width: 100%;
-  min-width: 276px;
-  margin: 0;
-  padding: 20px 24px;
-
-  /* Layout details */
-  color: var(--colorGrey300);
-  text-align: left;
-  white-space: nowrap;
-  transition: var(--transitionStyleButton);
-
-  /* Borders */
-  border: none;
-  border-top-width: 1px;
-  border-top-style: solid;
-  border-top-color: var(--colorGrey100);
-
-  &:hover {
-    cursor: pointer;
-    color: var(--colorBlack);
-    text-decoration: none;
-
-    & .menuItemBorder {
-      height: 100%;
-      width: 6px;
-      top: 0;
-      background-color: var(--marketplaceColor);
-    }
-  }
-
-  @media (--viewportMedium) {
-    line-height: 16px;
-    margin-top: 20px;
-    margin-bottom: 0;
-  }
-}
-
-.currentPage {
-  color: var(--colorBlack);
-  position: relative;
-
-  & .menuItemBorder {
-    width: 6px;
-    background-color: var(--colorBlack);
-  }
-
-  &:hover {
-    & .menuItemBorder {
-      background-color: var(--colorBlack);
-    }
+@media (min-width: 1100px) {
+  .topbarDesktop {
+    display: flex !important;
   }
 }

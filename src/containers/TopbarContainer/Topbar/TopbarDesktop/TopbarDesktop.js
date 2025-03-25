@@ -3,6 +3,8 @@ import classNames from 'classnames';
 
 import { FormattedMessage } from '../../../../util/reactIntl';
 import { ACCOUNT_SETTINGS_PAGES } from '../../../../routing/routeConfiguration';
+import { ensureCurrentUser } from '../../../../util/data';
+import { hasPermissionToPostListings } from '../../../../util/userHelpers';
 import {
   Avatar,
   InlineTextButton,
@@ -61,6 +63,10 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
+  
+  const user = ensureCurrentUser(currentUser);
+  // Check if current user has permission to post listings (i.e., is an owner)
+  const isOwner = user && hasPermissionToPostListings(user);
 
   return (
     <Menu>
@@ -68,15 +74,17 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
         <Avatar className={css.avatar} user={currentUser} disableProfileLink />
       </MenuLabel>
       <MenuContent className={css.profileMenuContent}>
-        <MenuItem key="ManageListingsPage">
-          <NamedLink
-            className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
-            name="ManageListingsPage"
-          >
-            <span className={css.menuItemBorder} />
-            <FormattedMessage id="TopbarDesktop.yourListingsLink" />
-          </NamedLink>
-        </MenuItem>
+        {isOwner && (
+          <MenuItem key="ManageListingsPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
+              name="ManageListingsPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.yourListingsLink" />
+            </NamedLink>
+          </MenuItem>
+        )}
         <MenuItem key="ProfileSettingsPage">
           <NamedLink
             className={classNames(css.menuLink, currentPageClass('ProfileSettingsPage'))}
@@ -201,13 +209,13 @@ const TopbarDesktop = props => {
         currentPage={currentPage}
         customLinks={customLinks}
         intl={intl}
+        currentUser={currentUser}
         hasClientSideContentReady={authenticatedOnClientSide || mounted}
       />
 
       {inboxLinkMaybe}
       {profileMenuMaybe}
-      {signupLinkMaybe}
-      {loginLinkMaybe}
+      {/* Removing duplicate login/signup links */}
     </nav>
   );
 };

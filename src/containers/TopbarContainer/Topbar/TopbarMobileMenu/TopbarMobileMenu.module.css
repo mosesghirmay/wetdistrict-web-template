@@ -14,18 +14,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding-bottom: 80px; /* Space for footer */
+  overflow-y: auto; /* Allow scrolling if menu is too long */
 }
 
 .accountLinksWrapper,
 .customLinksWrapper {
-  margin-top: 80px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0 16px;
+  padding: 0 0px;
 }
 .accountLinksWrapper {
-  margin-bottom: 36px;
+  margin-top: 60px; /* Space for the fixed header */
+  margin-bottom: -80px;
+}
+.customLinksWrapper {
+  margin-top: 80px; /* Remove excessive spacing */
 }
 
 .footer {
@@ -82,7 +87,7 @@
 
   /* Position component */
   width: initial;
-  margin: 4px 0 24px 0;
+  margin: 10px 0 0px 0;
   padding: 0;
 
   &:hover {
@@ -120,7 +125,7 @@
   position: relative;
 
   margin-top: auto;
-  margin-bottom: 13px;
+  margin-bottom: 0px;
 }
 
 .navigationLink {
@@ -149,17 +154,6 @@
 
 .createNewListingLink {
   composes: buttonPrimary from global;
-  /* Initial state: marketplace color */
-  background-color: var(--marketplaceColor) !important;
-  color: var(--colorWhite) !important;
-}
-
-/* Hover state: maintain the marketplace color with just a shadow change */
-.createNewListingLink:hover,
-.createNewListingLink:focus {
-  background-color: var(--marketplaceColor) !important;
-  color: var(--colorWhite) !important;
-  box-shadow: var(--boxShadowButton);
 }
 
 .authenticationGreeting {

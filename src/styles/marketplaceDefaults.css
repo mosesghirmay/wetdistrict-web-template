@@ -1055,6 +1055,7 @@ textarea {
   border: 2px solid var(--marketplaceColor);
   color: black;
 
+
   @media (--viewportMedium) {
     padding: 20px 0 20px 0;
   }

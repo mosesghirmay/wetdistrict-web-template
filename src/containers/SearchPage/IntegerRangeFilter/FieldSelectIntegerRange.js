@@ -30,12 +30,21 @@ const RangeInput = props => {
   } = props;
   const { value: values = {}, onChange, name } = input;
 
-  const currentValues = resolveMinMaxValues(initialValues[name], defaultMaxValue, defaultMinValue);
-  const [fieldValues, setFieldValues] = useState(currentValues);
+  // Get the initial values only during component initialization
+  const initialResolvedValues = resolveMinMaxValues(initialValues[name], defaultMaxValue, defaultMinValue);
+  const [fieldValues, setFieldValues] = useState(initialResolvedValues);
 
+  // Only update when initialValues[name] changes, using JSON.stringify to compare objects
   useEffect(() => {
-    setFieldValues(currentValues);
-  }, [initialValues]);
+    if (initialValues && initialValues[name]) {
+      const newValues = resolveMinMaxValues(initialValues[name], defaultMaxValue, defaultMinValue);
+      
+      // Only update if values actually changed
+      if (newValues.minValue !== fieldValues.minValue || newValues.maxValue !== fieldValues.maxValue) {
+        setFieldValues(newValues);
+      }
+    }
+  }, [JSON.stringify(initialValues[name]), defaultMaxValue, defaultMinValue]);
 
   const handleMinValueChange = event => {
     const newValue = Number.parseInt(event.target.value, RADIX);
@@ -93,7 +102,7 @@ const RangeInput = props => {
             step={step}
             placeholder={defaultMinValue}
             value={fieldValues.minValue}
-            onChange={event => handleMinValueChange(event, values.minValue)}
+            onChange={event => handleMinValueChange(event)}
           ></input>
           <span className={css.valueSeparator}>-</span>
           <input

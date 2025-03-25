@@ -158,6 +158,29 @@ export const listingFields = [
       isRequired: false,
     },
   },
+  {
+    key: 'capacity',
+  scope: 'public',
+  schemaType: 'long',
+  filterConfig: {
+    indexForSearch: true,
+    label: 'Guest capacity',
+    group: 'primary',
+    min: 1,
+    max: 24,
+    step: 1
+  },
+  showConfig: {
+    label: 'Guest capacity',
+    isDetail: true,
+  },
+  saveConfig: {
+    label: 'Guest capacity',
+    placeholderMessage: 'Enter maximum number of guests',
+    isRequired: true,
+    requiredMessage: 'You need to specify the guest capacity.',
+  },
+}
 
   // // An example of how to use transaction type specific custom fields and private data.
   // {

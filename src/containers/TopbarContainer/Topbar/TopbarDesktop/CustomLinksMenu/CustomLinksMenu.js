@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ensureCurrentUser } from '../../../../../util/data';
+import { hasPermissionToPostListings } from '../../../../../util/userHelpers';
 
 import PriorityLinks, { CreateListingMenuLink } from './PriorityLinks';
 import LinksMenu from './LinksMenu';
@@ -100,12 +102,20 @@ const calculateContainerWidth = (containerRefTarget, parentWidth) => {
  * @param {*} props contains currentPage, customLinks, intl, and hasClientSideContentReady
  * @returns component to be placed inside TopbarDesktop
  */
-const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentReady, intl }) => {
+const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentReady, intl, currentUser }) => {
   const containerRef = useRef(null);
   const observer = useRef(null);
   const [mounted, setMounted] = useState(false);
   const [moreLabelWidth, setMoreLabelWidth] = useState(0);
-  const [links, setLinks] = useState([createListingLinkConfig(intl), ...customLinks]);
+  
+  // Check if current user has permission to post listings (i.e., is an owner)
+  const user = ensureCurrentUser(currentUser);
+  const isOwner = user && hasPermissionToPostListings(user);
+  
+  // Only include the createListing link if the user is an owner
+  const initialLinks = isOwner ? [createListingLinkConfig(intl), ...customLinks] : [...customLinks];
+  
+  const [links, setLinks] = useState(initialLinks);
   const [layoutData, setLayoutData] = useState({
     priorityLinks: links,
     menuLinks: links,
@@ -177,9 +187,14 @@ const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentRe
 
   const { priorityLinks, menuLinks, containerWidth } = layoutData;
 
-  // If there are no custom links, just render createListing link.
-  if (customLinks?.length === 0) {
+  // If there are no custom links and user is an owner, just render createListing link.
+  if (customLinks?.length === 0 && isOwner) {
     return <CreateListingMenuLink customLinksMenuClass={css.createListingLinkOnly} />;
+  }
+  
+  // If there are no custom links and user is not an owner, don't render anything
+  if (customLinks?.length === 0 && !isOwner) {
+    return null;
   }
 
   const styleMaybe = mounted ? { style: { width: `${containerWidth}px` } } : {};

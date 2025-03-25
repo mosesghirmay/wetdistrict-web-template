@@ -240,11 +240,12 @@ const EditListingDetailsFormComponent = props => (
                 id={`${formId}model`}
                 name="model"
                 className={css.model}
-                type="number"
+                type="text"
                 label={intl.formatMessage({ id: 'EditListingDetailsForm.modelLabel' })}
-                placeholder={intl.formatMessage({ id: 'EditListingDetailsForm.modelPlaceholder' })}
+                placeholder="Enter model (optional)"
                 maxLength={TITLE_MAX_LENGTH}
-                validate={composeValidators(required(modelRequiredMessage))}
+                // Making model field optional
+                validate={()=>{}}
               />
             </div>
           ) : null}
