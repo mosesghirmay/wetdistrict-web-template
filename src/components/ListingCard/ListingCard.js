@@ -75,17 +75,17 @@ const PriceMaybe = props => {
   );
 };
 
-export const ListingCardComponent = props => {
+// Using modern default parameters to fix the warning
+export const ListingCardComponent = ({
+  className = null,
+  rootClassName = null,
+  intl,
+  listing,
+  renderSizes = null,
+  setActiveListing = null,
+  showAuthorInfo = true,
+}) => {
   const config = useConfiguration();
-  const {
-    className,
-    rootClassName,
-    intl,
-    listing,
-    renderSizes,
-    setActiveListing,
-    showAuthorInfo,
-  } = props;
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureListing(listing);
   const id = currentListing.id.uuid;
@@ -116,16 +116,13 @@ export const ListingCardComponent = props => {
       }
     : null;
   
-  // Get capacity directly from publicData
-  // Force to string before displaying to ensure it renders correctly
-  const capacityValue = publicData?.capacity;
+  // Check multiple possible field names for capacity
+  const capacityValue = publicData?.capacity || publicData?.maxGuests || publicData?.guests;
   
-  // For debugging - log the publicData to see what's available
-  console.log('ListingCard publicData:', publicData);
-  
+  // Enhanced display with proper formatting
   const guestCapacity = capacityValue 
     ? <span><strong>{capacityValue}</strong> guests</span> 
-    : <span><FormattedMessage id="ListingCard.noGuestLimit" /></span>;
+    : 'No guest limit';
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
@@ -164,13 +161,7 @@ export const ListingCardComponent = props => {
   );
 };
 
-ListingCardComponent.defaultProps = {
-  className: null,
-  rootClassName: null,
-  renderSizes: null,
-  setActiveListing: null,
-  showAuthorInfo: true,
-};
+// Removed defaultProps (replaced with default parameters above)
 
 ListingCardComponent.propTypes = {
   className: string,
@@ -182,4 +173,4 @@ ListingCardComponent.propTypes = {
   setActiveListing: func,
 };
 
-export default injectIntl(ListingCardComponent);
+export default injectIntl(ListingCardComponent)

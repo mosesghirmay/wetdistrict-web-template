@@ -169,7 +169,17 @@ const TopbarMobileMenu = props => {
             </div>
             
             {/* Custom links (Extra menu items) */}
-            <div className={css.customLinksWrapper}>{extraLinks}</div>
+            <div className={css.customLinksWrapper}>
+              {extraLinks}
+              
+              {/* Add a boat link - shown to owners */}
+              {isOwner && (
+                <NamedLink className={css.navigationLink} name="NewListingPage">
+                  <span className={css.menuItemBorder} />
+                  <FormattedMessage id="TopbarMobileMenu.addABoatLink" />
+                </NamedLink>
+              )}
+            </div>
             
             {/* Logout Button */}
             <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
@@ -179,7 +189,15 @@ const TopbarMobileMenu = props => {
         ) : (
           <>
             {/* Non-authenticated user - show custom links */}
-            <div className={css.customLinksWrapper}>{extraLinks}</div>
+            <div className={css.customLinksWrapper}>
+              {extraLinks}
+              
+              {/* Add a boat link - shown to non-authenticated users */}
+              <NamedLink className={css.navigationLink} name="NewListingPage">
+                <span className={css.menuItemBorder} />
+                <FormattedMessage id="TopbarMobileMenu.addABoatLink" />
+              </NamedLink>
+            </div>
           </>
         )}
 

@@ -13,6 +13,7 @@ import PriceFilter from './PriceFilter/PriceFilter';
 import IntegerRangeFilter from './IntegerRangeFilter/IntegerRangeFilter';
 import SeatsFilter from './SeatsFilter/SeatsFilter';
 import StartTimeFilter from './StartTimeFilter/StartTimeFilter';
+import GuestsFilter from './GuestsFilter/GuestsFilter';
 
 // Debugging to confirm component renders
 console.log("✅ FilterComponent is rendering in Topbar!");
@@ -223,19 +224,30 @@ case 'StartTime': {
       );
 
     case SCHEMA_TYPE_LONG:
-      // For guest capacity filter, use specific min and max values
+      // For guest capacity filter, use a dropdown similar to StartTimeFilter
       if (key === 'maxGuests' || key === 'capacity' || name === 'pub_maxGuests') {
+        // Generate guest count options for the dropdown
+        const guestOptions = [];
+        for (let i = 1; i <= 24; i++) {
+          guestOptions.push({
+            option: i.toString(),
+            label: i.toString()
+          });
+        }
+        
+        // Ensure we're using the correct parameter name format
+        const paramName = constructQueryParamName(key, config.scope);
+        console.log(`Guest filter param name: ${paramName} for key: ${key}, scope: ${config.scope}`);
+        
         return (
-          <IntegerRangeFilter
+          <GuestsFilter
             id={componentId}
-            label={config.filterConfig?.label || key}
+            label="Who"
             name={name}
-            queryParamNames={[constructQueryParamName(key, config.scope)]}
-            initialValues={initialValues([constructQueryParamName(key, config.scope)], liveEdit)}
+            queryParamNames={[paramName]}
+            initialValues={initialValues([paramName], liveEdit)}
             onSubmit={getHandleChangedValueFn(useHistoryPush)}
-            min={1}
-            max={24}
-            step={1}
+            options={guestOptions}
             {...rest}
           />
         );

@@ -95,3 +95,15 @@
     padding: 3px 0 13px 0;
   }
 }
+
+/* Guest Count Styles for the plus/minus buttons */
+.guestCountWrapper {
+  display: flex;
+  width: 100%;
+  padding: 16px 0 8px;
+  justify-content: flex-start;
+}
+
+.guestCountField {
+  width: 100%;
+}

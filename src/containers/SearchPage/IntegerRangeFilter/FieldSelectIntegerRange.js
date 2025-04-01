@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
 import { Field } from 'react-final-form';
 
-import { RangeSlider } from '../../../components';
+import { RangeSlider, FieldNumber } from '../../../components';
 
 import css from './IntegerRangeFilter.module.css';
 
@@ -19,7 +19,8 @@ const resolveMinMaxValues = (values, defaultMax, defaultMin) => {
   };
 };
 
-const RangeInput = props => {
+// Custom input for capacity that only shows a single guest count with plus/minus buttons
+const GuestCountInput = props => {
   const {
     input,
     min: defaultMinValue,
@@ -27,9 +28,41 @@ const RangeInput = props => {
     step,
     isInSideBar,
     initialValues,
+    isCapacityFilter,
   } = props;
+  
   const { value: values = {}, onChange, name } = input;
 
+  // For capacity filter, we only care about maxValue (guest count)
+  // Set both min and max to the same value to maintain compatibility
+  const handleGuestCountChange = (newCount) => {
+    onChange({ 
+      minValue: newCount,
+      maxValue: newCount 
+    });
+  };
+
+  // Check if this is for the capacity filter
+  if (isCapacityFilter) {
+    // Get initial value - use maxValue as the guest count
+    const initialResolvedValues = resolveMinMaxValues(initialValues[name], defaultMaxValue, defaultMinValue);
+    const initialGuestCount = initialResolvedValues.maxValue;
+
+    return (
+      <div className={css.guestCountWrapper}>
+        <FieldNumber
+          className={css.guestCountField}
+          value={values.maxValue}
+          initialValue={initialGuestCount}
+          minValue={1}
+          maxValue={defaultMaxValue || 24}
+          onChange={handleGuestCountChange}
+        />
+      </div>
+    );
+  }
+
+  // Original RangeInput implementation for non-capacity filters
   // Get the initial values only during component initialization
   const initialResolvedValues = resolveMinMaxValues(initialValues[name], defaultMaxValue, defaultMinValue);
   const [fieldValues, setFieldValues] = useState(initialResolvedValues);
@@ -142,10 +175,20 @@ const RangeInput = props => {
  * @param {string} [props.name] - The name
  * @param {number} [props.step] - The step
  * @param {boolean} [props.isInSideBar] - Whether the filter is in the sidebar
+ * @param {boolean} [props.isCapacityFilter] - Whether this is the capacity filter
  * @returns {JSX.Element}
  */
 const FieldSelectIntegerRange = props => {
-  const { max, min, name, step = 5, isInSideBar = false, ...rest } = props;
+  const { 
+    max, 
+    min, 
+    name, 
+    step = 5, 
+    isInSideBar = false, 
+    isCapacityFilter = false,
+    ...rest 
+  } = props;
+  
   return (
     <Field
       max={max}
@@ -153,7 +196,8 @@ const FieldSelectIntegerRange = props => {
       name={name}
       step={step}
       isInSideBar={isInSideBar}
-      component={RangeInput}
+      isCapacityFilter={isCapacityFilter}
+      component={GuestCountInput}
       {...rest}
     />
   );

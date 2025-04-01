@@ -70,7 +70,8 @@ const IntegerRangeFilter = props => {
     ...rest
   } = props;
 
-  // No special cases needed - use props directly
+  // Check if this is the capacity filter
+  const isCapacityFilter = name === 'maxGuests' || name === 'capacity' || name === 'pub_maxGuests';
   
   // Use provided props for min and max
   const min = minProp ?? 0;
@@ -136,10 +137,18 @@ const IntegerRangeFilter = props => {
     handleSubmit(null);
   };
 
-  // Used to display the selected values above the filter component in the "grid" view
-  const labelSelectionForPlain = hasInitialValues ? (
-    <FormattedMessage id="IntegerRangeFilter.labelSelectedPlain" values={{ minValue, maxValue }} />
-  ) : null;
+  // For capacity filter, customize the label when selected
+  let labelSelectionForPlain;
+  
+  if (isCapacityFilter && hasInitialValues) {
+    // Only show the max value (guest count) for capacity filter
+    labelSelectionForPlain = maxValue && maxValue > 0 ? `${maxValue} ${maxValue === 1 ? 'guest' : 'guests'}` : null;
+  } else {
+    // Default behavior for regular range filters
+    labelSelectionForPlain = hasInitialValues ? (
+      <FormattedMessage id="IntegerRangeFilter.labelSelectedPlain" values={{ minValue, maxValue }} />
+    ) : null;
+  }
 
   return showAsPopup ? (
     <FilterPopup
@@ -157,6 +166,7 @@ const IntegerRangeFilter = props => {
         min={min}
         name={name}
         step={step}
+        isCapacityFilter={isCapacityFilter}
         initialValues={resolvedInitialValues}
       />
     </FilterPopup>
@@ -166,7 +176,7 @@ const IntegerRangeFilter = props => {
       rootClassName={rootClassName}
       label={label}
       labelSelection={labelSelectionForPlain}
-      labelSelectionSeparator=":"
+      labelSelectionSeparator={isCapacityFilter ? "" : ":"}
       isSelected={hasInitialValues}
       id={`${id}.plain`}
       liveEdit
@@ -181,6 +191,7 @@ const IntegerRangeFilter = props => {
         min={min}
         name={name}
         step={step}
+        isCapacityFilter={isCapacityFilter}
         initialValues={resolvedInitialValues}
       />
     </FilterPlain>
