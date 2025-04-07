@@ -11,6 +11,8 @@
   /* Additional styles from datesFilterHeader */
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  position: relative;
+  z-index: 1; /* Default z-index */
 }
 
 .root:hover {
@@ -99,9 +101,9 @@
   border-color: var(--colorGrey300);
 }
 
-.selected .selectField {
-  color: black;
-  font-weight: bold;
+.selected .selectField, .selectedField {
+  color: black !important;
+  font-weight: bold !important;
 }
 
 .field::after {
@@ -132,9 +134,9 @@
   position: relative;
 }
 
-.selected .endTimeDisplay {
-  color: black;
-  font-weight: bold;
+.selected .endTimeDisplay, .selectedEndTime {
+  color: black !important;
+  font-weight: bold !important;
 }
 
 .fieldReadOnly::after {

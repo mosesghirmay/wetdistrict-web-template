@@ -25,6 +25,30 @@ export const MyContextProvider = ({ children }) => {
     
     // Set state immediately without debounce
     setIsMobileSearchFilerOpen(isOpen);
+    
+    // Additionally, set a global variable for components that can't access context
+    if (typeof window !== 'undefined') {
+      window.__isMobileFilterOpen = isOpen;
+      
+      // If we're closing, also try direct DOM manipulation
+      if (!isOpen && typeof document !== 'undefined') {
+        setTimeout(() => {
+          // Try to find and close the modal directly
+          const modal = document.getElementById('SearchFiltersMobile.filters');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+          
+          // Force send an escape key event to close modal
+          document.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape',
+            keyCode: 27,
+            which: 27,
+            bubbles: true
+          }));
+        }, 100);
+      }
+    }
   };
 
   return (

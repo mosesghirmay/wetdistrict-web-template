@@ -27,30 +27,53 @@ const TimeAvailabilityFilterComponent = props => {
     setIsLoading(true);
     
     // Get values from form
-    const { availabilityStartTime, availabilityEndTime } = values;
+    const { availabilityStartTime, availabilityEndTime, availabilityDate } = values;
     
     // Use current date if not specified
-    const today = new Date();
-    const dateStr = today.toISOString().split('T')[0];
+    const dateStr = availabilityDate || new Date().toISOString().split('T')[0];
     
-    // Convert the form values to availability parameters for the API
-    const availabilityParams = timeRangeToAvailabilityParameters(
-      dateStr,
-      availabilityStartTime,
-      availabilityEndTime
-    );
+    // Ensure we have valid time values
+    if (!availabilityStartTime || !availabilityEndTime) {
+      setIsLoading(false);
+      return;
+    }
     
-    // This ensures all relevant parameters are passed to the SDK query
-    const filterParams = {
-      availabilityStartTime,
-      availabilityEndTime,
-      availabilityDate: dateStr,
-      ...availabilityParams
-    };
-    
-    // Call onSubmit with the filter parameters to update the URL/query
-    onSubmit(filterParams);
-    setIsLoading(false);
+    try {
+      // Create proper date objects for the selected times
+      const [startHours, startMinutes] = availabilityStartTime.split(':').map(n => parseInt(n, 10));
+      const [endHours, endMinutes] = availabilityEndTime.split(':').map(n => parseInt(n, 10));
+      
+      // Create Date objects with the correct date and times
+      const startDate = new Date(dateStr);
+      startDate.setHours(startHours, startMinutes, 0, 0);
+      
+      const endDate = new Date(dateStr);
+      endDate.setHours(endHours, endMinutes, 0, 0);
+      
+      // Convert to ISO strings for the API
+      const startISO = startDate.toISOString();
+      const endISO = endDate.toISOString();
+      
+      // Directly provide all needed parameters for the search
+      const filterParams = {
+        availabilityStartTime,
+        availabilityEndTime,
+        availabilityDate: dateStr,
+        availability: 'time-partial',
+        start: startISO,
+        end: endISO,
+        minDuration: 180, // 3 hours in minutes
+      };
+      
+      console.log('Submitting time filter params:', filterParams);
+      
+      // Call onSubmit with the filter parameters to update the URL/query
+      onSubmit(filterParams);
+    } catch (e) {
+      console.error('Error processing time filter:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, [onSubmit]);
 
   // Handle the filter clear button click
@@ -60,10 +83,14 @@ const TimeAvailabilityFilterComponent = props => {
 
   // Initialize form values from URL params or defaults
   const initialFilterValues = {
-    availabilityStartTime: queryParams.availabilityStartTime || null,
-    availabilityEndTime: queryParams.availabilityEndTime || null,
+    availabilityStartTime: queryParams.availabilityStartTime || '14:00',
+    availabilityEndTime: queryParams.availabilityEndTime || '17:00',
+    availabilityDate: queryParams.availabilityDate || new Date().toISOString().split('T')[0],
     ...initialValues
   };
+  
+  // Debug log to see what initial values are being passed
+  console.log('Initial filter values:', initialFilterValues);
 
   return (
     <div className={className || css.root}>

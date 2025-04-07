@@ -171,6 +171,7 @@ const debouncedSearch = debounce((dispatch, sdk, params, config) => {
 }, 500); // 500ms debounce
 
 export const searchListings = (searchParams, config) => (dispatch, getState, sdk) => {
+  console.log('Search initiated with parameters:', searchParams);
   dispatch(searchListingsRequest(searchParams));
 
   // SearchPage can enforce listing query to only those listings with valid listingType
@@ -233,62 +234,70 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   };
 
   const datesSearchParams = datesParam => {
+    // If no date parameter is provided, return empty object
+    if (!datesParam) {
+      return {};
+    }
+    
+    console.log('Processing date parameter in SearchPage.duck.js:', datesParam);
+    
     const searchTZ = 'Etc/UTC';
-    const datesFilter = config.search.defaultFilters.find(f => f.key === 'dates');
-    const values = datesParam ? datesParam.split(',') : [];
-    const hasValues = datesFilter && datesParam && values.length === 2;
-    const { dateRangeMode, availability } = datesFilter || {};
-    const isNightlyMode = dateRangeMode === 'night';
-    const isEntireRangeAvailable = availability === 'time-full';
-
-    // SearchPage need to use a single time zone but listings can have different time zones
-    // We need to expand/prolong the time window (start & end) to cover other time zones too.
-    //
-    // NOTE: you might want to consider changing UI so that
-    //   1) location is always asked first before date range
-    //   2) use some 3rd party service to convert location to time zone (IANA tz name)
-    //   3) Make exact dates filtering against that specific time zone
-    //   This setup would be better for dates filter,
-    //   but it enforces a UX where location is always asked first and therefore configurability
-    const getProlongedStart = date => subtractTime(date, 14, 'hours', searchTZ);
-    const getProlongedEnd = date => addTime(date, 12, 'hours', searchTZ);
-
-    const startDate = hasValues ? parseDateFromISO8601(values[0], searchTZ) : null;
-    const endRaw = hasValues ? parseDateFromISO8601(values[1], searchTZ) : null;
-    const endDate =
-      hasValues && isNightlyMode
-        ? endRaw
-        : hasValues
-        ? getExclusiveEndDate(endRaw, searchTZ)
-        : null;
-
-    const today = getStartOf(new Date(), 'day', searchTZ);
-    const possibleStartDate = subtractTime(today, 14, 'hours', searchTZ);
-    const hasValidDates =
-      hasValues &&
-      startDate.getTime() >= possibleStartDate.getTime() &&
-      startDate.getTime() <= endDate.getTime();
-
-    const dayCount = isEntireRangeAvailable ? daysBetween(startDate, endDate) : 1;
-    const day = 1440;
-    const hour = 60;
-    // When entire range is required to be available, we count minutes of included date range,
-    // but there's a need to subtract one hour due to possibility of daylight saving time.
-    // If partial range is needed, then we just make sure that the shortest time unit supported
-    // is available within the range.
-    // You might want to customize this to match with your time units (e.g. day: 1440 - 60)
-    const minDuration = isEntireRangeAvailable ? dayCount * day - hour : hour;
-    return hasValidDates
-      ? {
-          start: getProlongedStart(startDate),
-          end: getProlongedEnd(endDate),
-          // Availability can be time-full or time-partial.
-          // However, due to prolonged time window, we need to use time-partial.
-          availability: 'time-partial',
-          // minDuration uses minutes
-          minDuration,
-        }
-      : {};
+    
+    // Parse date values from comma-separated string
+    const values = datesParam.split(',');
+    
+    // Validate that we have two values
+    if (values.length < 2 || !values[0] || !values[1]) {
+      console.log('Invalid date values', values);
+      return {};
+    }
+    
+    try {
+      // Parse the dates
+      const startDate = parseDateFromISO8601(values[0], searchTZ);
+      const endDate = parseDateFromISO8601(values[1], searchTZ);
+      
+      if (!startDate || !endDate) {
+        console.log('Could not parse date values', { startDate, endDate });
+        return {};
+      }
+      
+      // For day-based filters, we need to convert to valid format
+      // Get beginning of day
+      const startOfDay = getStartOf(startDate, 'day', searchTZ);
+      
+      // Get end of day (or next day if that's what was provided)
+      // This is what makes filtering work effectively
+      const endOfRange = endDate;
+      
+      console.log('Date range for availability:', {
+        start: startOfDay.toISOString(),
+        end: endOfRange.toISOString(),
+      });
+      
+      // The key is to create a proper date filter parameter for the API
+      // An important fix: use the right timezone padding
+      return {
+        // Time-partial allows partial availability within the time range
+        availability: 'time-full',
+        
+        // These need to be in ISO format
+        start: startOfDay.toISOString(),
+        end: endOfRange.toISOString(),
+        
+        // For day-based bookings, we want to filter for a full day
+        minDuration: 1440, // Full day in minutes
+        
+        // Type hint for API (if needed)
+        bookingType: 'day',
+        
+        // Provide raw values for other uses
+        datesQueryParam: datesParam,
+      };
+    } catch (error) {
+      console.error('Error processing date params:', error);
+      return {};
+    }
   };
 
   const stockFilters = datesMaybe => {

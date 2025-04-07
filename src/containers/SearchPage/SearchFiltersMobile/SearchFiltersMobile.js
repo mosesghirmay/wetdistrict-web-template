@@ -114,53 +114,102 @@ const SearchFiltersMobile = ({
     }
   }, [urlQueryParamsDates]);
 
+  // Create a global function to force close the modal
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.forceCloseFilterModal = () => {
+        console.log("Force closing filter modal via global function");
+        setIsFiltersOpenOnMobile(false);
+        onCloseModal();
+        
+        // Also try direct DOM manipulation
+        const modalContainer = document.querySelector('.ReactModalPortal');
+        if (modalContainer) {
+          console.log("Found modal portal, removing");
+          modalContainer.parentNode.removeChild(modalContainer);
+        }
+      };
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.forceCloseFilterModal;
+      }
+    };
+  }, [onCloseModal]);
+  
+  // Watch for changes to the context state
+  useEffect(() => {
+    console.log("SearchFiltersMobile - isMobileSearchFilerOpen changed to:", isMobileSearchFilerOpen);
     if (isMobileSearchFilerOpen) {
+      console.log("SearchFiltersMobile - opening filters");
       openFilters();
     } else {
+      console.log("SearchFiltersMobile - closing filters");
       setIsFiltersOpenOnMobile(false);
       onCloseModal();
-    }
-  }, [isMobileSearchFilerOpen]);
-  
-  // Find the date filter element and add click handler after the modal opens
-  useEffect(() => {
-    if (isFiltersOpenOnMobile) {
-      // Wait for the DOM to update
-      setTimeout(() => {
-        // Find the date filter element by its class (added via 'plainClassName' property)
-        const dateFilterElem = document.querySelector('.datesFilterHeader');
-        
-        if (dateFilterElem) {
-          // Add direct click handler to open the date picker
-          const clickHandler = (e) => {
-            // Only open the date picker when clicking directly on the filter, not its children
-            if (e.target.closest('.datesFilterHeader') && 
-                !e.target.closest('.FilterPlain_plain')) {
-              setIsPickerOpen(true);
-              
-              // Prevent the filter from toggling when we're opening the date picker
-              e.stopPropagation();
-              e.preventDefault();
-            }
-          };
-          
-          // Add click event
-          dateFilterElem.addEventListener('click', clickHandler);
-          
-          // Clean up event listener when component unmounts or filters close
-          return () => {
-            dateFilterElem.removeEventListener('click', clickHandler);
-          };
+      
+      // Try to force remove the modal from the DOM
+      if (typeof document !== 'undefined') {
+        const modalContainer = document.querySelector('.ReactModalPortal');
+        if (modalContainer) {
+          console.log("Found modal portal, removing");
+          modalContainer.parentNode.removeChild(modalContainer);
         }
-      }, 200); // Small delay to ensure DOM is updated
+      }
     }
+  }, [isMobileSearchFilerOpen, openFilters, onCloseModal]);
+  
+  // Simple click handler for date filter
+  useEffect(() => {
+    if (!isFiltersOpenOnMobile) return;
+    
+    // Wait for a short delay to ensure DOM is ready
+    const timerId = setTimeout(() => {
+      // Get the date filter header
+      const dateFilterElem = document.querySelector('.datesFilterHeader');
+      
+      if (!dateFilterElem) return;
+      
+      // Simple click listener that just opens the picker
+      const clickListener = (event) => {
+        console.log('Date filter clicked');
+        setIsPickerOpen(true);
+        
+        // Stop event propagation
+        event.stopPropagation();
+        event.preventDefault();
+      };
+      
+      // Add the event listener
+      dateFilterElem.addEventListener('click', clickListener);
+      
+      return () => {
+        dateFilterElem.removeEventListener('click', clickListener);
+      };
+    }, 100);
+    
+    return () => {
+      clearTimeout(timerId);
+    };
   }, [isFiltersOpenOnMobile]);
 
   const cancelFilters = () => {
+    // Get the context function from the parent component
+    const { onOpenMobileSearchFilterModal } = useMyContext();
+    
+    // Restore URL parameters
     history.push(
       createResourceLocatorString('SearchPage', routeConfiguration, {}, initialQueryParams)
     );
+    
+    // Call the context function to update global state
+    if (onOpenMobileSearchFilterModal) {
+      console.log("SearchFiltersMobile - canceling filters via context");
+      onOpenMobileSearchFilterModal(false);
+    }
+    
+    // Also update local state
     onCloseModal();
     setIsFiltersOpenOnMobile(false);
     setInitialQueryParams(null);
@@ -169,10 +218,58 @@ const SearchFiltersMobile = ({
   };
 
   const closeFilters = () => {
-    onCloseModal();
+    console.log("CLOSE FILTERS CALLED");
+    
+    // Set global tracking variable
+    if (typeof window !== 'undefined') {
+      window.__isMobileFilterOpen = false;
+    }
+    
+    // Use multiple approaches to ensure closing works
+    
+    // 1. Set local component state
     setIsFiltersOpenOnMobile(false);
-    // Close date picker
     setIsPickerOpen(false);
+    
+    // 2. Call context function if available
+    const { onOpenMobileSearchFilterModal } = useMyContext();
+    if (onOpenMobileSearchFilterModal) {
+      console.log("Closing filters via context");
+      onOpenMobileSearchFilterModal(false);
+    }
+    
+    // 3. Call provided close function
+    onCloseModal();
+    
+    // 4. Force close with DOM manipulation (if in browser)
+    if (typeof document !== 'undefined') {
+      const modal = document.getElementById('SearchFiltersMobile.filters');
+      if (modal) {
+        // Hide the modal
+        modal.style.display = 'none';
+        
+        // Also try to remove classes that might make it visible
+        const modalContent = modal.querySelector('div');
+        if (modalContent) {
+          modalContent.style.display = 'none';
+        }
+      }
+      
+      // 5. Force ESC keypress to trigger modal close behavior
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Escape',
+        keyCode: 27,
+        which: 27,
+        bubbles: true
+      }));
+    }
+    
+    // 6. Use history back as a last resort
+    setTimeout(() => {
+      if (window.__isMobileFilterOpen === false) {
+        window.history.back();
+      }
+    }, 200);
   };
 
   const classes = classNames(rootClassName || css.root, className);
@@ -190,16 +287,24 @@ const SearchFiltersMobile = ({
 
   const formatValue = dates => {
     const { startDate } = dates || {};
-    const start = startDate && stringifyDateToISO8601(startDate);
-    // Use the same date for both start and end for compatibility with existing code
-    return start ? `${start},${start}` : null;
+    if (!startDate) return null;
+    
+    // Convert startDate to ISO string for the beginning of the day
+    const start = stringifyDateToISO8601(moment(startDate).startOf('day'));
+    
+    // Create endDate as the next day (for proper day booking query format)
+    const end = stringifyDateToISO8601(moment(startDate).add(1, 'days').startOf('day'));
+    
+    // Use start date and next day for proper date range filtering
+    // This format is needed for the Sharetribe API to correctly filter availability
+    return `${start},${end}`;
   };
 
   const handleDateChange = selectedDates => {
     if (!selectedDates || !selectedDates.length || !selectedDates[0]) return;
     
     // Only store the first selected date
-    const selectedDate = moment(selectedDates[0]).startOf('day').toDate();
+    const selectedDate = moment(selectedDates[0]).startOf('day');
     
     // Set both dates to the same value for data consistency
     setDates({ 
@@ -207,15 +312,35 @@ const SearchFiltersMobile = ({
       endDate: selectedDate 
     });
     
-    // Format and update URL - using the same date for both start and end
-    const formattedDate = moment(selectedDate).format('YYYY-MM-DD');
-    const dateParam = `${formattedDate},${formattedDate}`;
-    const extraParams = urlQueryParams 
-      ? { ...urlQueryParams, dates: dateParam } 
-      : { dates: dateParam };
+    // Format for API: Use next day as end date (exclusive range)
+    // This ensures the API interprets it as "the entire day" rather than just the specific moment
+    const startDay = selectedDate.format('YYYY-MM-DD');
+    const endDay = selectedDate.clone().add(1, 'days').format('YYYY-MM-DD');
+    const dateParam = `${startDay},${endDay}`;
+    
+    console.log('Date filter parameters:', {
+      startDay,
+      endDay,
+      dateParam
+    });
+    
+    // Create new params, removing any time availability filter params
+    // to prevent conflicts with the date filter
+    const newParams = { ...urlQueryParams, dates: dateParam };
+    
+    // Remove time filter params if present
+    delete newParams.availability;
+    delete newParams.start;
+    delete newParams.end;
+    delete newParams.availabilityDate;
+    delete newParams.availabilityStartTime;
+    delete newParams.availabilityEndTime;
+    delete newParams.minDuration;
+    
+    console.log('Setting date filter with param:', dateParam);
     
     // Push the URL update
-    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, extraParams));
+    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, newParams));
     
     // First close the modal picker
     setIsPickerOpen(false);
@@ -271,8 +396,21 @@ const SearchFiltersMobile = ({
       <ModalInMobile
         id="SearchFiltersMobile.filters"
         isModalOpenOnMobile={isFiltersOpenOnMobile}
-        onClose={cancelFilters}
-        hideCloseIcon
+        onClose={() => {
+          // Direct approach: navigate to the same page without query params
+          console.log("Modal close triggered - direct close approach");
+          
+          // Remove query parameters
+          window.location.href = window.location.pathname;
+          
+          // Also try calling cancelFilters as backup
+          try {
+            cancelFilters();
+          } catch (e) {
+            console.error("Error in cancelFilters", e);
+          }
+        }}
+        hideCloseIcon={false}
         showAsModalMaxWidth={showAsModalMaxWidth}
         onManageDisableScrolling={onManageDisableScrolling}
         containerClassName={css.modalContainer}
@@ -402,7 +540,17 @@ const SearchFiltersMobile = ({
         <div className={css.showListingsContainer}>
           {/* Button takes 80% width */}
           <div className={css.buttonWrapper}>
-            <Button className={css.showListingsButton} onClick={closeFilters}>
+            <Button 
+              className={css.showListingsButton} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Show listings button clicked - FORCE CLOSING");
+                
+                // Use location hash directly rather than reload
+                window.location.href = window.location.pathname;
+              }}
+            >
               {showListingsLabel}
             </Button>
           </div>

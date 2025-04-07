@@ -23,37 +23,92 @@ const getDatesQueryParamName = queryParamNames => {
 const parseValue = value => {
   if (!value) return { dates: null };
   
-  // Always split by comma, assuming the comma format is used
-  const rawValuesFromParams = value.split(',');
+  console.log('BookingDateRangeFilter parsing value:', value);
   
-  // If we have at least one value
-  if (rawValuesFromParams.length > 0) {
-    const startDate = parseDateFromISO8601(rawValuesFromParams[0]);
-    let endDate = null;
+  try {
+    // Always split by comma, assuming the comma format is used
+    const rawValuesFromParams = value.split(',');
     
-    // If we have a second value and it's different, use it, otherwise set same as startDate
-    if (rawValuesFromParams.length > 1) {
-      endDate = parseDateFromISO8601(rawValuesFromParams[1]);
-    } else {
-      endDate = startDate; // For single date selection, both dates are the same
+    if (rawValuesFromParams.length < 1) {
+      return { dates: null };
     }
     
-    return startDate ? { dates: { startDate, endDate: startDate } } : { dates: null };
+    // Parse the start date (first part of the parameter)
+    const startDate = parseDateFromISO8601(rawValuesFromParams[0]);
+    if (!startDate) {
+      console.log('Could not parse start date:', rawValuesFromParams[0]);
+      return { dates: null };
+    }
+    
+    // For a date range with two dates, we need to handle it specially
+    // The typical format from the API is "2020-05-28,2020-05-29" for a single day
+    // where the end date is the next day (exclusive end)
+    
+    // For date filter selection, we only need the start date
+    // We'll set the end date equal to the start date for simplicity
+    // and to match how the UI expects a single day selection
+    
+    // Create a date-only copy of the startDate to ensure consistency
+    const startDateOnly = new Date(startDate);
+    startDateOnly.setHours(0, 0, 0, 0);
+    
+    const result = { 
+      dates: { 
+        startDate: startDateOnly, 
+        endDate: startDateOnly // Use same date for both start and end
+      } 
+    };
+    
+    console.log('Parsed date result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error parsing date value:', error);
+    return { dates: null };
   }
-  
-  return { dates: null };
 };
 // Format dateRange value for the query. It's given by FieldDateRangeInput:
 // { dates: { startDate, endDate } }
 const formatValue = (dateRange, queryParamName) => {
   const hasDates = dateRange && dateRange.dates;
   const { startDate, endDate } = hasDates ? dateRange.dates : {};
-  const start = startDate ? stringifyDateToISO8601(startDate) : null;
   
-  // Use the startDate for both start and end in the URL to maintain compatibility
-  const value = start ? `${start},${start}` : null;
+  if (!startDate) {
+    console.log('No start date provided');
+    return { [queryParamName]: null };
+  }
   
-  return { [queryParamName]: value };
+  try {
+    // Create a date object for the selected startDate
+    // For single day selection, the endDate is usually the same as startDate
+    // or may be the next day (for a day booking)
+    const start = stringifyDateToISO8601(startDate);
+    
+    // For date filtering, we set up the date range for a SINGLE DAY
+    // this is crucial for API compatibility with daily booking
+    
+    // Get next day (to create proper date range)
+    const nextDay = new Date(startDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const end = stringifyDateToISO8601(nextDay);
+    
+    // Format: "2023-04-07,2023-04-08" (one day range from midnight to midnight)
+    // This format is necessary for the Sharetribe API to filter correctly
+    const value = `${start},${end}`;
+    
+    console.log('Date parameter:', {
+      value,
+      startDate: start,
+      endDate: end,
+      originalStartDate: startDate,
+      originalEndDate: endDate
+    });
+    
+    // Return the query parameter
+    return { [queryParamName]: value };
+  } catch (error) {
+    console.error('Error formatting date value:', error);
+    return { [queryParamName]: null };
+  }
 };
 
 /**
@@ -125,9 +180,11 @@ export class BookingDateRangeFilterComponent extends Component {
     // Get current date for default display
     const currentDate = new Date();
     
-    const formattedStartDate = isSelected ? intl.formatDate(startDate, format) : intl.formatDate(currentDate, format);
-    const formattedEndDate = isSelected ? intl.formatDate(endDate, format) : null;
-
+    // Format dates, adding the day of week for better visibility
+    const formattedStartDate = isSelected 
+      ? intl.formatDate(startDate, format) 
+      : intl.formatDate(currentDate, format);
+    
     // When no date is selected, show the current date in a placeholder format
     const labelForPlain = isSelected
       ? intl.formatMessage(
@@ -141,8 +198,8 @@ export class BookingDateRangeFilterComponent extends Component {
       ? `${label}`  // Only show "Date:" as the label
       : intl.formatMessage({ id: 'BookingDateRangeFilter.labelPlain' });
       
-    // Only display current date as placeholder when not selected
-    const placeholderDate = !isSelected ? formattedStartDate : null;
+    // Don't show placeholder date when not selected - it's confusing
+    const placeholderDate = null;
 
     const labelForPopup = isSelected
       ? intl.formatMessage(
@@ -167,7 +224,18 @@ export class BookingDateRangeFilterComponent extends Component {
       : null;
 
     const handleSubmit = values => {
-      onSubmit(formatValue(values, datesQueryParamName));
+      // Check if we have valid date values before submitting
+      if (values && values.dates && values.dates.startDate) {
+        console.log('Submitting date filter:', values);
+        
+        // Format and submit the date range
+        const formattedValue = formatValue(values, datesQueryParamName);
+        console.log('Formatted date for submission:', formattedValue);
+        
+        onSubmit(formattedValue);
+      } else {
+        console.log('No valid date to submit');
+      }
     };
 
     const onClearPopupMaybe =

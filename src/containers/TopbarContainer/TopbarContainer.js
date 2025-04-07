@@ -39,20 +39,39 @@ export const TopbarContainerComponent = ({
   // 🔹 State for managing the mobile filter menu toggle
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // 🔹 Function to toggle the filter menu
-  const handleMobileFilterToggle = () => {
-    setIsMobileFilterOpen(prevState => {
-      const newState = !prevState;
-      console.log("🔹 handleMobileFilterToggle - New State:", newState);
-  
-      // Call the modal function immediately without setTimeout
-      if (onOpenMobileSearchFilterModal) {
-        onOpenMobileSearchFilterModal(newState);
-      }
-  
-      return newState;
-    });
-  };
+  // 🔹 Function to toggle the filter menu - modified to always open
+  const handleMobileFilterToggle = useCallback(() => {
+    console.log("🔹 handleMobileFilterToggle called");
+    
+    // Toggle the local state for visual feedback
+    setIsMobileFilterOpen(true);
+    
+    // Try the context function first to ALWAYS OPEN
+    if (onOpenMobileSearchFilterModal) {
+      console.log("🔹 Opening filter via context function");
+      onOpenMobileSearchFilterModal(true);
+    } else {
+      // Fallback: Try to directly manipulate the DOM if context fails
+      console.warn("Context function not available, using direct DOM manipulation");
+      
+      // Force a small delay to ensure any previous state updates have propagated
+      setTimeout(() => {
+        // Find the modal element
+        const modal = document.getElementById('SearchFiltersMobile.filters');
+        if (modal) {
+          modal.style.display = 'block';
+          
+          // Also try to set any related classes that might control visibility
+          modal.classList.add('isOpen');
+          
+          // Force fix z-index to ensure it's visible
+          modal.style.zIndex = '99999';
+        } else {
+          console.error("Could not find modal element");
+        }
+      }, 50);
+    }
+  }, [onOpenMobileSearchFilterModal]);
   
 
   return (

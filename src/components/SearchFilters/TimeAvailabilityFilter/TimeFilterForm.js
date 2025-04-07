@@ -51,38 +51,40 @@ const TimeFilterFormComponent = props => {
     ...rest
   } = props;
 
-  const [startTime, setStartTime] = useState(initialValues.availabilityStartTime || '14:00');
-  const [endTime, setEndTime] = useState(initialValues.availabilityEndTime || '17:00');
+  // Use empty default value to force selection
+  const [startTime, setStartTime] = useState(initialValues.availabilityStartTime || '');
+  const [endTime, setEndTime] = useState(initialValues.availabilityEndTime || '');
   const [lastSubmittedTime, setLastSubmittedTime] = useState(null);
-  // Only consider it selected if there are user-provided initialValues that aren't the default
+  // Always start unselected regardless of initialValues, so styling is correct
   const [isSelected, setIsSelected] = useState(false);
   const selectRef = useRef(null);
 
   // Generate fixed time options - memoized to prevent unnecessary recalculation
   const timeOptions = useMemo(() => generateFixedTimeOptions(intl), [intl]);
   
+  // Effect to submit initial values on mount
+  useEffect(() => {
+    // Submit initial values on component mount to ensure filter is applied
+    if (startTime) {
+      const calculatedEndTime = calculateEndTime(startTime);
+      
+      onSubmit({
+        availabilityStartTime: startTime,
+        availabilityEndTime: calculatedEndTime,
+        availabilityDate: new Date().toISOString().split('T')[0]
+      });
+    }
+  }, []); // Empty dependency array to run only on mount
+  
   // Automatically calculate end time when start time changes (3-hour fixed duration)
   useEffect(() => {
     if (startTime) {
       const calculatedEndTime = calculateEndTime(startTime);
       setEndTime(calculatedEndTime);
-      
-      // Prevent duplicate submissions of the same time
-      if (calculatedEndTime && startTime !== lastSubmittedTime) {
-        setLastSubmittedTime(startTime);
-        
-        // Only submit if user has made an explicit selection
-        if (isSelected) {
-          onSubmit({
-            availabilityStartTime: startTime,
-            availabilityEndTime: calculatedEndTime
-          });
-        }
-      }
     } else {
       setEndTime(null);
     }
-  }, [startTime, onSubmit, lastSubmittedTime, isSelected]);
+  }, [startTime]);
 
   const classes = classNames(
     rootClassName || css.root, 
@@ -90,38 +92,42 @@ const TimeFilterFormComponent = props => {
     { [css.selected]: isSelected }
   );
   
+  // Apply selected class to the form itself, not just the parent container
   const formClasses = classNames(
     css.form,
-    { [css.disabledForm]: isLoading }
+    { [css.disabledForm]: isLoading },
+    { [css.selected]: isSelected }
   );
 
   // Handle dropdown change events
   const handleTimeChange = (e) => {
     const newTime = e.target.value;
     
-    // Always mark as selected when the dropdown is used, even if selecting the current value
+    // Always mark as selected when a real change is made
     setIsSelected(true);
     setStartTime(newTime);
+    
+    // Submit directly on change to ensure it works with mobile filters
+    const calculatedEndTime = calculateEndTime(newTime);
+    onSubmit({
+      availabilityStartTime: newTime,
+      availabilityEndTime: calculatedEndTime,
+      // Include current date as well (set to today's date)
+      availabilityDate: new Date().toISOString().split('T')[0]
+    });
   };
   
   // This function is triggered when the select field is clicked/interacted with
   const handleSelectInteraction = () => {
-    // If user clicks on select, mark it as selected even if they don't change the value
-    setIsSelected(true);
+    // Don't mark as selected when just clicking - wait for actual selection
+    // setIsSelected handled in handleTimeChange instead
   };
 
-  // Format end time to show 5 PM if start time is 2 PM, or placeholder if no time selected
+  // Format end time to show after selected time, or placeholder if no time selected
   const formatEndTime = () => {
-    if (!endTime) {
-      // Format default end time (5:00 PM) if nothing is selected
-      const defaultDate = new Date();
-      defaultDate.setHours(17, 0, 0); // 5:00 PM
-      
-      return intl.formatTime(defaultDate, {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
+    if (!endTime || !startTime) {
+      // Display placeholder if no time is selected
+      return 'End time';
     }
     
     const hour = parseInt(endTime.split(':')[0], 10);
@@ -149,16 +155,20 @@ const TimeFilterFormComponent = props => {
               {intl.formatMessage({ id: 'TimeFilterForm.startTimeLabel' })}
             </label>
             <select
-              className={css.selectField}
+              className={classNames(
+                css.selectField,
+                { [css.selectedField]: isSelected }
+              )}
               name="availabilityStartTime"
               id="availability-start-time"
               onChange={handleTimeChange}
-              onClick={handleSelectInteraction} 
-              onFocus={handleSelectInteraction}
               value={startTime}
               disabled={isLoading}
               ref={selectRef}
             >
+              <option value="" disabled>
+                Select time
+              </option>
               {timeOptions.map(option => (
                 <option key={option.key} value={option.value}>
                   {option.label}
@@ -176,7 +186,10 @@ const TimeFilterFormComponent = props => {
             <label className={css.innerLabel}>
               {intl.formatMessage({ id: 'TimeFilterForm.endTimeLabel' })}
             </label>
-            <div className={css.endTimeDisplay}>
+            <div className={classNames(
+              css.endTimeDisplay,
+              { [css.selectedEndTime]: isSelected }
+            )}>
               {formattedEndTime}
             </div>
             <input 

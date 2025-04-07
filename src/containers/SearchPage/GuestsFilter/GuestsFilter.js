@@ -23,23 +23,19 @@ const GuestsFilterComponent = props => {
     ...rest
   } = props;
 
-  // Ensure we get the correct query param name
-  const queryParamName = Array.isArray(queryParamNames) ? queryParamNames[0] : queryParamNames;
-  
-  console.log('GuestsFilter queryParamName:', queryParamName);
-  console.log('GuestsFilter initialValues:', initialValues);
+  // Always use pub_capacity as the parameter name
+  const queryParamName = 'pub_capacity';
   
   // Get initial value from URL parameters (if available)
   let initialGuestCount = null;
   if (initialValues && initialValues[queryParamName]) {
     const paramValue = initialValues[queryParamName];
-    console.log('GuestsFilter paramValue:', paramValue);
     
     // Check if it's a range format (contains a comma)
     if (paramValue.includes(',')) {
       const parts = paramValue.split(',');
-      // Use the first non-empty value, preferring the second one (max)
-      initialGuestCount = parts[1] || parts[0] || null;
+      // For range min,max or min, format, use the minimum value
+      initialGuestCount = parts[0] || null;
     } else {
       // It's already a single value
       initialGuestCount = paramValue;
@@ -55,15 +51,12 @@ const GuestsFilterComponent = props => {
     setIsSelected(!!guestCount);
     
     if (guestCount) {
-      // Use a range to show all listings that can handle this capacity or more
-      // The format is "minValue,maxValue" where minValue is what we're filtering by
-      // and maxValue can be the same or higher (we use the same for simplicity)
-      const submitParam = { [queryParamName]: `${guestCount},${guestCount}` };
-      console.log('GuestsFilter submitting:', submitParam);
+      // Use a minimum range format to show all listings with capacity >= selected value
+      // Format "min," means "at least min capacity" (no upper bound)
+      const submitParam = { [queryParamName]: `${guestCount},` };
       onSubmit(submitParam);
     } else {
       // Clear the filter if no value is selected
-      console.log('GuestsFilter clearing filter');
       onSubmit({ [queryParamName]: null });
     }
   };

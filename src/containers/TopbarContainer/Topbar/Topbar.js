@@ -336,7 +336,7 @@ render() {
       <Button 
         className={css.searchButton} 
         type="button" 
-        onClick={this.props.handleMobileFilterToggle} // Use props directly
+        onClick={this.props.handleMobileFilterToggle}
       >
         <Icons name="calendar" className={css.searchIcon} /> 
         Choose a date

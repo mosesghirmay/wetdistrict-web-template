@@ -7,12 +7,9 @@ const MyContextFunctions = React.createContext();
 // ContextFunctions component to provide shared functions
 const ContextFunctions = (props) => {
   // Get state functions from another context
-  const { setMobileSearchFilterOpen } = useMyContext();
+  const { onOpenMobileSearchFilterModal } = useMyContext();
 
-  // Function to toggle the mobile search filter modal
-  const onOpenMobileSearchFilterModal = (boolean) => {
-    setMobileSearchFilterOpen(boolean);
-  };
+  // This component just passes through the function
 
   return (
     <MyContextFunctions.Provider value={{ onOpenMobileSearchFilterModal }}>
@@ -22,10 +19,29 @@ const ContextFunctions = (props) => {
 };
 
 export const useMyContextFunctions = () => {
-  const { onOpenMobileSearchFilterModal } = useMyContext();
+  const context = useMyContext();
+  
+  // Add extra safety check
+  if (!context || !context.onOpenMobileSearchFilterModal) {
+    console.error("Context or onOpenMobileSearchFilterModal is not available");
+    
+    // Return a fallback implementation if the real one isn't available
+    return {
+      onOpenMobileSearchFilterModal: (isOpen) => {
+        console.log(`Fallback implementation - setting isOpen: ${isOpen}`);
+        // If we can find the modal directly, try to manipulate it
+        if (typeof document !== 'undefined') {
+          const modal = document.getElementById('SearchFiltersMobile.filters');
+          if (modal) {
+            modal.style.display = isOpen ? 'block' : 'none';
+          }
+        }
+      }
+    };
+  }
   
   return {
-    onOpenMobileSearchFilterModal,
+    onOpenMobileSearchFilterModal: context.onOpenMobileSearchFilterModal,
   };
 };
 
