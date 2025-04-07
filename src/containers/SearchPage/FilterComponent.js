@@ -235,15 +235,16 @@ case 'StartTime': {
           });
         }
         
-        // Ensure we're using the correct parameter name format
-        const paramName = constructQueryParamName(key, config.scope);
-        console.log(`Guest filter param name: ${paramName} for key: ${key}, scope: ${config.scope}`);
+        // Always use pub_capacity as the parameter name since that's the field
+        // defined in configListing.js and stored in the listings
+        const paramName = 'pub_capacity';
+        console.log(`Using hardcoded query param: ${paramName} for capacity filter`);
         
         return (
           <GuestsFilter
             id={componentId}
             label="Who"
-            name={name}
+            name={'capacity'}
             queryParamNames={[paramName]}
             initialValues={initialValues([paramName], liveEdit)}
             onSubmit={getHandleChangedValueFn(useHistoryPush)}

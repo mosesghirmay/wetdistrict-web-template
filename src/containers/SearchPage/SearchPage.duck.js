@@ -317,8 +317,25 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   const seatsMaybe = seatsSearchParams(seats, datesMaybe);
   const sortMaybe = sort === config.search.sortConfig.relevanceKey ? {} : { sort };
   
+  // Handle capacity parameter
+  const capacityParam = params => {
+    // Check if we have a pub_capacity parameter
+    const capacityValue = params.pub_capacity;
+    if (!capacityValue) return {};
+    
+    // If capacity is in format "min,max", use it directly
+    // This handles our GuestsFilter format which is "n,n"
+    if (capacityValue.includes(',')) {
+      console.log('Using capacity filter:', capacityValue);
+      return { pub_capacity: capacityValue };
+    }
+    
+    return {};
+  };
+  
   // Get time availability filter params
   const timeAvailabilityParams = getTimeAvailabilityFilterParams(restOfParams);
+  const capacityParams = capacityParam(restOfParams);
 
   const params = {
     // The rest of the params except invalid nested category-related params
@@ -332,6 +349,8 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     ...searchValidListingTypes(config.listing.listingTypes),
     // Add time availability filter params
     ...timeAvailabilityParams,
+    // Add capacity filter params
+    ...capacityParams,
     perPage,
   };
 

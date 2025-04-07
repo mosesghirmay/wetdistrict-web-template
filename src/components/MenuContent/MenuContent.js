@@ -49,14 +49,23 @@ const MenuContent = props => {
     </div>
   ) : null;
 
-  React.Children.forEach(children, child => {
-    if (child.type !== MenuItem) {
-      throw new Error('All children of MenuContent must be MenuItems.');
-    }
-    if (child.key == null) {
-      throw new Error('All children of MenuContent must have a "key" prop.');
-    }
-  });
+  // Safely validate children when they exist
+  if (children) {
+    React.Children.forEach(children, child => {
+      // Skip null or undefined children
+      if (!child) return;
+      
+      // Make sure it's a valid React element with a type
+      if (React.isValidElement(child) && child.type !== MenuItem) {
+        throw new Error('All children of MenuContent must be MenuItems.');
+      }
+      
+      // Only check key prop on valid elements
+      if (React.isValidElement(child) && child.key == null) {
+        throw new Error('All children of MenuContent must have a "key" prop.');
+      }
+    });
+  }
 
   return (
     <div className={classes} ref={contentRef} style={style}>

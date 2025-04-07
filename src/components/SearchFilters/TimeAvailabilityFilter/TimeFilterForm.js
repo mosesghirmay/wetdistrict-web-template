@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { func, string, object, bool } from 'prop-types';
 import classNames from 'classnames';
 import { FormattedMessage, intlShape, injectIntl } from '../../../util/reactIntl';
@@ -25,11 +25,6 @@ const generateFixedTimeOptions = (intl) => {
   });
 };
 
-// Find the 2 PM option index for default selection
-const find2PMOptionIndex = (options) => {
-  return options.findIndex(option => option.value === '14:00');
-};
-
 // Calculate end time based on start time (3 hour fixed duration)
 const calculateEndTime = (startTimeStr) => {
   if (!startTimeStr) return null;
@@ -44,11 +39,6 @@ const calculateEndTime = (startTimeStr) => {
   return `${endHours.toString().padStart(2, '0')}:${endMinutes === 0 ? '00' : endMinutes.toString().padStart(2, '0')}`;
 };
 
-// Find the display option for a given time value
-const findTimeOption = (timeOptions, timeValue) => {
-  return timeOptions.find(option => option.value === timeValue);
-};
-
 const TimeFilterFormComponent = props => {
   const {
     rootClassName,
@@ -61,25 +51,15 @@ const TimeFilterFormComponent = props => {
     ...rest
   } = props;
 
-  const [startTime, setStartTime] = useState(initialValues.availabilityStartTime || null);
-  const [endTime, setEndTime] = useState(initialValues.availabilityEndTime || null);
+  const [startTime, setStartTime] = useState(initialValues.availabilityStartTime || '14:00');
+  const [endTime, setEndTime] = useState(initialValues.availabilityEndTime || '17:00');
   const [lastSubmittedTime, setLastSubmittedTime] = useState(null);
-  const [userSelected, setUserSelected] = useState(false);
+  // Only consider it selected if there are user-provided initialValues that aren't the default
+  const [isSelected, setIsSelected] = useState(false);
+  const selectRef = useRef(null);
 
   // Generate fixed time options - memoized to prevent unnecessary recalculation
   const timeOptions = useMemo(() => generateFixedTimeOptions(intl), [intl]);
-  
-  // Set default to 2PM when component initializes
-  useEffect(() => {
-    if (!startTime) {
-      const defaultTimeIndex = find2PMOptionIndex(timeOptions);
-      const defaultTime = defaultTimeIndex !== -1 ? timeOptions[defaultTimeIndex].value : timeOptions[0]?.value;
-      
-      if (defaultTime) {
-        setStartTime(defaultTime);
-      }
-    }
-  }, [timeOptions]);
   
   // Automatically calculate end time when start time changes (3-hour fixed duration)
   useEffect(() => {
@@ -92,7 +72,7 @@ const TimeFilterFormComponent = props => {
         setLastSubmittedTime(startTime);
         
         // Only submit if user has made an explicit selection
-        if (userSelected) {
+        if (isSelected) {
           onSubmit({
             availabilityStartTime: startTime,
             availabilityEndTime: calculatedEndTime
@@ -102,20 +82,33 @@ const TimeFilterFormComponent = props => {
     } else {
       setEndTime(null);
     }
-  }, [startTime, onSubmit, lastSubmittedTime, userSelected]);
-
-  const isTimeSelected = userSelected;
+  }, [startTime, onSubmit, lastSubmittedTime, isSelected]);
 
   const classes = classNames(
     rootClassName || css.root, 
     className,
-    { [css.selected]: isTimeSelected }
+    { [css.selected]: isSelected }
   );
   
   const formClasses = classNames(
     css.form,
     { [css.disabledForm]: isLoading }
   );
+
+  // Handle dropdown change events
+  const handleTimeChange = (e) => {
+    const newTime = e.target.value;
+    
+    // Always mark as selected when the dropdown is used, even if selecting the current value
+    setIsSelected(true);
+    setStartTime(newTime);
+  };
+  
+  // This function is triggered when the select field is clicked/interacted with
+  const handleSelectInteraction = () => {
+    // If user clicks on select, mark it as selected even if they don't change the value
+    setIsSelected(true);
+  };
 
   // Format end time to show 5 PM if start time is 2 PM, or placeholder if no time selected
   const formatEndTime = () => {
@@ -149,10 +142,7 @@ const TimeFilterFormComponent = props => {
   
   return (
     <div className={classes}>
-      <div className={formClasses}>
-        {/* Add a "Time:" label at the top to match DatePicker styling */}
-       
-        
+      <div className={formClasses}>        
         <div className={css.formRow}>
           <div className={css.field}>
             <label className={css.innerLabel}>
@@ -162,12 +152,12 @@ const TimeFilterFormComponent = props => {
               className={css.selectField}
               name="availabilityStartTime"
               id="availability-start-time"
-              onChange={e => {
-                setStartTime(e.target.value);
-                setUserSelected(true);
-              }}
-              value={startTime || timeOptions[0]?.value || ''}
+              onChange={handleTimeChange}
+              onClick={handleSelectInteraction} 
+              onFocus={handleSelectInteraction}
+              value={startTime}
               disabled={isLoading}
+              ref={selectRef}
             >
               {timeOptions.map(option => (
                 <option key={option.key} value={option.value}>
