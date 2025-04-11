@@ -49,26 +49,33 @@ const urlifyBase64 = base64Str =>
 // passed in this response. The request to the redirect URI is handled with the
 // `/login-as` endpoint.
 module.exports = (req, res) => {
-  const userId = req.query.user_id;
+  try {
+    const userId = req.query.user_id;
 
-  if (!userId) {
-    return res.status(400).send('Missing query parameter: user_id.');
-  }
-  if (!ROOT_URL_SAFE) {
-    return res.status(409).send('Marketplace canonical root URL is missing.');
-  }
+    if (!userId) {
+      if (!res.headersSent) {
+        return res.status(400).send('Missing query parameter: user_id.');
+      }
+      return;
+    }
+    if (!ROOT_URL_SAFE) {
+      if (!res.headersSent) {
+        return res.status(409).send('Marketplace canonical root URL is missing.');
+      }
+      return;
+    }
 
-  const state = urlifyBase64(crypto.randomBytes(32).toString('base64'));
-  const codeVerifier = urlifyBase64(crypto.randomBytes(32).toString('base64'));
-  const hash = crypto
-    .createHash('sha256')
-    .update(codeVerifier)
-    .digest('base64');
-  const codeChallenge = urlifyBase64(hash);
-  const authorizeServerUrl = `${CONSOLE_URL}/api/authorize-as`;
-  const { target_path: targetPath } = req.query || {};
+    const state = urlifyBase64(crypto.randomBytes(32).toString('base64'));
+    const codeVerifier = urlifyBase64(crypto.randomBytes(32).toString('base64'));
+    const hash = crypto
+      .createHash('sha256')
+      .update(codeVerifier)
+      .digest('base64');
+    const codeChallenge = urlifyBase64(hash);
+    const authorizeServerUrl = `${CONSOLE_URL}/api/authorize-as`;
+    const { target_path: targetPath } = req.query || {};
 
-  const location = `${authorizeServerUrl}?\
+    const location = `${authorizeServerUrl}?\
 response_type=code&\
 client_id=${CLIENT_ID}&\
 redirect_uri=${loginAsRedirectUri}&\
@@ -77,15 +84,23 @@ state=${state}&\
 code_challenge=${codeChallenge}&\
 code_challenge_method=S256`;
 
-  const cookieOpts = {
-    maxAge: 1000 * 30, // 30 seconds
-    secure: USING_SSL,
-  };
+    const cookieOpts = {
+      maxAge: 1000 * 30, // 30 seconds
+      secure: USING_SSL,
+    };
 
-  res.cookie(stateKey, state, cookieOpts);
-  res.cookie(codeVerifierKey, codeVerifier, cookieOpts);
-  if (targetPath) {
-    res.cookie(targetPathKey, targetPath, cookieOpts);
+    if (!res.headersSent) {
+      res.cookie(stateKey, state, cookieOpts);
+      res.cookie(codeVerifierKey, codeVerifier, cookieOpts);
+      if (targetPath) {
+        res.cookie(targetPathKey, targetPath, cookieOpts);
+      }
+      return res.redirect(location);
+    }
+  } catch (error) {
+    console.error('initiate-login-as error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   }
-  return res.redirect(location);
 };

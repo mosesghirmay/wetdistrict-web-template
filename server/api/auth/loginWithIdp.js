@@ -20,90 +20,95 @@ const httpsAgent = new https.Agent({ keepAlive: true });
 
 const baseUrl = BASE_URL ? { baseUrl: BASE_URL } : {};
 
-module.exports = (err, user, req, res, idpClientId, idpId) => {
-  if (err) {
-    log.error(err, 'fetching-user-data-from-idp-failed');
+module.exports = async (err, user, req, res, idpClientId, idpId) => {
+  try {
+    if (err) {
+      log.error(err, 'fetching-user-data-from-idp-failed');
 
-    // Save error details to cookie so that we can show
-    // relevant information in the frontend
-    return res
-      .cookie(
-        'st-autherror',
-        {
-          status: err.status,
-          code: err.code,
-          message: err.message,
-        },
-        {
-          maxAge: 15 * 60 * 1000, // 15 minutes
-        }
-      )
-      .redirect(`${rootUrl}/login#`);
-  }
+      // Save error details to cookie so that we can show
+      // relevant information in the frontend
+      if (!res.headersSent) {
+        return res
+          .cookie(
+            'st-autherror',
+            {
+              status: err.status,
+              code: err.code,
+              message: err.message,
+            },
+            {
+              maxAge: 15 * 60 * 1000, // 15 minutes
+            }
+          )
+          .redirect(`${rootUrl}/login#`);
+      }
+      return;
+    }
 
-  if (!user) {
-    log.error(
-      new Error('Failed to fetch user details from identity provider'),
-      'fetching-user-data-from-idp-failed'
-    );
+    if (!user) {
+      log.error(
+        new Error('Failed to fetch user details from identity provider'),
+        'fetching-user-data-from-idp-failed'
+      );
 
-    // Save error details to cookie so that we can show
-    // relevant information in the frontend
-    return res
-      .cookie(
-        'st-autherror',
-        {
-          status: 'Bad Request',
-          code: 400,
-          message: 'Failed to fetch user details from identity provider!',
-        },
-        {
-          maxAge: 15 * 60 * 1000, // 15 minutes
-        }
-      )
-      .redirect(`${rootUrl}/login#`);
-  }
+      // Save error details to cookie so that we can show
+      // relevant information in the frontend
+      if (!res.headersSent) {
+        return res
+          .cookie(
+            'st-autherror',
+            {
+              status: 'Bad Request',
+              code: 400,
+              message: 'Failed to fetch user details from identity provider!',
+            },
+            {
+              maxAge: 15 * 60 * 1000, // 15 minutes
+            }
+          )
+          .redirect(`${rootUrl}/login#`);
+      }
+      return;
+    }
 
-  const { from, defaultReturn, defaultConfirm, userType } = user;
+    const { from, defaultReturn, defaultConfirm, userType } = user;
 
-  const tokenStore = sharetribeSdk.tokenStore.expressCookieStore({
-    clientId: CLIENT_ID,
-    req,
-    res,
-    secure: USING_SSL,
-  });
+    const tokenStore = sharetribeSdk.tokenStore.expressCookieStore({
+      clientId: CLIENT_ID,
+      req,
+      res,
+      secure: USING_SSL,
+    });
 
-  const sdk = sharetribeSdk.createInstance({
-    transitVerbose: TRANSIT_VERBOSE,
-    clientId: CLIENT_ID,
-    clientSecret: CLIENT_SECRET,
-    httpAgent,
-    httpsAgent,
-    tokenStore,
-    typeHandlers: sdkUtils.typeHandlers,
-    ...baseUrl,
-  });
+    const sdk = sharetribeSdk.createInstance({
+      transitVerbose: TRANSIT_VERBOSE,
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
+      httpAgent,
+      httpsAgent,
+      tokenStore,
+      typeHandlers: sdkUtils.typeHandlers,
+      ...baseUrl,
+    });
 
-  return sdk
-    .loginWithIdp({
-      idpId,
-      idpClientId,
-      idpToken: user.idpToken,
-    })
-    .then(response => {
-      if (response.status === 200) {
+    try {
+      const response = await sdk.loginWithIdp({
+        idpId,
+        idpClientId,
+        idpToken: user.idpToken,
+      });
+      
+      if (response.status === 200 && !res.headersSent) {
         // If the user was authenticated, redirect back to to LandingPage
         // We need to add # to the end of the URL because otherwise Facebook
         // login will add their defaul #_#_ which breaks the routing in frontend.
-
         if (from) {
-          res.redirect(`${rootUrl}${from}#`);
+          return res.redirect(`${rootUrl}${from}#`);
         } else {
-          res.redirect(`${rootUrl}${defaultReturn}#`);
+          return res.redirect(`${rootUrl}${defaultReturn}#`);
         }
       }
-    })
-    .catch(() => {
+    } catch (loginError) {
       console.log(
         'Authenticating with idp failed. User needs to confirm creating sign up in frontend.'
       );
@@ -113,23 +118,30 @@ module.exports = (err, user, req, res, idpClientId, idpId) => {
       // that we can use that information in createUserWithIdp api call.
       // The createUserWithIdp api call is triggered from frontend
       // after showing a confirm page to user
+      if (!res.headersSent) {
+        res.cookie(
+          'st-authinfo',
+          {
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            idpToken: user.idpToken,
+            idpId,
+            from,
+            userType,
+          },
+          {
+            maxAge: 15 * 60 * 1000, // 15 minutes
+          }
+        );
 
-      res.cookie(
-        'st-authinfo',
-        {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          idpToken: user.idpToken,
-          idpId,
-          from,
-          userType,
-        },
-        {
-          maxAge: 15 * 60 * 1000, // 15 minutes
-        }
-      );
-
-      res.redirect(`${rootUrl}${defaultConfirm}#`);
-    });
+        return res.redirect(`${rootUrl}${defaultConfirm}#`);
+      }
+    }
+  } catch (error) {
+    console.error('loginWithIdp error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 };

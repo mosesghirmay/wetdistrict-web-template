@@ -42,29 +42,34 @@ const strategyOptions = {
  * @param {Function} done Session management function, introduced in `authenticateGoogleCallback`
  */
 const verifyCallback = (req, accessToken, refreshToken, rawReturn, profile, done) => {
-  // We need to add additional parameter `rawReturn` to the callback
-  // so that we can access the id_token coming from Google
-  // With Google we want to use that id_token instead of accessToken in Sharetribe
-  const idpToken = rawReturn.id_token;
+  try {
+    // We need to add additional parameter `rawReturn` to the callback
+    // so that we can access the id_token coming from Google
+    // With Google we want to use that id_token instead of accessToken in Sharetribe
+    const idpToken = rawReturn.id_token;
 
-  const { email, given_name, family_name } = profile._json;
-  const state = req.query.state;
-  const queryParams = JSON.parse(state);
+    const { email, given_name, family_name } = profile._json;
+    const state = req.query.state;
+    const queryParams = JSON.parse(state);
 
-  const { from, defaultReturn, defaultConfirm, userType } = queryParams;
+    const { from, defaultReturn, defaultConfirm, userType } = queryParams;
 
-  const userData = {
-    email,
-    firstName: given_name,
-    lastName: family_name,
-    idpToken,
-    from,
-    defaultReturn,
-    defaultConfirm,
-    userType,
-  };
+    const userData = {
+      email,
+      firstName: given_name,
+      lastName: family_name,
+      idpToken,
+      from,
+      defaultReturn,
+      defaultConfirm,
+      userType,
+    };
 
-  done(null, userData);
+    done(null, userData);
+  } catch (error) {
+    console.error('Google verifyCallback error:', error);
+    done(error);
+  }
 };
 
 // ClientId is required when adding a new Google strategy to passport
@@ -81,24 +86,32 @@ if (clientID) {
  * @param {Function} next Call the next middleware function in the stack
  */
 exports.authenticateGoogle = (req, res, next) => {
-  const { from, defaultReturn, defaultConfirm, userType } = req.query || {};
-  const params = {
-    ...(from ? { from } : {}),
-    ...(defaultReturn ? { defaultReturn } : {}),
-    ...(defaultConfirm ? { defaultConfirm } : {}),
-    ...(userType ? { userType } : {}),
-  };
+  try {
+    const { from, defaultReturn, defaultConfirm, userType } = req.query || {};
+    const params = {
+      ...(from ? { from } : {}),
+      ...(defaultReturn ? { defaultReturn } : {}),
+      ...(defaultConfirm ? { defaultConfirm } : {}),
+      ...(userType ? { userType } : {}),
+    };
 
-  const paramsAsString = JSON.stringify(params);
+    const paramsAsString = JSON.stringify(params);
 
-  passport.authenticate('google', {
-    scope: [
-      'https://www.googleapis.com/auth/plus.login',
-      'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/userinfo.email',
-    ],
-    state: paramsAsString,
-  })(req, res, next);
+    passport.authenticate('google', {
+      scope: [
+        'https://www.googleapis.com/auth/plus.login',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
+      ],
+      state: paramsAsString,
+    })(req, res, next);
+  } catch (error) {
+    console.error('authenticateGoogle error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    next(error);
+  }
 };
 
 /**
@@ -112,13 +125,21 @@ exports.authenticateGoogle = (req, res, next) => {
  * @param {Function} next Call the next middleware function in the stack
  */
 exports.authenticateGoogleCallback = (req, res, next) => {
-  // We've already defined the `verifyCallback` function for the Passport Google authentication
-  // strategy. That function is normally used to verify the user information obtained from identity
-  // provider, or alternatively create a new use while an internal Passport function is used to
-  // store the user data into session. In our case however, we use the SDK to manage sessions.
-  // Therefore, we provide an additional session management function here, that is called from the
-  // `verifyCallback` fn.
-  const sessionFn = (err, user) => loginWithIdp(err, user, req, res, clientID, 'google');
+  try {
+    // We've already defined the `verifyCallback` function for the Passport Google authentication
+    // strategy. That function is normally used to verify the user information obtained from identity
+    // provider, or alternatively create a new use while an internal Passport function is used to
+    // store the user data into session. In our case however, we use the SDK to manage sessions.
+    // Therefore, we provide an additional session management function here, that is called from the
+    // `verifyCallback` fn.
+    const sessionFn = (err, user) => loginWithIdp(err, user, req, res, clientID, 'google');
 
-  passport.authenticate('google', sessionFn)(req, res, next);
+    passport.authenticate('google', sessionFn)(req, res, next);
+  } catch (error) {
+    console.error('authenticateGoogleCallback error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    next(error);
+  }
 };

@@ -7,52 +7,58 @@ const {
   fetchCommission,
 } = require('../api-util/sdk');
 
-module.exports = (req, res) => {
-  const { isSpeculative, orderData, bodyParams, queryParams } = req.body;
+module.exports = async (req, res) => {
+  try {
+    const { isSpeculative, orderData, bodyParams, queryParams } = req.body;
 
-  const sdk = getSdk(req, res);
-  let lineItems = null;
+    const sdk = getSdk(req, res);
+    let lineItems = null;
 
-  const listingPromise = () => sdk.listings.show({ id: bodyParams?.params?.listingId });
+    const listingPromise = () => sdk.listings.show({ id: bodyParams?.params?.listingId });
 
-  Promise.all([listingPromise(), fetchCommission(sdk)])
-    .then(([showListingResponse, fetchAssetsResponse]) => {
-      const listing = showListingResponse.data.data;
-      const commissionAsset = fetchAssetsResponse.data.data[0];
+    const [showListingResponse, fetchAssetsResponse] = await Promise.all([
+      listingPromise(), 
+      fetchCommission(sdk)
+    ]);
+    
+    const listing = showListingResponse.data.data;
+    const commissionAsset = fetchAssetsResponse.data.data[0];
 
-      const { providerCommission, customerCommission } =
-        commissionAsset?.type === 'jsonAsset' ? commissionAsset.attributes.data : {};
+    const { providerCommission, customerCommission } =
+      commissionAsset?.type === 'jsonAsset' ? commissionAsset.attributes.data : {};
 
-      lineItems = transactionLineItems(
-        listing,
-        { ...orderData, ...bodyParams.params },
-        providerCommission,
-        customerCommission
-      );
+    lineItems = transactionLineItems(
+      listing,
+      { ...orderData, ...bodyParams.params },
+      providerCommission,
+      customerCommission
+    );
 
-      return getTrustedSdk(req);
-    })
-    .then(trustedSdk => {
-      // Omit listingId from params (transition/request-payment-after-inquiry does not need it)
-      const { listingId, ...restParams } = bodyParams?.params || {};
+    const trustedSdk = await getTrustedSdk(req);
+    
+    // Omit listingId from params (transition/request-payment-after-inquiry does not need it)
+    const { listingId, ...restParams } = bodyParams?.params || {};
 
-      // Add lineItems to the body params
-      const body = {
-        ...bodyParams,
-        params: {
-          ...restParams,
-          lineItems,
-        },
-      };
+    // Add lineItems to the body params
+    const body = {
+      ...bodyParams,
+      params: {
+        ...restParams,
+        lineItems,
+      },
+    };
 
-      if (isSpeculative) {
-        return trustedSdk.transactions.transitionSpeculative(body, queryParams);
-      }
-      return trustedSdk.transactions.transition(body, queryParams);
-    })
-    .then(apiResponse => {
-      const { status, statusText, data } = apiResponse;
-      res
+    let apiResponse;
+    if (isSpeculative) {
+      apiResponse = await trustedSdk.transactions.transitionSpeculative(body, queryParams);
+    } else {
+      apiResponse = await trustedSdk.transactions.transition(body, queryParams);
+    }
+
+    const { status, statusText, data } = apiResponse;
+    
+    if (!res.headersSent) {
+      return res
         .status(status)
         .set('Content-Type', 'application/transit+json')
         .send(
@@ -63,8 +69,11 @@ module.exports = (req, res) => {
           })
         )
         .end();
-    })
-    .catch(e => {
-      handleError(res, e);
-    });
+    }
+  } catch (error) {
+    console.error('transition-privileged error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 };
