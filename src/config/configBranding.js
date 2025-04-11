@@ -1,8 +1,10 @@
 import logoImageDesktop from '../assets/biketribe-logo-desktop.png';
 import logoImageMobile from '../assets/biketribe-logo-mobile.png';
 import brandImage from '../assets/biketribe-brandImage-1500.jpg';
-import facebookImage from '../assets/biketribe-facebook-sharing-1200x630.jpg';
-import twitterImage from '../assets/biketribe-twitter-sharing-600x314.jpg';
+import simpleyachtImage from '../assets/simpleyacht.jpg';
+// The following imports are kept for reference
+// import facebookImage from '../assets/biketribe-facebook-sharing-1200x630.jpg';
+// import twitterImage from '../assets/biketribe-twitter-sharing-600x314.jpg';
 
 /////////////////////////////////////////////////////////
 // This file contains configs that affect branding     //
@@ -47,7 +49,9 @@ export const brandImageURL = brandImage;
 // Default images for social media sharing
 // These can be overwritten per page
 
-// For Facebook, the aspect ratio should be 1200x630 (otherwise, the image is cropped)
-export const facebookImageURL = facebookImage;
-// For Twitter, the aspect ratio should be 600x314 (otherwise, the image is cropped)
-export const twitterImageURL = twitterImage;
+// Note: We're using simpleyacht.jpg for all social media previews
+// Ideally, images should have specific aspect ratios for each platform:
+// - For Facebook: 1200x630 pixels
+// - For Twitter: 600x314 pixels
+export const facebookImageURL = simpleyachtImage;
+export const twitterImageURL = simpleyachtImage;
