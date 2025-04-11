@@ -169,7 +169,6 @@ const MaintenanceModeError = props => {
       locale={locale} 
       messages={messages} 
       textComponent="span"
-      onError={error => console.error('IntlProvider error:', error)}
     >
       <HelmetProvider context={helmetContext}>
         <MaintenanceMode />
@@ -262,7 +261,6 @@ export const ClientApp = props => {
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
         textComponent="span"
-        onError={error => console.error('IntlProvider error:', error)}
       >
         <Provider store={store}>
           <HelmetProvider>
@@ -305,7 +303,6 @@ export const ServerApp = props => {
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
         textComponent="span"
-        onError={error => console.error('IntlProvider error:', error)}
       >
         <Provider store={store}>
           <HelmetProvider context={helmetContext}>

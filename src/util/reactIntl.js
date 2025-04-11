@@ -1,6 +1,6 @@
 import { func, shape } from 'prop-types';
 import {
-  IntlProvider,
+  IntlProvider as OriginalIntlProvider,
   FormattedMessage,
   FormattedDate,
   FormattedDateTimeRange,
@@ -13,6 +13,22 @@ import {
 // by default the library assumes the usage of ES modules
 // and that don't work with server-side rendering.
 // https://github.com/formatjs/formatjs/issues/1499#issuecomment-570151879
+
+// Create a custom IntlProvider that doesn't duplicate error handlers
+const IntlProvider = (props) => {
+  // Use a custom error handler to prevent duplication
+  const customProps = {
+    ...props,
+    onError: (error) => {
+      // Only log in development to avoid polluting production logs
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[IntlProvider] Error:', error.code, error.message);
+      }
+    }
+  };
+  
+  return <OriginalIntlProvider {...customProps} />;
+};
 
 const intlShape = shape({
   formatDate: func.isRequired,
