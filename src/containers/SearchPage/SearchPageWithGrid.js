@@ -10,6 +10,9 @@ import { useIntl, intlShape, FormattedMessage } from '../../util/reactIntl';
 import { useConfiguration } from '../../context/configurationContext';
 import { useRouteConfiguration } from '../../context/routeConfigurationContext';
 
+// Import the simpleyacht image for social sharing
+import simpleyachtImage from '../../assets/simpleyacht.jpg';
+
 import { createResourceLocatorString } from '../../util/routes';
 import {
   isAnyFilterActive,
@@ -339,12 +342,38 @@ export class SearchPageComponent extends Component {
 
     // N.B. openMobileMap button is sticky.
     // For some reason, stickyness doesn't work on Safari, if the element is <button>
+    // Create absolute URL for social sharing image to ensure it works in text messages
+    const marketplaceRootURL = config.marketplaceRootURL || '';
+    const absoluteImageURL = `${marketplaceRootURL}${simpleyachtImage}`;
+    
+    // Custom social sharing configuration
+    const socialSharing = {
+      title: 'Wet District Yacht Tours and Luxury Boat Rentals',
+      description: 'Book your dream yacht experience with Wet District. Luxury boat rentals and yacht tours in Miami.',
+      images1200: [
+        {
+          url: absoluteImageURL,
+          width: 1200,
+          height: 630,
+        }
+      ],
+      images600: [
+        {
+          url: absoluteImageURL,
+          width: 600,
+          height: 314,
+        }
+      ],
+    };
+
     return (
       <Page
         scrollingDisabled={scrollingDisabled}
         description={description}
         title={title}
         schema={schema}
+        socialSharing={socialSharing}
+        openGraphType="website"
       >
         {!isMobileLayout && (
           <TopbarContainer rootClassName={topbarClasses} currentSearchParams={urlQueryParams} />
