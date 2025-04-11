@@ -64,12 +64,16 @@ module.exports = async (req, res) => {
       console.error('login-as SDK error:', error);
       if (!res.headersSent) {
         return res.status(401).send('Unable to authenticate as a user');
+      } else {
+        console.warn('Headers already sent — skipping error response.');
       }
     }
   } catch (error) {
     console.error('login-as error:', error);
     if (!res.headersSent) {
       return res.status(500).json({ error: 'Internal server error' });
+    } else {
+      console.warn('Headers already sent — skipping error response.');
     }
   }
 };

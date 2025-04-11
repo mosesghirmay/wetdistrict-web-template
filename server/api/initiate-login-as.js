@@ -101,6 +101,8 @@ code_challenge_method=S256`;
     console.error('initiate-login-as error:', error);
     if (!res.headersSent) {
       return res.status(500).json({ error: 'Internal server error' });
+    } else {
+      console.warn('Headers already sent — skipping error response.');
     }
   }
 };

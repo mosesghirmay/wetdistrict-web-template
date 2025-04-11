@@ -109,6 +109,8 @@ exports.authenticateGoogle = (req, res, next) => {
     console.error('authenticateGoogle error:', error);
     if (!res.headersSent) {
       return res.status(500).json({ error: 'Internal server error' });
+    } else {
+      console.warn('Headers already sent — skipping error response.');
     }
     next(error);
   }
@@ -139,6 +141,8 @@ exports.authenticateGoogleCallback = (req, res, next) => {
     console.error('authenticateGoogleCallback error:', error);
     if (!res.headersSent) {
       return res.status(500).json({ error: 'Internal server error' });
+    } else {
+      console.warn('Headers already sent — skipping error response.');
     }
     next(error);
   }

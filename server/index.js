@@ -16,6 +16,11 @@
 // This enables nice stacktraces from the minified production bundle
 require('source-map-support').install();
 
+// Global handler for unhandled Promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Configure process.env with .env.* files
 require('./env').configureEnv();
 
