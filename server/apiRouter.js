@@ -40,7 +40,12 @@ router.use((req, res, next) => {
     } catch (e) {
       console.error('Failed to parse request body as Transit:');
       console.error(e);
-      return res.status(400).send('Invalid Transit in request body.');
+      if (!res.headersSent) {
+        return res.status(400).send('Invalid Transit in request body.');
+      } else {
+        console.warn('Headers already sent — skipping error response.');
+        return;
+      }
     }
   }
   next();

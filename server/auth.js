@@ -15,10 +15,14 @@ exports.basicAuth = (username, password) => {
     if (user && user.name === username && user.pass === password) {
       next();
     } else {
-      res
-        .set({ 'WWW-Authenticate': 'Basic realm="Authentication required"' })
-        .status(401)
-        .end("I'm afraid I cannot let you do that.");
+      if (!res.headersSent) {
+        res
+          .set({ 'WWW-Authenticate': 'Basic realm="Authentication required"' })
+          .status(401)
+          .end("I'm afraid I cannot let you do that.");
+      } else {
+        console.warn('Headers already sent — skipping authentication response.');
+      }
     }
   };
 };

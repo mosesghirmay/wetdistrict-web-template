@@ -76,7 +76,12 @@ const errorPage404 = fs.readFileSync(path.join(buildPath, '404.html'), 'utf-8');
 app.use(
   /.*(\.php|\.php7|\/wp-.*\/.*|cgi-bin.*|htdocs\.rar|htdocs\.zip|root\.7z|root\.rar|root\.zip|www\.7z|www\.rar|wwwroot\.7z)$/,
   (req, res) => {
-    return res.status(404).send(errorPage404);
+    if (!res.headersSent) {
+      return res.status(404).send(errorPage404);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+      return;
+    }
   }
 );
 
@@ -161,6 +166,12 @@ app.get('/robots.txt', robotsTxtRoute);
 
 // Handle different sitemap-* resources. E.g. /sitemap-index.xml
 app.get('/sitemap-:resource', sitemapResourceRoute);
+
+// Test route to verify headersSent protection
+app.get('/test-double-send', (req, res) => {
+  res.send('First response');
+  res.send('Second response'); // This should trigger a warning in your logs
+});
 
 // Generate web app manifest
 // When developing with "yarn run dev",
@@ -325,6 +336,14 @@ app.get('*', async (req, res) => {
 // Set error handler. If Sentry is set up, all error responses
 // will be logged there.
 log.setupExpressErrorHandler(app);
+
+// Global express error handler as a last resort for catching unhandled errors
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  if (!res.headersSent) {
+    res.status(500).send({ error: 'Internal server error' });
+  }
+});
 
 if (cspEnabled) {
   // Dig out the value of the given CSP report key from the request body.

@@ -435,9 +435,14 @@ module.exports = (req, res, next) => {
   // Making it a bit faster to react to DDOS attacks, since the generation is a bit resource intensive.
   // You might want to consider adding cron job and avoid sitemap generation on request time.
   if (isSitemapDisabled) {
-    res.status(503).end();
-    console.log('Sitemap functionality is disabled.');
-    return;
+    if (!res.headersSent) {
+      res.status(503).end();
+      console.log('Sitemap functionality is disabled.');
+      return;
+    } else {
+      console.warn('Headers already sent — skipping response.');
+      return;
+    }
   }
 
   const sdk = sdkUtils.getSdk(req, res);

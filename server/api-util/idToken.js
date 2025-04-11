@@ -70,12 +70,16 @@ exports.createIdToken = (idpClientId, user, options) => {
 // this document is expected to be found from
 // api/.well-known/openid-configuration endpoint
 exports.openIdConfiguration = (req, res) => {
-  res.json({
-    issuer: issuerUrl,
-    jwks_uri: `${issuerUrl}/.well-known/jwks.json`,
-    subject_types_supported: ['public'],
-    id_token_signing_alg_values_supported: ['RS256'],
-  });
+  if (!res.headersSent) {
+    res.json({
+      issuer: issuerUrl,
+      jwks_uri: `${issuerUrl}/.well-known/jwks.json`,
+      subject_types_supported: ['public'],
+      id_token_signing_alg_values_supported: ['RS256'],
+    });
+  } else {
+    console.warn('Headers already sent — skipping response.');
+  }
 };
 
 /**
@@ -93,7 +97,20 @@ exports.jwksUri = keys => (req, res) => {
     });
   });
 
-  Promise.all(jwkKeys).then(resolvedJwkKeys => {
-    res.json({ keys: resolvedJwkKeys });
-  });
+  Promise.all(jwkKeys)
+    .then(resolvedJwkKeys => {
+      if (!res.headersSent) {
+        res.json({ keys: resolvedJwkKeys });
+      } else {
+        console.warn('Headers already sent — skipping response.');
+      }
+    })
+    .catch(error => {
+      console.error('jwksUri error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      } else {
+        console.warn('Headers already sent — skipping error response.');
+      }
+    });
 };
