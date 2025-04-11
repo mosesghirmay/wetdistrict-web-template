@@ -165,7 +165,12 @@ const Configurations = props => {
 const MaintenanceModeError = props => {
   const { locale, messages, helmetContext } = props;
   return (
-    <IntlProvider locale={locale} messages={messages} textComponent="span">
+    <IntlProvider 
+      locale={locale} 
+      messages={messages} 
+      textComponent="span"
+      onError={error => console.error('IntlProvider error:', error)}
+    >
       <HelmetProvider context={helmetContext}>
         <MaintenanceMode />
       </HelmetProvider>
@@ -257,6 +262,7 @@ export const ClientApp = props => {
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
         textComponent="span"
+        onError={error => console.error('IntlProvider error:', error)}
       >
         <Provider store={store}>
           <HelmetProvider>
@@ -299,6 +305,7 @@ export const ServerApp = props => {
         locale={appConfig.localization.locale}
         messages={{ ...localeMessages, ...hostedTranslations }}
         textComponent="span"
+        onError={error => console.error('IntlProvider error:', error)}
       >
         <Provider store={store}>
           <HelmetProvider context={helmetContext}>
