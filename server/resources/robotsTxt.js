@@ -112,12 +112,16 @@ const sendRobotsTxt = (req, res, robotsTxtPath) => {
       if (!res.headersSent) {
         log.error(e, 'robots-txt-stream-error');
         res.send(fallbackRobotsTxt);
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     });
   } catch (e) {
     if (!res.headersSent) {
       log.error(e, 'robots-txt-render-failed');
       res.send(fallbackRobotsTxt);
+    } else {
+      console.warn('Headers already sent — skipping response.');
     }
   }
 };
@@ -134,7 +138,11 @@ module.exports = (req, res) => {
   if (data && timestamp) {
     const age = Math.floor((Date.now() - timestamp) / 1000);
     res.set('Age', age);
-    res.send(data);
+    if (!res.headersSent) {
+      res.send(data);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+    }
     return;
   }
 

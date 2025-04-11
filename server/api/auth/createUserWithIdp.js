@@ -9,16 +9,12 @@ const TRANSIT_VERBOSE = process.env.REACT_APP_SHARETRIBE_SDK_TRANSIT_VERBOSE ===
 const USING_SSL = process.env.REACT_APP_SHARETRIBE_USING_SSL === 'true';
 const BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL;
 
-const FACBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
+const FACEBOOK_APP_ID = process.env.REACT_APP_FACEBOOK_APP_ID;
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const FACEBOOK_IDP_ID = 'facebook';
 const GOOGLE_IDP_ID = 'google';
 
-// Instantiate HTTP(S) Agents with keepAlive set to true.
-// This will reduce the request time for consecutive requests by
-// reusing the existing TCP connection, thus eliminating the time used
-// for setting up new TCP connections.
 const httpAgent = new http.Agent({ keepAlive: true });
 const httpsAgent = new https.Agent({ keepAlive: true });
 
@@ -46,22 +42,31 @@ module.exports = async (req, res) => {
 
     const { idpToken, idpId, ...rest } = req.body;
 
-    // Choose the idpClientId based on which authentication method is used.
     const idpClientId =
-      idpId === FACEBOOK_IDP_ID ? FACBOOK_APP_ID : idpId === GOOGLE_IDP_ID ? GOOGLE_CLIENT_ID : null;
+      idpId === FACEBOOK_IDP_ID
+        ? FACEBOOK_APP_ID
+        : idpId === GOOGLE_IDP_ID
+        ? GOOGLE_CLIENT_ID
+        : null;
 
+    if (!idpClientId) {
+      const err = new Error(`Unsupported IDP: ${idpId}`);
+      err.status = 400;
+      throw err;
+    }
+
+    // Create user with identity provider
     await sdk.currentUser.createWithIdp({ idpId, idpClientId, idpToken, ...rest });
-    
-    // After the user is created, we need to call loginWithIdp endpoint
-    // so that the user will be logged in.
+
+    // Log in the user with IDP
     const apiResponse = await sdk.loginWithIdp({
       idpId,
-      idpClientId: `${idpClientId}`,
-      idpToken: `${idpToken}`,
+      idpClientId,
+      idpToken,
     });
-    
+
     const { status, statusText, data } = apiResponse;
-    
+
     if (!res.headersSent) {
       return res
         .clearCookie('st-authinfo')
@@ -75,6 +80,8 @@ module.exports = async (req, res) => {
           })
         )
         .end();
+    } else {
+      console.warn('Headers already sent — skipping response.');
     }
   } catch (error) {
     console.error('Error in createUserWithIdp:', error);

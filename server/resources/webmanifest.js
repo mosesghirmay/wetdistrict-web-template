@@ -78,6 +78,8 @@ module.exports = (req, res) => {
       if (!res.headersSent) {
         res.setHeader('Content-Type', 'application/manifest+json');
         res.send(json);
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     })
     .catch(e => {
@@ -111,6 +113,8 @@ module.exports = (req, res) => {
       if (!res.headersSent) {
         res.setHeader('Content-Type', 'application/manifest+json');
         res.send(json);
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     });
 };

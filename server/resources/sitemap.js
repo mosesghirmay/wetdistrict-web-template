@@ -105,7 +105,11 @@ const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
   if (data && timestamp) {
     const age = Math.floor((Date.now() - timestamp) / 1000);
     res.set('Age', age);
-    res.send(data);
+    if (!res.headersSent) {
+      res.send(data);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+    }
     return;
   }
 
@@ -128,6 +132,8 @@ const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
       if (!res.headersSent) {
         log.error(e, 'sitemap-index-stream-error');
         res.status(500).end();
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     });
 
@@ -137,6 +143,8 @@ const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
     if (!res.headersSent) {
       log.error(e, 'sitemap-index-render-failed');
       res.status(500).end();
+    } else {
+      console.warn('Headers already sent — skipping response.');
     }
   }
 };
@@ -162,7 +170,11 @@ const sitemapDefault = (req, res, rootUrl, isPrivateMarketplace) => {
   if (data && timestamp) {
     const age = Math.floor((Date.now() - timestamp) / 1000);
     res.set('Age', age);
-    res.send(data);
+    if (!res.headersSent) {
+      res.send(data);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+    }
     return;
   }
 
@@ -185,12 +197,16 @@ const sitemapDefault = (req, res, rootUrl, isPrivateMarketplace) => {
       if (!res.headersSent) {
         log.error(e, 'sitemap-default-stream-error');
         res.status(500).end();
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     });
   } catch (e) {
     if (!res.headersSent) {
       log.error(e, 'sitemap-default-render-failed');
       res.status(500).end();
+    } else {
+      console.warn('Headers already sent — skipping response.');
     }
   }
 };
@@ -214,7 +230,11 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
   if (data && timestamp) {
     const age = Math.floor((Date.now() - timestamp) / 1000);
     res.set('Age', age);
-    res.send(data);
+    if (!res.headersSent) {
+      res.send(data);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+    }
     return;
   }
 
@@ -234,9 +254,14 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
       // If there's no listings, let's just return empty sitemap
       const hasListingIds = ids.length > 0;
       if (!hasListingIds) {
-        return res.send(
-          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-        );
+        if (!res.headersSent) {
+          return res.send(
+            `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+          );
+        } else {
+          console.warn('Headers already sent — skipping response.');
+          return;
+        }
       }
 
       const smStream = new SitemapStream({ hostname: rootUrl });
@@ -250,6 +275,8 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
         if (!res.headersSent) {
           log.error(e, 'sitemap-stream-error');
           res.status(500).end();
+        } else {
+          console.warn('Headers already sent — skipping response.');
         }
       });
     })
@@ -262,12 +289,21 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
       
       // Private marketplace mode might throw
       if (e.status === 403) {
-        return res.send(
-          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-        );
+        if (!res.headersSent) {
+          return res.send(
+            `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+          );
+        } else {
+          console.warn('Headers already sent — skipping response.');
+          return;
+        }
       }
       log.error(e, 'sitemap-recent-listings-render-failed');
-      res.status(500).end();
+      if (!res.headersSent) {
+        res.status(500).end();
+      } else {
+        console.warn('Headers already sent — skipping response.');
+      }
     });
 };
 
@@ -292,7 +328,11 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
   if (data && timestamp) {
     const age = Math.floor((Date.now() - timestamp) / 1000);
     res.set('Age', age);
-    res.send(data);
+    if (!res.headersSent) {
+      res.send(data);
+    } else {
+      console.warn('Headers already sent — skipping response.');
+    }
     return;
   }
 
@@ -311,9 +351,14 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
       // If there's no Pages, let's just return empty sitemap
       const hasAssets = assets.length > 0;
       if (!hasAssets) {
-        return res.send(
-          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
-        );
+        if (!res.headersSent) {
+          return res.send(
+            `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
+          );
+        } else {
+          console.warn('Headers already sent — skipping response.');
+          return;
+        }
       }
 
       // Pick those asset paths that CMSPage component renders
@@ -335,6 +380,8 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
         if (!res.headersSent) {
           log.error(e, 'sitemap-stream-error');
           res.status(500).end();
+        } else {
+          console.warn('Headers already sent — skipping response.');
         }
       });
     })
@@ -342,6 +389,8 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
       if (!res.headersSent) {
         log.error(e, 'sitemap-recent-pages-render-failed');
         res.status(500).end();
+      } else {
+        console.warn('Headers already sent — skipping response.');
       }
     });
 };
