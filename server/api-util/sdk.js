@@ -14,6 +14,7 @@ const MAX_SOCKETS_DEFAULT = 10;
 const BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL;
 const ASSET_CDN_BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_ASSET_CDN_BASE_URL;
 
+// Type handlers
 const typeHandlers = [
   {
     type: sharetribeSdk.types.BigDecimal,
@@ -26,9 +27,9 @@ exports.typeHandlers = typeHandlers;
 
 const baseUrlMaybe = BASE_URL ? { baseUrl: BASE_URL } : {};
 const assetCdnBaseUrlMaybe = ASSET_CDN_BASE_URL ? { assetCdnBaseUrl: ASSET_CDN_BASE_URL } : {};
-
 const maxSockets = MAX_SOCKETS ? parseInt(MAX_SOCKETS, 10) : MAX_SOCKETS_DEFAULT;
 
+// Reuse TCP connections
 const httpAgent = new http.Agent({ keepAlive: true, maxSockets });
 const httpsAgent = new https.Agent({ keepAlive: true, maxSockets });
 
@@ -56,7 +57,7 @@ exports.deserialize = str => {
 };
 
 exports.handleError = (res, error) => {
-  log.error(error, 'local-api-request-failed', error.data);
+  log.error(error, 'local-api-request-failed', error?.data);
 
   if (res.headersSent) {
     console.warn('Headers already sent, skipping error response');
@@ -64,17 +65,16 @@ exports.handleError = (res, error) => {
   }
 
   if (error.status && error.statusText && error.data) {
-    const { status, statusText, data } = error;
-    return res.status(status).json({
+    return res.status(error.status).json({
       name: 'LocalAPIError',
       message: 'Local API request failed',
-      status,
-      statusText,
-      data,
+      status: error.status,
+      statusText: error.statusText,
+      data: error.data,
     });
   }
 
-  return res.status(500).json({ error: error.message });
+  return res.status(500).json({ error: error.message || 'Internal Server Error' });
 };
 
 exports.getSdk = (req, res) => {
