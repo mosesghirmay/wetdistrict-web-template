@@ -77,9 +77,11 @@ module.exports = async (req, res) => {
         .end();
     }
   } catch (error) {
-    console.error('createUserWithIdp error:', error);
+    console.error('Error in createUserWithIdp:', error);
     if (!res.headersSent) {
-      handleError(res, error);
+      return handleError(res, error);
+    } else {
+      console.warn('Headers already sent — skipping handleError.');
     }
   }
 };
