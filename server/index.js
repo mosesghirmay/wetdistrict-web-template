@@ -223,53 +223,68 @@ app.get('*', async (req, res) => {
 
   const sdk = sdkUtils.getSdk(req, res);
 
-  dataLoader
-    .loadData(req.url, sdk, appInfo)
-    .then(data => {
-      const cspNonce = cspEnabled ? res.locals.cspNonce : null;
-      return renderer.render(req.url, context, data, renderApp, webExtractor, cspNonce);
-    })
-    .then(html => {
-      if (dev) {
-        const debugData = {
-          url: req.url,
-          context,
-        };
-        console.log(`\nRender info:\n${JSON.stringify(debugData, null, '  ')}`);
-      }
+  try {
+    const data = await dataLoader.loadData(req.url, sdk, appInfo);
+    const cspNonce = cspEnabled ? res.locals.cspNonce : null;
+    const html = await renderer.render(req.url, context, data, renderApp, webExtractor, cspNonce);
 
-      if (context.unauthorized) {
-        // Routes component injects the context.unauthorized when the
-        // user isn't logged in to view the page that requires
-        // authentication.
-        sdk.authInfo().then(authInfo => {
-          if (authInfo && authInfo.isAnonymous === false) {
-            // It looks like the user is logged in.
-            // Full verification would require actual call to API
-            // to refresh the access token
+    if (dev) {
+      const debugData = {
+        url: req.url,
+        context,
+      };
+      console.log(`\nRender info:\n${JSON.stringify(debugData, null, '  ')}`);
+    }
+
+    // Check if headers have already been sent to avoid the "Cannot set headers after they are sent" error
+    if (res.headersSent) {
+      console.warn('Headers already sent, cannot send response');
+      return;
+    }
+
+    if (context.unauthorized) {
+      // Routes component injects the context.unauthorized when the
+      // user isn't logged in to view the page that requires
+      // authentication.
+      try {
+        const authInfo = await sdk.authInfo();
+        if (authInfo && authInfo.isAnonymous === false) {
+          // It looks like the user is logged in.
+          // Full verification would require actual call to API
+          // to refresh the access token
+          if (!res.headersSent) {
             res.status(200).send(html);
-          } else {
-            // Current token is anonymous.
+          }
+        } else {
+          // Current token is anonymous.
+          if (!res.headersSent) {
             res.status(401).send(html);
           }
-        });
-      } else if (context.forbidden) {
-        res.status(403).send(html);
-      } else if (context.url) {
-        // React Router injects the context.url if a redirect was rendered
-        res.redirect(context.url);
-      } else if (context.notfound) {
-        // NotFoundPage component injects the context.notfound when a
-        // 404 should be returned
-        res.status(404).send(html);
-      } else {
-        res.send(html);
+        }
+      } catch (error) {
+        if (!res.headersSent) {
+          log.error(error, 'auth-info-failed');
+          res.status(401).send(html);
+        }
       }
-    })
-    .catch(e => {
+    } else if (context.forbidden) {
+      res.status(403).send(html);
+    } else if (context.url) {
+      // React Router injects the context.url if a redirect was rendered
+      res.redirect(context.url);
+    } else if (context.notfound) {
+      // NotFoundPage component injects the context.notfound when a
+      // 404 should be returned
+      res.status(404).send(html);
+    } else {
+      res.send(html);
+    }
+  } catch (e) {
+    if (!res.headersSent) {
       log.error(e, 'server-side-render-failed');
       res.status(500).send(errorPage500);
-    });
+    }
+  }
 });
 
 // Set error handler. If Sentry is set up, all error responses

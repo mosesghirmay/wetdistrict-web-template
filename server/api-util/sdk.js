@@ -69,6 +69,12 @@ exports.deserialize = str => {
 
 exports.handleError = (res, error) => {
   log.error(error, 'local-api-request-failed', error.data);
+  
+  // Check if headers have already been sent
+  if (res.headersSent) {
+    console.warn('Headers already sent, cannot send error response');
+    return;
+  }
 
   if (error.status && error.statusText && error.data) {
     const { status, statusText, data } = error;

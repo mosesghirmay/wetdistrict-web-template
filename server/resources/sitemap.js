@@ -125,14 +125,19 @@ const sitemapIndex = (req, res, rootUrl, isPrivateMarketplace) => {
     streamToPromise(smiStream).then(sm => (cache.sitemapIndex = sm));
 
     smiStream.pipe(res).on('error', e => {
-      throw e;
+      if (!res.headersSent) {
+        log.error(e, 'sitemap-index-stream-error');
+        res.status(500).end();
+      }
     });
 
     // Since we manually add content to the stream, we need to close it.
     smiStream.end();
   } catch (e) {
-    log.error(e, 'sitemap-index-render-failed');
-    res.status(500).end();
+    if (!res.headersSent) {
+      log.error(e, 'sitemap-index-render-failed');
+      res.status(500).end();
+    }
   }
 };
 
@@ -177,11 +182,16 @@ const sitemapDefault = (req, res, rootUrl, isPrivateMarketplace) => {
 
     // Write the stream to the response
     smStream.pipe(res).on('error', e => {
-      throw e;
+      if (!res.headersSent) {
+        log.error(e, 'sitemap-default-stream-error');
+        res.status(500).end();
+      }
     });
   } catch (e) {
-    log.error(e, 'sitemap-default-render-failed');
-    res.status(500).end();
+    if (!res.headersSent) {
+      log.error(e, 'sitemap-default-render-failed');
+      res.status(500).end();
+    }
   }
 };
 
@@ -211,6 +221,12 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
   sdk.sitemapData
     .queryListings()
     .then(response => {
+      // If headers have already been sent, we can't continue
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send sitemap response');
+        return;
+      }
+      
       const listings = response.data.data || [];
       // Use canonical URL: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
       const ids = listings.map(l => `l/${l.id?.uuid}`);
@@ -218,10 +234,9 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
       // If there's no listings, let's just return empty sitemap
       const hasListingIds = ids.length > 0;
       if (!hasListingIds) {
-        res.send(
+        return res.send(
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
         );
-        return;
       }
 
       const smStream = new SitemapStream({ hostname: rootUrl });
@@ -232,13 +247,22 @@ const sitemapListings = (req, res, rootUrl, sdk) => {
 
       // Write the stream to the response
       smStream.pipe(res).on('error', e => {
-        throw e;
+        if (!res.headersSent) {
+          log.error(e, 'sitemap-stream-error');
+          res.status(500).end();
+        }
       });
     })
     .catch(e => {
+      // If headers have already been sent, we can't continue
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send error response');
+        return;
+      }
+      
       // Private marketplace mode might throw
       if (e.status === 403) {
-        res.send(
+        return res.send(
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
         );
       }
@@ -276,15 +300,20 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
   sdk.sitemapData
     .queryAssets({ pathPrefix })
     .then(response => {
+      // If headers have already been sent, we can't continue
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send sitemap pages response');
+        return;
+      }
+      
       const assets = response.data.data || [];
 
       // If there's no Pages, let's just return empty sitemap
       const hasAssets = assets.length > 0;
       if (!hasAssets) {
-        res.send(
+        return res.send(
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"></urlset>`
         );
-        return;
       }
 
       // Pick those asset paths that CMSPage component renders
@@ -303,12 +332,17 @@ const sitemapPages = (req, res, rootUrl, sdk) => {
 
       // stream write the response
       smStream.pipe(res).on('error', e => {
-        throw e;
+        if (!res.headersSent) {
+          log.error(e, 'sitemap-stream-error');
+          res.status(500).end();
+        }
       });
     })
     .catch(e => {
-      log.error(e, 'sitemap-recent-pages-render-failed');
-      res.status(500).end();
+      if (!res.headersSent) {
+        log.error(e, 'sitemap-recent-pages-render-failed');
+        res.status(500).end();
+      }
     });
 };
 

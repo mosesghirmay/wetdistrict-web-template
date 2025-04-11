@@ -109,11 +109,16 @@ const sendRobotsTxt = (req, res, robotsTxtPath) => {
     streamToPromise(robotsStream).then(rs => (cache.robotsTxt = rs));
 
     robotsStream.pipe(res).on('error', e => {
-      throw e;
+      if (!res.headersSent) {
+        log.error(e, 'robots-txt-stream-error');
+        res.send(fallbackRobotsTxt);
+      }
     });
   } catch (e) {
-    log.error(e, 'robots-txt-render-failed');
-    res.send(fallbackRobotsTxt);
+    if (!res.headersSent) {
+      log.error(e, 'robots-txt-render-failed');
+      res.send(fallbackRobotsTxt);
+    }
   }
 };
 // Middleware to generate robots.txt
@@ -137,6 +142,11 @@ module.exports = (req, res) => {
   sdkUtils
     .fetchAccessControlAsset(sdk)
     .then(response => {
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send robots.txt response');
+        return;
+      }
+      
       const accessControlAsset = response.data.data[0];
 
       const { marketplace } =
@@ -149,6 +159,11 @@ module.exports = (req, res) => {
       sendRobotsTxt(req, res, robotsTxtPath);
     })
     .catch(e => {
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send error response');
+        return;
+      }
+      
       // Log error
       const is404 = e.status === 404;
       if (is404 && dev) {

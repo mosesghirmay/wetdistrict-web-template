@@ -32,6 +32,11 @@ module.exports = (req, res) => {
 
   Promise.all([marketplacePromise(), sdkUtils.fetchBranding(sdk)])
     .then(response => {
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send webmanifest response');
+        return;
+      }
+      
       const [marketplaceResponse, brandingResponse] = response;
 
       // Get name
@@ -70,10 +75,17 @@ module.exports = (req, res) => {
       const json = JSON.stringify(jsonData, null, 2);
 
       // Set the content type for web app manifest
-      res.setHeader('Content-Type', 'application/manifest+json');
-      res.send(json);
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'application/manifest+json');
+        res.send(json);
+      }
     })
     .catch(e => {
+      if (res.headersSent) {
+        console.warn('Headers already sent, cannot send error response');
+        return;
+      }
+      
       // Log error
       const is404 = e.status === 404;
       if (is404) {
@@ -96,7 +108,9 @@ module.exports = (req, res) => {
       const json = JSON.stringify(defaultJsonData, null, 2);
 
       // Set the content type for web app manifest
-      res.setHeader('Content-Type', 'application/manifest+json');
-      res.send(json);
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'application/manifest+json');
+        res.send(json);
+      }
     });
 };
