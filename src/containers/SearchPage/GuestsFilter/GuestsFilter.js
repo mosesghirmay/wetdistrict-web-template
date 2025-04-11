@@ -8,20 +8,19 @@ import css from './GuestsFilter.module.css';
 /**
  * A simpler direct dropdown component for guest selection
  */
-const GuestsFilterComponent = props => {
-  const {
-    rootClassName,
-    className,
-    id,
-    name,
-    label,
-    queryParamNames,
-    initialValues,
-    onSubmit,
-    intl,
-    options,
-    ...rest
-  } = props;
+const GuestsFilterComponent = ({
+  rootClassName = null,
+  className = null,
+  id,
+  name,
+  label,
+  queryParamNames,
+  initialValues = null,
+  onSubmit,
+  intl,
+  options = [],
+  ...rest
+}) => {
 
   // Always use pub_capacity as the parameter name
   const queryParamName = 'pub_capacity';
@@ -110,12 +109,7 @@ const GuestsFilterComponent = props => {
   );
 };
 
-GuestsFilterComponent.defaultProps = {
-  rootClassName: null,
-  className: null,
-  initialValues: null,
-  options: []
-};
+// Using JavaScript default parameters instead of defaultProps
 
 GuestsFilterComponent.propTypes = {
   rootClassName: PropTypes.string,

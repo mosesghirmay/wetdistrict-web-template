@@ -141,11 +141,20 @@ const SearchFiltersMobile = ({
   // Watch for changes to the context state
   useEffect(() => {
     console.log("SearchFiltersMobile - isMobileSearchFilerOpen changed to:", isMobileSearchFilerOpen);
-    if (isMobileSearchFilerOpen) {
+    
+    // Only update local state if it's different from context state
+    // This prevents the infinite update loop
+    if (isMobileSearchFilerOpen && !isFiltersOpenOnMobile) {
       console.log("SearchFiltersMobile - opening filters");
-      openFilters();
-    } else {
+      // Call the external functions but don't update state here
+      // The openFilters function will set the state
+      onOpenModal();
+      setIsFiltersOpenOnMobile(true);
+      setInitialQueryParams(urlQueryParams);
+    } 
+    else if (!isMobileSearchFilerOpen && isFiltersOpenOnMobile) {
       console.log("SearchFiltersMobile - closing filters");
+      // Only update state if it needs to change
       setIsFiltersOpenOnMobile(false);
       onCloseModal();
       
@@ -158,7 +167,7 @@ const SearchFiltersMobile = ({
         }
       }
     }
-  }, [isMobileSearchFilerOpen, openFilters, onCloseModal]);
+  }, [isMobileSearchFilerOpen, isFiltersOpenOnMobile, onCloseModal, onOpenModal, urlQueryParams]);
   
   // Simple click handler for date filter
   useEffect(() => {

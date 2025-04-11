@@ -120,8 +120,6 @@ case 'dates': {
         queryParamNames={[key]}
         initialValues={initialValues([key], liveEdit)}
         onSubmit={getHandleChangedValueFn(useHistoryPush)}
-        forceSingleDay={true}
-        isSearchFiltersMobile={true} // Always pass this as true to ensure our styling is applied
         {...rest}
       />
     );

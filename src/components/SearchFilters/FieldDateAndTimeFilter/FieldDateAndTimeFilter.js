@@ -11,6 +11,24 @@ import Icons from '../../Icons/Icons';
 
 import css from './FieldDateAndTimeFilter.module.css';
 
+// Simple icon component for calendar
+const IconCalendar = props => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M8 2V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M16 2V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M3 9H21" stroke="currentColor" strokeWidth="2"/>
+    <path d="M19 4H5C3.89543 4 3 4.89543 3 6V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
+// Simple icon component for close button
+const IconClose = props => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const CalendarOnlyFilter = props => {
   const {
     bookingStartDate,
@@ -35,7 +53,14 @@ const CalendarOnlyFilter = props => {
   };
 
   const handleApply = () => {
-    onBookingStartDateChange(tempDate);
+    // Make sure we have a clean Date object with no time component
+    if (tempDate) {
+      const cleanDate = new Date(tempDate);
+      cleanDate.setHours(0, 0, 0, 0);
+      onBookingStartDateChange(cleanDate);
+    } else {
+      onBookingStartDateChange(null);
+    }
     closeCalendarModal();
   };
 

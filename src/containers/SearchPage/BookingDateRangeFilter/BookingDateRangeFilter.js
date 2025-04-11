@@ -19,47 +19,67 @@ const getDatesQueryParamName = queryParamNames => {
     : 'dates';
 };
 
-// Parse query parameter, which could be either "2020-05-28,2020-05-28" for single date or "2020-05-28,2020-05-31" for range
+// Parse query parameter in format "2020-05-28,2020-05-29" (start date, end date)
 const parseValue = value => {
   if (!value) return { dates: null };
   
   console.log('BookingDateRangeFilter parsing value:', value);
   
   try {
-    // Always split by comma, assuming the comma format is used
+    // Split comma-separated date parameter
     const rawValuesFromParams = value.split(',');
     
     if (rawValuesFromParams.length < 1) {
       return { dates: null };
     }
     
-    // Parse the start date (first part of the parameter)
-    const startDate = parseDateFromISO8601(rawValuesFromParams[0]);
-    if (!startDate) {
+    // Parse the start date, being careful with timezones
+    // Use a method that preserves the actual day selected
+    let startDate;
+    
+    // Extract year, month, day directly from the date string
+    if (rawValuesFromParams[0].includes('-')) {
+      const [year, month, day] = rawValuesFromParams[0].split('-').map(Number);
+      // Create date in local timezone (months are 0-indexed in JS Date)
+      startDate = new Date(year, month - 1, day, 0, 0, 0);
+    } else if (rawValuesFromParams[0].includes('T')) {
+      // Try to handle ISO format with time
+      startDate = new Date(rawValuesFromParams[0]);
+    } else {
+      // Fallback
+      startDate = new Date(rawValuesFromParams[0]);
+    }
+    
+    // Validate we got a valid date
+    if (isNaN(startDate.getTime())) {
       console.log('Could not parse start date:', rawValuesFromParams[0]);
       return { dates: null };
     }
     
-    // For a date range with two dates, we need to handle it specially
-    // The typical format from the API is "2020-05-28,2020-05-29" for a single day
-    // where the end date is the next day (exclusive end)
+    // Log the exact day we parsed for debugging
+    console.log('Parsed date details:', {
+      dateString: rawValuesFromParams[0],
+      parsedDate: startDate,
+      day: startDate.getDate(),
+      month: startDate.getMonth() + 1,
+      year: startDate.getFullYear(),
+      dayOfWeek: startDate.getDay(), // 0 = Sunday, 1 = Monday, etc.
+      fullLocalDate: startDate.toLocaleString()
+    });
     
-    // For date filter selection, we only need the start date
-    // We'll set the end date equal to the start date for simplicity
-    // and to match how the UI expects a single day selection
+    // Verify we have the right day (Tuesday should be 2)
+    if (startDate.getDay() === 2) {
+      console.log('✅ TUESDAY detected correctly!');
+    }
     
-    // Create a date-only copy of the startDate to ensure consistency
-    const startDateOnly = new Date(startDate);
-    startDateOnly.setHours(0, 0, 0, 0);
-    
+    // Create properly structured date object for the date picker component
     const result = { 
       dates: { 
-        startDate: startDateOnly, 
-        endDate: startDateOnly // Use same date for both start and end
+        startDate: startDate,
+        endDate: startDate // Use same date for both start and end for single day selection
       } 
     };
     
-    console.log('Parsed date result:', result);
     return result;
   } catch (error) {
     console.error('Error parsing date value:', error);
@@ -78,32 +98,42 @@ const formatValue = (dateRange, queryParamName) => {
   }
   
   try {
-    // Create a date object for the selected startDate
-    // For single day selection, the endDate is usually the same as startDate
-    // or may be the next day (for a day booking)
-    const start = stringifyDateToISO8601(startDate);
+    // Ensure we're working with proper Date objects
+    const startDateObj = startDate instanceof Date ? startDate : new Date(startDate);
     
-    // For date filtering, we set up the date range for a SINGLE DAY
-    // this is crucial for API compatibility with daily booking
+    // To preserve the actual day, we'll use a different approach
+    // Get the year, month, day directly
+    const year = startDateObj.getFullYear();
+    const month = startDateObj.getMonth() + 1; // Months are 0-indexed
+    const day = startDateObj.getDate();
     
-    // Get next day (to create proper date range)
-    const nextDay = new Date(startDate);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const end = stringifyDateToISO8601(nextDay);
+    // Format start date manually to avoid timezone issues
+    const start = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
-    // Format: "2023-04-07,2023-04-08" (one day range from midnight to midnight)
-    // This format is necessary for the Sharetribe API to filter correctly
+    // For booking API compatibility, we need a day range (current day to next day)
+    // Create a new date for the next day to avoid modifying the original
+    const nextDay = new Date(year, month - 1, day + 1, 0, 0, 0);
+    const nextYear = nextDay.getFullYear();
+    const nextMonth = nextDay.getMonth() + 1;
+    const nextDayDate = nextDay.getDate();
+    
+    // Format end date manually
+    const end = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(nextDayDate).padStart(2, '0')}`;
+    
+    // Create the date parameter in format required by the API: "2023-04-07,2023-04-08"
     const value = `${start},${end}`;
     
-    console.log('Date parameter:', {
+    console.log('Date parameter formatted successfully:', {
       value,
       startDate: start,
       endDate: end,
-      originalStartDate: startDate,
-      originalEndDate: endDate
+      originalDay: startDateObj.getDay(), // Day of week (0-6, 0 is Sunday)
+      originalDate: startDateObj.getDate(), // Day of month (1-31)
+      fullOriginalDate: startDateObj.toLocaleString(), // Full local date for verification
+      dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][startDateObj.getDay()]
     });
     
-    // Return the query parameter
+    // Return the query parameter with properly formatted value
     return { [queryParamName]: value };
   } catch (error) {
     console.error('Error formatting date value:', error);
@@ -228,11 +258,45 @@ export class BookingDateRangeFilterComponent extends Component {
       if (values && values.dates && values.dates.startDate) {
         console.log('Submitting date filter:', values);
         
+        // Create a clean copy with exact dates to avoid any timezone issues
+        const exactStartDate = new Date(
+          values.dates.startDate.getFullYear(),
+          values.dates.startDate.getMonth(),
+          values.dates.startDate.getDate(),
+          0, 0, 0
+        );
+        
+        const exactValues = {
+          dates: {
+            startDate: exactStartDate,
+            endDate: exactStartDate // Same day for single-day selection
+          }
+        };
+        
+        // Log the exact values with detailed day info
+        console.log('Exact date being submitted:', {
+          originalStartDate: values.dates.startDate.toLocaleString(),
+          exactStartDate: exactStartDate.toLocaleString(),
+          day: exactStartDate.getDate(),
+          month: exactStartDate.getMonth() + 1,
+          year: exactStartDate.getFullYear(),
+          dayOfWeek: exactStartDate.getDay(),
+          dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][exactStartDate.getDay()]
+        });
+        
         // Format and submit the date range
-        const formattedValue = formatValue(values, datesQueryParamName);
+        const formattedValue = formatValue(exactValues, datesQueryParamName);
         console.log('Formatted date for submission:', formattedValue);
         
-        onSubmit(formattedValue);
+        // Add a unique timestamp parameter to force a new search and bypass caching
+        const uniqueFormattedValue = {
+          ...formattedValue,
+          _t: Date.now() // Add a timestamp to ensure URL is unique and cache isn't used
+        };
+        
+        console.log('Adding timestamp to force fresh search:', uniqueFormattedValue);
+        
+        onSubmit(uniqueFormattedValue);
       } else {
         console.log('No valid date to submit');
       }

@@ -24,7 +24,7 @@ const RESULT_PAGE_SIZE = 24;
 
 // Cache for storing search results
 const searchCache = new Map();
-const CACHE_TTL = 60000; // 1 minute cache lifetime
+const CACHE_TTL = 30000; // 30 seconds cache lifetime (reduced to help with testing)
 
 // ================ Action types ================ //
 
@@ -241,6 +241,7 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     
     console.log('Processing date parameter in SearchPage.duck.js:', datesParam);
     
+    // Use UTC for consistency
     const searchTZ = 'Etc/UTC';
     
     // Parse date values from comma-separated string
@@ -253,47 +254,80 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     }
     
     try {
-      // Parse the dates
-      const startDate = parseDateFromISO8601(values[0], searchTZ);
-      const endDate = parseDateFromISO8601(values[1], searchTZ);
+      // Parse the dates from the URL parameters
+      // These should be in YYYY-MM-DD format (ISO date strings without time)
+      let startDate, endDate;
       
-      if (!startDate || !endDate) {
-        console.log('Could not parse date values', { startDate, endDate });
+      // First try to parse as ISO strings, but be careful with timezones
+      if (values[0].includes('T')) {
+        // Full ISO format with time
+        startDate = new Date(values[0]);
+        endDate = new Date(values[1]);
+      } else {
+        // Simple date format (YYYY-MM-DD)
+        // Create date objects that preserve the actual day selected
+        const [startYear, startMonth, startDay] = values[0].split('-').map(Number);
+        const [endYear, endMonth, endDay] = values[1].split('-').map(Number);
+        
+        // Create dates with local timezone (months are 0-indexed in JS Date)
+        startDate = new Date(startYear, startMonth - 1, startDay, 0, 0, 0);
+        endDate = new Date(endYear, endMonth - 1, endDay, 0, 0, 0);
+      }
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.log('Invalid date format:', { values, startDate, endDate });
         return {};
       }
       
-      // For day-based filters, we need to convert to valid format
-      // Get beginning of day
-      const startOfDay = getStartOf(startDate, 'day', searchTZ);
+      // Format for the API query - needs to be full ISO strings
+      // We need to ensure the timezone doesn't shift the date
+      // Start date should be exactly at the beginning of the selected day
+      // Force to UTC to ensure consistent API behavior
+      const startISO = new Date(Date.UTC(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate(),
+        0, 0, 0
+      )).toISOString();
       
-      // Get end of day (or next day if that's what was provided)
-      // This is what makes filtering work effectively
-      const endOfRange = endDate;
+      // End date should be end of selected day / beginning of next day
+      const endISO = new Date(Date.UTC(
+        endDate.getFullYear(), 
+        endDate.getMonth(), 
+        endDate.getDate(),
+        0, 0, 0
+      )).toISOString();
       
-      console.log('Date range for availability:', {
-        start: startOfDay.toISOString(),
-        end: endOfRange.toISOString(),
+      console.log('API date range parameters:', { 
+        startISO, 
+        endISO, 
+        original: datesParam,
+        actualStartDay: startDate.getDate(),
+        actualEndDay: endDate.getDate(),
+        // Track the actual values to verify correct days are used
+        parsedStartDate: startDate.toLocaleString(),
+        parsedEndDate: endDate.toLocaleString()
       });
       
-      // The key is to create a proper date filter parameter for the API
-      // An important fix: use the right timezone padding
-      return {
-        // Time-partial allows partial availability within the time range
-        availability: 'time-full',
+      // Return the properly formatted availability parameters for the API
+      const params = {
+        // Day availability mode ensures we're looking for the entire day
+        availability: 'day',
         
-        // These need to be in ISO format
-        start: startOfDay.toISOString(),
-        end: endOfRange.toISOString(),
+        // Pass properly formatted ISO timestamps ensuring correct days
+        start: startISO,
+        end: endISO,
         
-        // For day-based bookings, we want to filter for a full day
-        minDuration: 1440, // Full day in minutes
+        // For day-based bookings, filter for entire day
+        minDuration: 1440, // 24 hours in minutes (full day)
         
-        // Type hint for API (if needed)
-        bookingType: 'day',
-        
-        // Provide raw values for other uses
+        // Keep original parameter for reference
         datesQueryParam: datesParam,
       };
+      
+      console.log('📆 FINAL AVAILABILITY PARAMS FOR API:', params);
+      
+      return params;
     } catch (error) {
       console.error('Error processing date params:', error);
       return {};
@@ -346,6 +380,7 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   const timeAvailabilityParams = getTimeAvailabilityFilterParams(restOfParams);
   const capacityParams = capacityParam(restOfParams);
 
+  // Construct all search parameters
   const params = {
     // The rest of the params except invalid nested category-related params
     // Note: invalid independent search params are still passed through
@@ -362,6 +397,13 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     ...capacityParams,
     perPage,
   };
+  
+  // Log the complete search parameters to debug filtering issues
+  console.log('🔍 Complete search parameters:', {
+    dateFilter: datesMaybe,
+    timeFilter: timeAvailabilityParams,
+    otherParams: params
+  });
 
   // Use the debounced search to prevent excessive API calls
   return debouncedSearch(dispatch, sdk, params, config);

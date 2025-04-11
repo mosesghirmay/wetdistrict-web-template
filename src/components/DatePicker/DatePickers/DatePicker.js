@@ -383,21 +383,37 @@ const DatePicker = props => {
       return;
     }
 
+    // Ensure we're working with the exact date that was clicked
+    // Create a clean date object with the same day, month, and year
+    const selectedDate = new Date(date);
+    // Reset time to midnight to ensure consistent behavior
+    selectedDate.setHours(0, 0, 0, 0);
+
     // Date range:
     if (range) {
       // Force single-date selection by immediately setting both start and end dates
       // to the clicked date, rather than requiring two clicks to complete a range
-      const newValue = [date, date];
+      const newValue = [selectedDate, selectedDate];
+      
+      // Log the exact date selected for debugging
+      console.log('Selected date:', {
+        original: date,
+        day: date.getDate(),
+        month: date.getMonth(),
+        year: date.getFullYear(),
+        dayOfWeek: date.getDay(), // 0 = Sunday, 1 = Monday, etc.
+        newValue
+      });
       
       onCurrentValueChange(newValue);
     } else {
       // Don't allow selecting the same day.
       // This relies on assumption that date points to the same time of day. (00:00)
-      if (isSameDay(currentValue, date)) {
+      if (isSameDay(currentValue, selectedDate)) {
         return;
       }
 
-      onCurrentValueChange(date);
+      onCurrentValueChange(selectedDate);
     }
   };
 

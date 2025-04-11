@@ -5,9 +5,20 @@ const ROOT_URL = process.env.REACT_APP_MARKETPLACE_ROOT_URL;
 const CONSOLE_URL = process.env.SERVER_SHARETRIBE_CONSOLE_URL || 'https://console.sharetribe.com';
 const USING_SSL = process.env.REACT_APP_SHARETRIBE_USING_SSL === 'true';
 
+// Add this line for debugging
+console.log('Environment variables in initiate-login-as.js:', {
+  CLIENT_ID,
+  ROOT_URL,
+  CONSOLE_URL,
+  USING_SSL,
+});
+
+// Add a fallback for ROOT_URL to prevent errors
+const ROOT_URL_SAFE = ROOT_URL || process.env.ROOT_URL || 'http://localhost:3000';
+
 // redirect_uri param used when initiating a login as authentication flow and
 // when requesting a token using an authorization code
-const loginAsRedirectUri = `${ROOT_URL.replace(/\/$/, '')}/api/login-as`;
+const loginAsRedirectUri = `${ROOT_URL_SAFE.replace(/\/$/, '')}/api/login-as`;
 
 // Cookies used for authorization code authentication.
 const stateKey = `st-${CLIENT_ID}-oauth2State`;
@@ -43,7 +54,7 @@ module.exports = (req, res) => {
   if (!userId) {
     return res.status(400).send('Missing query parameter: user_id.');
   }
-  if (!ROOT_URL) {
+  if (!ROOT_URL_SAFE) {
     return res.status(409).send('Marketplace canonical root URL is missing.');
   }
 

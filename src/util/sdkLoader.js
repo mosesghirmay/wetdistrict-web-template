@@ -40,57 +40,92 @@ const logTokenStatus = (sdk) => {
   }
 };
 
-// Custom createInstance wrapper that adds auth debugging
+// Enhanced error handler for SDK calls
+const enhancedErrorHandler = (error, methodName, sdkInstance, args) => {
+  console.error(`SDK Error in ${methodName}:`, error);
+  
+  if (error.status === 401) {
+    console.error('Authentication error (401): Token may be invalid or expired');
+    // Force a token refresh if needed
+    if (sdkInstance.tokenStore && typeof sdkInstance.tokenStore.refresh === 'function') {
+      console.log('Attempting to refresh token...');
+      return sdkInstance.tokenStore.refresh()
+        .then(() => {
+          console.log('Token refreshed, retrying request...');
+          // Return the original method call with fresh token
+          return sdkInstance[methodName].apply(sdkInstance, args);
+        })
+        .catch(refreshError => {
+          console.error('Token refresh failed:', refreshError);
+          throw error; // Throw the original error
+        });
+    }
+  } else if (error.status === 403) {
+    console.error('Authorization error (403): Insufficient permissions');
+  } else if (error.status === 429) {
+    console.error('Rate limit error (429): Too many requests');
+  } else if (error.status >= 500) {
+    console.error('Server error:', error.status);
+  }
+  
+  throw error;
+};
+
+// Custom createInstance wrapper that adds auth debugging and enhanced error handling
 const createInstanceWithDebug = (config) => {
-  const sdkInstance = createInstance(config);
+  // Ensure we have the proper production URL for the Sharetribe API
+  const enhancedConfig = {
+    ...config,
+    baseUrl: config.baseUrl || 'https://flex-api.sharetribe.com',
+  };
+  
+  console.log('Creating SDK instance with config:', {
+    ...enhancedConfig,
+    // Don't log token store or sensitive data
+    clientId: enhancedConfig.clientId ? '[SET]' : '[NOT SET]',
+    clientSecret: enhancedConfig.clientSecret ? '[SET]' : '[NOT SET]',
+    tokenStore: enhancedConfig.tokenStore ? '[TOKEN STORE OBJECT]' : '[NOT SET]',
+    typeHandlers: enhancedConfig.typeHandlers ? '[TYPE HANDLERS OBJECT]' : '[NOT SET]',
+  });
+  
+  // Create the SDK instance with enhanced config
+  const sdkInstance = createInstance(enhancedConfig);
   
   // Add a debug method to the SDK
   sdkInstance.debugAuth = () => logTokenStatus(sdkInstance);
   
-  // Override the currentUser.show method to add debugging
+  // Wrap key SDK methods with error handling
+
+  // Override the currentUser.show method
   const originalShow = sdkInstance.currentUser.show;
   sdkInstance.currentUser.show = (...args) => {
     console.log('Calling currentUser.show with args:', args);
-    
-    // Log token status before making the request
     logTokenStatus(sdkInstance);
     
     return originalShow.apply(sdkInstance.currentUser, args)
-      .catch(error => {
-        console.error('currentUser.show failed:', error);
-        
-        // Check for 401 errors specifically
-        if (error.status === 401) {
-          console.error('Authentication error (401): Token may be invalid or expired');
-          // Force a token refresh if needed
-          if (sdkInstance.tokenStore && typeof sdkInstance.tokenStore.refresh === 'function') {
-            console.log('Attempting to refresh token...');
-            return sdkInstance.tokenStore.refresh()
-              .then(() => {
-                console.log('Token refreshed, retrying request...');
-                return originalShow.apply(sdkInstance.currentUser, args);
-              })
-              .catch(refreshError => {
-                console.error('Token refresh failed:', refreshError);
-                throw error; // Throw the original error
-              });
-          }
-        }
-        
-        throw error;
-      });
+      .catch(error => enhancedErrorHandler(error, 'currentUser.show', sdkInstance.currentUser, args));
+  };
+
+  // Add error handling to listings.query
+  const originalListingsQuery = sdkInstance.listings.query;
+  sdkInstance.listings.query = (...args) => {
+    console.log('Calling listings.query with params', args[0] ? JSON.stringify(args[0]) : 'no params');
+    
+    return originalListingsQuery.apply(sdkInstance.listings, args)
+      .catch(error => enhancedErrorHandler(error, 'listings.query', sdkInstance.listings, args));
   };
   
   return sdkInstance;
 };
 
-// create image variant from variant name, desired width and aspectRatio
+// Create image variant from variant name, desired width and aspectRatio
 const createImageVariantConfig = (name, width, aspectRatio) => {
   let variantWidth = width;
   let variantHeight = Math.round(aspectRatio * width);
 
+  // Ensure dimensions are within API limits
   if (variantWidth > 3072 || variantHeight > 3072) {
-    if (!isServer) {
+    if (!isServer()) {
       console.error(`Dimensions of custom image variant (${name}) are too high (w:${variantWidth}, h:${variantHeight}).
       Reduce them to max 3072px. https://www.sharetribe.com/api-reference/marketplace.html#custom-image-variants`);
     }
@@ -98,7 +133,7 @@ const createImageVariantConfig = (name, width, aspectRatio) => {
     if (variantHeight > 3072) {
       variantHeight = 3072;
       variantWidth = Math.round(variantHeight / aspectRatio);
-    } else if (variantHeight > 3072) {
+    } else if (variantWidth > 3072) {
       variantWidth = 3072;
       variantHeight = Math.round(aspectRatio * variantWidth);
     }
@@ -111,11 +146,6 @@ const createImageVariantConfig = (name, width, aspectRatio) => {
     fit: 'crop',
   });
   
-  // Log the raw query string for debugging
-  if (!isServer) {
-    console.log(`DEBUG - Image variant "${name}" query string:`, rawQueryString);
-  }
-  
   // Check for potentially problematic characters in the query string
   if (rawQueryString.includes('%3B')) {
     console.warn(`Warning: Image variant "${name}" contains semicolons that might cause API issues`);
@@ -126,5 +156,12 @@ const createImageVariantConfig = (name, width, aspectRatio) => {
     [`imageVariant.${name}`]: rawQueryString,
   };
 };
+
+// Add global promise rejection handler
+if (typeof process !== 'undefined') {
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('UNHANDLED PROMISE REJECTION IN SDK:', reason);
+  });
+}
 
 export { createInstanceWithDebug as createInstance, types, transit, util, createImageVariantConfig };
