@@ -14,11 +14,7 @@ const MAX_SOCKETS_DEFAULT = 10;
 const BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_BASE_URL;
 const ASSET_CDN_BASE_URL = process.env.REACT_APP_SHARETRIBE_SDK_ASSET_CDN_BASE_URL;
 
-// Application type handlers for JS SDK.
-//
-// NOTE: keep in sync with `typeHandlers` in `src/util/api.js`
 const typeHandlers = [
-  // Use Decimal type instead of SDK's BigDecimal.
   {
     type: sharetribeSdk.types.BigDecimal,
     customType: Decimal,
@@ -31,15 +27,8 @@ exports.typeHandlers = typeHandlers;
 const baseUrlMaybe = BASE_URL ? { baseUrl: BASE_URL } : {};
 const assetCdnBaseUrlMaybe = ASSET_CDN_BASE_URL ? { assetCdnBaseUrl: ASSET_CDN_BASE_URL } : {};
 
-// maxSockets is Infinity by default in Node.js
-// This makes it possible to alter that through environment variable.
-// Note: this is only affecting http agents created here.
 const maxSockets = MAX_SOCKETS ? parseInt(MAX_SOCKETS, 10) : MAX_SOCKETS_DEFAULT;
 
-// Instantiate HTTP(S) Agents with keepAlive set to true.
-// This will reduce the request time for consecutive requests by
-// reusing the existing TCP connection, thus eliminating the time used
-// for setting up new TCP connections.
 const httpAgent = new http.Agent({ keepAlive: true, maxSockets });
 const httpsAgent = new https.Agent({ keepAlive: true, maxSockets });
 
@@ -49,7 +38,6 @@ const memoryStore = token => {
   return store;
 };
 
-// Read the user token from the request cookie
 const getUserToken = req => {
   const cookieTokenStore = sharetribeSdk.tokenStore.expressCookieStore({
     clientId: CLIENT_ID,
@@ -69,37 +57,26 @@ exports.deserialize = str => {
 
 exports.handleError = (res, error) => {
   log.error(error, 'local-api-request-failed', error.data);
-  
-  // Check if headers have already been sent
+
   if (res.headersSent) {
-    console.warn('Headers already sent, cannot send error response');
+    console.warn('Headers already sent, skipping error response');
     return;
   }
 
   if (error.status && error.statusText && error.data) {
     const { status, statusText, data } = error;
-
-    // JS SDK error
-    res
-      .status(error.status)
-      .json({
-        name: 'LocalAPIError',
-        message: 'Local API request failed',
-        status,
-        statusText,
-        data,
-      })
-      .end();
-  } else {
-    res
-      .status(500)
-      .json({ error: error.message })
-      .end();
+    return res.status(status).json({
+      name: 'LocalAPIError',
+      message: 'Local API request failed',
+      status,
+      statusText,
+      data,
+    });
   }
+
+  return res.status(500).json({ error: error.message });
 };
 
-// The access token is read from cookie (request) and potentially saved into the cookie (response).
-// This keeps session updated between server and browser even if the token is re-issued.
 exports.getSdk = (req, res) => {
   return sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
@@ -118,11 +95,9 @@ exports.getSdk = (req, res) => {
   });
 };
 
-// Trusted token is powerful, it should not be passed away from the server.
 exports.getTrustedSdk = req => {
   const userToken = getUserToken(req);
 
-  // Initiate an SDK instance for token exchange
   const sdk = sharetribeSdk.createInstance({
     transitVerbose: TRANSIT_VERBOSE,
     clientId: CLIENT_ID,
@@ -134,21 +109,13 @@ exports.getTrustedSdk = req => {
     ...baseUrlMaybe,
   });
 
-  // Perform a token exchange
   return sdk.exchangeToken().then(response => {
-    // Setup a trusted sdk with the token we got from the exchange:
     const trustedToken = response.data;
 
     return sharetribeSdk.createInstance({
       transitVerbose: TRANSIT_VERBOSE,
-
-      // We don't need CLIENT_SECRET here anymore
       clientId: CLIENT_ID,
-
-      // Important! Do not use a cookieTokenStore here but a memoryStore
-      // instead so that we don't leak the token back to browser client.
       tokenStore: memoryStore(trustedToken),
-
       httpAgent,
       httpsAgent,
       typeHandlers,
@@ -157,12 +124,10 @@ exports.getTrustedSdk = req => {
   });
 };
 
-// Fetch commission asset with 'latest' alias.
 exports.fetchCommission = sdk => {
   return sdk
     .assetsByAlias({ paths: ['transactions/commission.json'], alias: 'latest' })
     .then(response => {
-      // Let's throw an error if we can't fetch commission for some reason
       const commissionAsset = response?.data?.data?.[0];
       if (!commissionAsset) {
         const message = 'Insufficient pricing configuration set.';
@@ -176,34 +141,30 @@ exports.fetchCommission = sdk => {
     });
 };
 
-// Fetch branding asset with 'latest' alias.
-// This is needed for generating webmanifest on server-side.
 exports.fetchBranding = sdk => {
-  return sdk.assetsByAlias({ paths: ['design/branding.json'], alias: 'latest' }).then(response => {
-    // Let's throw an error if we can't fetch branding for some reason
-    const brandingAsset = response?.data?.data?.[0];
-    if (!brandingAsset) {
-      const message = 'Branding configuration was not available.';
-      const error = new Error(message);
-      error.status = 400;
-      error.statusText = message;
-      error.data = {};
-      throw error;
-    }
-    return response;
-  });
+  return sdk
+    .assetsByAlias({ paths: ['design/branding.json'], alias: 'latest' })
+    .then(response => {
+      const brandingAsset = response?.data?.data?.[0];
+      if (!brandingAsset) {
+        const message = 'Branding configuration was not available.';
+        const error = new Error(message);
+        error.status = 400;
+        error.statusText = message;
+        error.data = {};
+        throw error;
+      }
+      return response;
+    });
 };
 
-// Fetch branding asset with 'latest' alias.
-// This is needed for generating webmanifest on server-side.
 exports.fetchAccessControlAsset = sdk => {
   return sdk
     .assetsByAlias({ paths: ['/general/access-control.json'], alias: 'latest' })
     .then(response => {
-      // Let's throw an error if we can't fetch branding for some reason
       const accessControlAsset = response?.data?.data?.[0];
       if (!accessControlAsset) {
-        const message = 'access-control configuration was not available.';
+        const message = 'Access-control configuration was not available.';
         const error = new Error(message);
         error.status = 404;
         error.statusText = message;
