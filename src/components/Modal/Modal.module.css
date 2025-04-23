@@ -12,7 +12,7 @@
 
     /* Add default background color to avoid bouncing scroll showing the
    page contents from behind the modal. */
-    background-color: var(--colorWhite);
+    background-color: rgba(0, 0, 0, 0.4);
 
     /* Additional styles for the modal window, dimming the background and positioning the modal */
     min-height: 100vh;

@@ -276,6 +276,17 @@
   }
 }
 
+/* Portal background - applied to all screen sizes */
+.ReactDates__Portal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  z-index: 999 !important;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 767px) {
   .DateRangePicker_picker {
@@ -298,16 +309,5 @@
     max-width: 100% !important;
     transform: none !important;
     background-color: white !important;
-  }
-  
-  /* Fix portal positioning */
-  .ReactDates__Portal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    z-index: 999 !important;
   }
 }
