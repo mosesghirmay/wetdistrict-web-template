@@ -13,6 +13,8 @@
     <!-- End Favicons -->
 
     <!--!link-->
+    <link rel="stylesheet" type="text/css" href="/mobile-only.css">
+    <link rel="stylesheet" type="text/css" href="/listing-card-styles.css">
     <!--!ssrStyles-->
     <!--!ssrLinks-->
 
@@ -158,6 +160,23 @@
         font-weight: 900;
         font-display: fallback;
         src: url("https://assets-sharetribecom.sharetribe.com/webfonts/inter/static-web/Inter-BlackItalic.woff2") format("woff2"), url("https://assets-sharetribecom.sharetribe.com/webfonts/inter/static-web/Inter-BlackItalic.woff") format("woff");
+      }
+
+      /* Force mobile styling across all screen sizes */
+      .mobileOnlyLayout {
+        max-width: 100% !important;
+        overflow-x: hidden;
+      }
+      
+      /* Hide any desktop-only components */
+      @media (min-width: 769px) {
+        .mobileOnlyLayout .searchFiltersMobileList {
+          display: block !important;
+        }
+        .mobileOnlyLayout .mainPanel,
+        .mobileOnlyLayout .layoutWrapperFilterColumn {
+          display: none !important;
+        }
       }
     </style>
 

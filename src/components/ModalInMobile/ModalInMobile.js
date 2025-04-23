@@ -32,8 +32,8 @@ class ModalInMobileComponent extends Component {
   componentDidMount() {
     const { isModalOpenOnMobile, showAsModalMaxWidth, viewport } = this.props;
 
-    // After Mounting, component can adapt to responsive screen size
-    const isMobileLayout = viewport.width <= showAsModalMaxWidth;
+    // Force mobile layout for all screen sizes
+    const isMobileLayout = true;
 
     if (isMobileLayout && isModalOpenOnMobile) {
       this.changeOpenStatus(isModalOpenOnMobile);
@@ -44,8 +44,8 @@ class ModalInMobileComponent extends Component {
     const { isModalOpenOnMobile, showAsModalMaxWidth, viewport } = this.props;
 
     const isChanging = isModalOpenOnMobile !== this.state.isOpen;
-    const isMobileLayout = viewport.width <= showAsModalMaxWidth;
-    const shouldBeClosedAsModal = !isMobileLayout && !isModalOpenOnMobile;
+    const isMobileLayout = true; // Force mobile layout for all screen sizes
+    const shouldBeClosedAsModal = false; // Never close as desktop
 
     // Handle change if status is changing on mobile layout or it is closing (on desktop layout)
     if (isChanging && (isMobileLayout || shouldBeClosedAsModal)) {
@@ -80,10 +80,10 @@ class ModalInMobileComponent extends Component {
       isFilterMobileModal,
     } = this.props;
 
-    const isMobileLayout = viewport.width <= showAsModalMaxWidth;
+    const isMobileLayout = true; // Force mobile layout for all screen sizes
     const isOpenInMobile = this.state.isOpen;
-    const isClosedInMobile = isMobileLayout && !isOpenInMobile;
-    const isOpen = isOpenInMobile && isMobileLayout;
+    const isClosedInMobile = !isOpenInMobile; // Always in mobile mode
+    const isOpen = isOpenInMobile; // Always in mobile mode
 
     // We have 3 view states:
     // - default desktop layout (just an extra wrapper)

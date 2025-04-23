@@ -200,7 +200,7 @@ export class SearchPageComponent extends Component {
       config,
       viewport,
     } = this.props;
-    const isMobileLayout = viewport && viewport.width > 0 && viewport.width < MODAL_BREAKPOINT;
+    const isMobileLayout = true; // Force mobile layout for all screen sizes
     const { listingFields: listingFieldsConfig } = config?.listing || {};
     const { defaultFilters: defaultFiltersConfig, sortConfig } = config?.search || {};
     const activeListingTypes = config?.listing?.listingTypes.map(config => config.listingType);
@@ -366,6 +366,7 @@ export class SearchPageComponent extends Component {
       ],
     };
 
+    // Force only the mobile layout
     return (
       <Page
         scrollingDisabled={scrollingDisabled}
@@ -374,142 +375,99 @@ export class SearchPageComponent extends Component {
         schema={schema}
         socialSharing={socialSharing}
         openGraphType="website"
+        className="mobileOnlyLayout"
       >
-        {!isMobileLayout && (
-          <TopbarContainer rootClassName={topbarClasses} currentSearchParams={urlQueryParams} />
-        )}
         <div className={css.layoutWrapperContainer}>
-          <aside className={css.layoutWrapperFilterColumn} data-testid="filterColumnAside">
-            <div className={css.filterColumnContent}>
-              {availableFilters.map(config => (
-                <FilterComponent
-                  key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
-                  idPrefix="SearchFiltersMobile"
-                  className={css.filter}
-                  config={config}
-                  marketplaceCurrency={marketplaceCurrency}
-                  urlQueryParams={urlQueryParams}
-                  initialValues={initialValues(this.props, this.state.currentQueryParams)}
-                  getHandleChangedValueFn={this.getHandleChangedValueFn}
-                  intl={intl}
-                  liveEdit
-                  showAsPopup={false}
-                />
-              ))}
-              <button className={css.resetAllButton} onClick={e => this.handleResetAll(e)}>
-                <FormattedMessage id={'SearchFiltersMobile.resetAll'} />
-              </button>
-            </div>
-          </aside>
-    
-          <div className={css.layoutWrapperMain} role="main">
+          <div className={css.layoutWrapperMain}>
             <div className={css.searchResultContainer}>
               <div className={css.mobileSec}>
-                {isMobileLayout && (
-                  <TopbarContainer
-                    rootClassName={topbarClasses}
-                    currentSearchParams={urlQueryParams}
-                  />
-                )}
+                <TopbarContainer rootClassName={topbarClasses} currentSearchParams={urlQueryParams} />
                 <SearchFiltersMobile
-  className={css.searchFiltersMobileList}
-  urlQueryParams={validQueryParams}
-  sortByComponent={sortBy('mobile')}
-  listingsAreLoaded={listingsAreLoaded}
-  resultsCount={totalItems}
-  intl={intl}
-  searchInProgress={searchInProgress}
-  searchListingsError={searchListingsError}
-  showAsModalMaxWidth={MODAL_BREAKPOINT}
-  onManageDisableScrolling={onManageDisableScrolling}
-  onOpenModal={this.onOpenMobileModal}
-  onCloseModal={this.onCloseMobileModal}
-  resetAll={this.resetAll}
-  selectedFiltersCount={selectedFiltersCountForMobile}
-  isMapVariant={false}
-  noResultsInfo={noResultsInfo}
-  routeConfiguration={this.props.routeConfiguration} // ✅ ADD THIS
-  history={this.props.history} // ✅ ADD THIS
->
-  {/* 1. Date filter */}
-  {availableFilters
-    .filter(config => config.key === 'dates')
-    .map(config => (
-      <FilterComponent
-        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
-        idPrefix="SearchFiltersMobile"
-        id="datesFilter"
-        config={config}
-        marketplaceCurrency={marketplaceCurrency}
-        urlQueryParams={validQueryParams}
-        initialValues={initialValues(this.props, this.state.currentQueryParams)}
-        getHandleChangedValueFn={this.getHandleChangedValueFn}
-        intl={intl}
-        liveEdit
-        showAsPopup={false}
-        isSearchFiltersMobile={true}
-        plainClassName="datesFilterHeader"
-      />
-    ))}
-  
-  {/* 2. Time filter is rendered by SearchFiltersMobile directly */}
-  
-  {/* 3. Guests filter */}
-  {availableFilters
-    .filter(config => config.key === 'seats')
-    .map(config => (
-      <FilterComponent
-        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
-        idPrefix="SearchFiltersMobile"
-        id="maxguestFilter"
-        config={config}
-        marketplaceCurrency={marketplaceCurrency}
-        urlQueryParams={validQueryParams}
-        initialValues={initialValues(this.props, this.state.currentQueryParams)}
-        getHandleChangedValueFn={this.getHandleChangedValueFn}
-        intl={intl}
-        liveEdit
-        showAsPopup={false}
-        isSearchFiltersMobile={true}
-        plainClassName="guestsFilterHeader"
-      />
-    ))}
-    
-  {/* All other filters except date and seats */}
-  {availableFilters
-    .filter(config => 
-      config.key !== 'dates' && 
-      config.key !== 'seats'
-    )
-    .map(config => (
-      <FilterComponent
-        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
-        idPrefix="SearchFiltersMobile"
-        config={config}
-        marketplaceCurrency={marketplaceCurrency}
-        urlQueryParams={validQueryParams}
-        initialValues={initialValues(this.props, this.state.currentQueryParams)}
-        getHandleChangedValueFn={this.getHandleChangedValueFn}
-        intl={intl}
-        liveEdit
-        showAsPopup={false}
-        isSearchFiltersMobile={true}
-      />
-    ))}
-</SearchFiltersMobile>
-
+                  className={css.searchFiltersMobileList}
+                  urlQueryParams={validQueryParams}
+                  sortByComponent={sortBy('mobile')}
+                  listingsAreLoaded={listingsAreLoaded}
+                  resultsCount={totalItems}
+                  intl={intl}
+                  searchInProgress={searchInProgress}
+                  searchListingsError={searchListingsError}
+                  showAsModalMaxWidth={MODAL_BREAKPOINT}
+                  onManageDisableScrolling={onManageDisableScrolling}
+                  onOpenModal={this.onOpenMobileModal}
+                  onCloseModal={this.onCloseMobileModal}
+                  resetAll={this.resetAll}
+                  selectedFiltersCount={selectedFiltersCountForMobile}
+                  isMapVariant={false}
+                  noResultsInfo={noResultsInfo}
+                  routeConfiguration={this.props.routeConfiguration}
+                  history={this.props.history}
+                >
+                  {/* 1. Date filter */}
+                  {availableFilters
+                    .filter(config => config.key === 'dates')
+                    .map(config => (
+                      <FilterComponent
+                        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                        idPrefix="SearchFiltersMobile"
+                        id="datesFilter"
+                        config={config}
+                        marketplaceCurrency={marketplaceCurrency}
+                        urlQueryParams={validQueryParams}
+                        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                        getHandleChangedValueFn={this.getHandleChangedValueFn}
+                        intl={intl}
+                        liveEdit
+                        showAsPopup={false}
+                        isSearchFiltersMobile={true}
+                        plainClassName="datesFilterHeader"
+                      />
+                    ))}
+                  
+                  {/* 3. Guests filter */}
+                  {availableFilters
+                    .filter(config => config.key === 'seats')
+                    .map(config => (
+                      <FilterComponent
+                        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                        idPrefix="SearchFiltersMobile"
+                        id="maxguestFilter"
+                        config={config}
+                        marketplaceCurrency={marketplaceCurrency}
+                        urlQueryParams={validQueryParams}
+                        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                        getHandleChangedValueFn={this.getHandleChangedValueFn}
+                        intl={intl}
+                        liveEdit
+                        showAsPopup={false}
+                        isSearchFiltersMobile={true}
+                        plainClassName="guestsFilterHeader"
+                      />
+                    ))}
+                    
+                  {/* All other filters except date and seats */}
+                  {availableFilters
+                    .filter(config => 
+                      config.key !== 'dates' && 
+                      config.key !== 'seats'
+                    )
+                    .map(config => (
+                      <FilterComponent
+                        key={`SearchFiltersMobile.${config.scope || 'built-in'}.${config.key}`}
+                        idPrefix="SearchFiltersMobile"
+                        config={config}
+                        marketplaceCurrency={marketplaceCurrency}
+                        urlQueryParams={validQueryParams}
+                        initialValues={initialValues(this.props, this.state.currentQueryParams)}
+                        getHandleChangedValueFn={this.getHandleChangedValueFn}
+                        intl={intl}
+                        liveEdit
+                        showAsPopup={false}
+                        isSearchFiltersMobile={true}
+                      />
+                    ))}
+                </SearchFiltersMobile>
               </div>
-    
-              <MainPanelHeader
-                className={css.mainPanel}
-                sortByComponent={sortBy('desktop')}
-                isSortByActive={sortConfig.active}
-                listingsAreLoaded={listingsAreLoaded}
-                resultsCount={totalItems}
-                searchInProgress={searchInProgress}
-                searchListingsError={searchListingsError}
-                noResultsInfo={noResultsInfo}
-              />
+              
               <div
                 className={classNames(css.listingsForGridVariant, {
                   [css.newSearchInProgress]: !(listingsAreLoaded || searchListingsError),
@@ -539,7 +497,6 @@ export class SearchPageComponent extends Component {
         <FooterContainer />
       </Page>
     );
-    
   }
 }
 

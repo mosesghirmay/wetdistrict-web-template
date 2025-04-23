@@ -264,11 +264,8 @@ render() {
 
     const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
 
-    const hasMatchMedia = typeof window !== 'undefined' && window?.matchMedia;
-    // We treat anything below 1100px as mobile layout, including iPads/tablets
-    const isMobileLayout = hasMatchMedia
-      ? window.matchMedia(`(max-width: ${MAX_MOBILE_SCREEN_WIDTH}px)`)?.matches
-      : true;
+    // Force mobile layout for all screen sizes
+    const isMobileLayout = true;
     const isMobileMenuOpen = isMobileLayout && mobilemenu === 'open';
     const isMobileSearchOpen = isMobileLayout && mobilesearch === 'open';
 

@@ -16,15 +16,11 @@
   transition: all 0.2s ease-in-out;
   backdrop-filter: blur(5px);
 
-  /* Display for mobile and tablets, hide for desktop */
+  /* Always display for all screen sizes */
   display: block;
   
   @media (--viewportMedium) {
     height: var(--topbarHeightDesktop);
-  }
-  
-  @media (min-width: 1024px) {
-    display: none;
   }
 }
 
@@ -124,12 +120,7 @@
 }
 
 .desktop {
-  display: none;
-
-  /* Only show desktop topbar on large screens (1024px+) */
-  @media (min-width: 1024px) {
-    display: block !important;
-  }
+  display: none !important;
 }
 
 /* Icon component styles */
@@ -303,10 +294,8 @@
   background-color: white; /* Add explicit background */
   z-index: 1000; /* High z-index to ensure visibility */
   
-  /* Hide in desktop mode */
-  @media (min-width: 1024px) {
-    display: none !important;
-  }
+  /* Always show in all modes */
+  display: flex !important;
 }
 
 /* Special styling for search page topbar */

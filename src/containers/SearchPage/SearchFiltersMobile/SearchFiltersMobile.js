@@ -24,7 +24,7 @@ import writtenLogo from '../../../assets/WrittenLogo.png';
 import { TimeAvailabilityFilter } from '../../../components/SearchFilters/TimeAvailabilityFilter';
 import config from '../../../config/configSearch';
 
-const isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 768;
+const isMobileLayout = true; // Force mobile layout for all screen sizes
 
 const SearchFiltersMobile = ({
   rootClassName = null,

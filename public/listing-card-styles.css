@@ -1,0 +1,91 @@
+/* Additional styles for listing cards to ensure mobile aesthetics across all screen sizes */
+
+/* Consistent card styling */
+.ListingCard__root {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  margin: 8px !important;
+}
+
+/* Hover effects */
+.ListingCard__root:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Card grid layout for different screen sizes */
+@media (min-width: 768px) {
+  .ListingCard__root {
+    width: calc(50% - 16px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ListingCard__root {
+    width: calc(33.333% - 16px) !important;
+  }
+}
+
+/* SearchResultsPanel padding */
+.SearchResultsPanel {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  
+  /* Add more padding on tablet/desktop */
+  @media (min-width: 768px) {
+    padding: 24px !important;
+  }
+  
+  /* Even more padding on large screens */
+  @media (min-width: 1024px) {
+    padding: 32px !important;
+  }
+}
+
+/* ListingCard content padding */
+.ListingCard__info {
+  padding: 16px !important;
+}
+
+/* Ensure images display properly */
+.ListingCard__rootForImage {
+  width: 100% !important;
+  border-radius: 8px 8px 0 0 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure consistent card spacing on all devices */
+:root {
+  --card-margin: 12px;
+}
+
+/* For SearchResultPanel */
+.searchListingsPanel {
+  padding: 0 !important;
+  margin: calc(-1 * var(--card-margin)) !important;
+}
+
+/* Fix for direct children of SearchResultsPanel */
+.searchListingsPanel > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+}
+
+/* Individual card spacing */
+.ListingCard {
+  margin: var(--card-margin) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.ListingCard:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}

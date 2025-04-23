@@ -11,22 +11,10 @@
 
   /* Top Bar's drop shadow should always be visible */
   z-index: var(--zIndexTopbar);
-  position: relative;
-
-  @media (max-width: 768px) {
-    position: sticky;
-    top: 0px;
-    left: 0;
-    z-index: 9999;
-  }
-
-  @media (--viewportMedium) {
-    position: sticky;
-    top: 0;
-    left: 0;
-    /* We need to raise Topbar above .container */
-    z-index: var(--zIndexTopbar);
-  }
+  position: sticky;
+  top: 0px;
+  left: 0;
+  z-index: 9999;
 }
 
 .container {
@@ -34,12 +22,6 @@
   width: 100%;
   flex-grow: 1;
   display: flex;
-
-  @media (--viewportMedium) {
-    position: relative;
-    padding-top: 10px;
-    min-height: calc(100vh - var(--topbarHeightDesktop));
-  }
 }
 
 /* Container for side and content */
@@ -55,42 +37,10 @@
 
   /* When side nav is shown as a column, Topbar's box-shadow should be visible */
   z-index: calc(var(--zIndexTopbar) - 1);
-
-  @media (--viewportMedium) {
-    flex-direction: row;
-    justify-content: center;
-  }
 }
 
 .layoutWrapperFilterColumn {
   display: none;
-
-  @media (--viewportMedium) {
-    /* Layout */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 24px 0 0 24px;
-  }
-
-  @media (--viewportLarge) {
-    /* Layout */
-    padding: 40px 0 0 36px;
-
-    flex-direction: column;
-    justify-content: flex-start;
-    border: none;
-    box-shadow: none;
-    background-color: transparent;
-  }
-
-  @media (min-width: 1440px) {
-    padding: 40px 0 0 calc((100vw - 1368px) / 2);
-  }
-
-  @media (--viewportXLarge) {
-    padding: 40px 0 0 calc((100vw - 1800px) / 2);
-  }
 }
 
 .filterColumnContent {
@@ -147,63 +97,15 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 24px 0 24px;
-
-  @media (max-width: 768px) {
-    padding: 0px !important;
-  }
-
-  @media (--viewportMedium) {
-    /**
-     * Calculate right padding to match Footer right border
-     * and left padding together with border should be 60px.
-     */
-    padding: 24px 24px 0 24px;
-    background-color: var(--colorWhite);
-    border-left-width: 1px;
-    border-left-style: solid;
-    border-left-color: var(--colorGrey100);
-  }
-
-  @media (--viewportLarge) {
-    /**
-     * Calculate right padding to match Footer right border
-     * and left padding together with border should be 60px.
-     */
-    padding: 40px 36px 0 36px;
-  }
-
-  @media (min-width: 1440px) {
-    padding: 40px calc((100vw - 1368px) / 2) 0 59px;
-  }
-
-  @media (--viewportXLarge) {
-    padding: 40px calc((100vw - 1800px) / 2) 0 59px;
-  }
+  padding: 0px !important;
 }
 
 .searchResultContainer {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 2px 0 0 0;
-
-  @media (max-width: 768px) {
-    padding: 0;
-  }
-
-  @media (--viewportMedium) {
-    padding: 0;
-    /**
-     * .container is using flexbox,
-     * This specifies that searchResultContainer is taking 60% from the viewport width
-     */
-    flex-basis: 50%;
-  }
-
-  @media (--viewportLarge) {
-    flex-basis: 62.5%;
-  }
+  padding: 0;
+  flex-basis: 100%;
 }
 
 .error {
@@ -216,11 +118,7 @@
 }
 
 .mainPanel {
-  display: none;
-
-  @media (--viewportMedium) {
-    display: flex;
-  }
+  display: none !important;
 }
 .filter {
   width: 100%;
@@ -240,22 +138,15 @@
 
 .searchFiltersMobileMap {
   padding: 16px 24px;
-
-  @media (--viewportMedium) {
-    display: none;
-  }
+  display: block;
 }
 
 .searchFiltersMobileList {
-  
+  display: block !important;
+  width: 100%;
 
-  @media (--viewportMedium) {
-    display: none;
-
-    .overlay {
-      pointer-events: none;
-    }
-    
+  .overlay {
+    pointer-events: none;
   }
 }
 
@@ -277,6 +168,15 @@
 
 .listingsForGridVariant {
   composes: listings;
+  padding: 16px;
+  
+  @media (--viewportMedium) {
+    padding: 24px;
+  }
+  
+  @media (--viewportLarge) {
+    padding: 32px;
+  }
 }
 
 .listingsForMapVariant {
@@ -294,6 +194,10 @@
 
 .searchListingsPanel {
   flex-grow: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: -8px; /* Negative margin to counteract the padding on cards */
 }
 
 .mapPanel {
@@ -344,21 +248,26 @@
   top: 0;
   z-index: var(--zIndexTopbar);
   background-color: var(--colorGrey50);
+  width: 100%;
+  display: block !important;
+  
   & .topbar {
     position: relative;
     z-index: 0;
     & > div {
       background: none;
       padding-bottom: 5px;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12); /* Soft shadow for depth */
-  transition: all 0.2s ease-in-out;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12); /* Soft shadow for depth */
+      transition: all 0.2s ease-in-out;
 
-  /* Ensures it stays clean visually */
-  backdrop-filter: blur(5px); /* Adds slight transparency */
-}
+      /* Ensures it stays clean visually */
+      backdrop-filter: blur(5px); /* Adds slight transparency */
     }
   }
+  
   & .searchFiltersMobileList {
     width: 100%;
-   
+    display: block !important;
   }
+}
+

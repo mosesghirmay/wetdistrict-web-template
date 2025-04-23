@@ -278,9 +278,8 @@ export class SearchPageComponent extends Component {
     );
 
     const isWindowDefined = typeof window !== 'undefined';
-    const isMobileLayout = isWindowDefined && window.innerWidth < MODAL_BREAKPOINT;
-    const shouldShowSearchMap =
-      !isMobileLayout || (isMobileLayout && this.state.isSearchMapOpenOnMobile);
+    const isMobileLayout = true; // Force mobile layout for all screen sizes
+    const shouldShowSearchMap = this.state.isSearchMapOpenOnMobile; // Only show map when open on mobile
 
     const isKeywordSearch = isMainSearchTypeKeywords(config);
     const defaultFilters = isKeywordSearch
@@ -412,6 +411,7 @@ export class SearchPageComponent extends Component {
       ],
     };
 
+    // Force only the mobile layout
     return (
       <Page
         scrollingDisabled={scrollingDisabled}
@@ -420,8 +420,11 @@ export class SearchPageComponent extends Component {
         schema={schema}
         socialSharing={socialSharing}
         openGraphType="website"
+        className="mobileOnlyLayout"
       >
-        <TopbarContainer rootClassName={topbarClasses} currentSearchParams={urlQueryParams} />
+        <div className={css.mobileSec}>
+          <TopbarContainer rootClassName={topbarClasses} currentSearchParams={urlQueryParams} />
+        </div>
         <div className={css.container}>
           <div className={css.searchResultContainer}>
             <SearchFiltersMobile
