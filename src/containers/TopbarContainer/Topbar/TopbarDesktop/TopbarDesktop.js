@@ -41,13 +41,21 @@ const LoginLink = () => {
   );
 };
 
-const InboxLink = ({ notificationCount, currentUserHasListings }) => {
+const InboxLink = ({ notificationCount, currentUserHasListings, currentUser }) => {
   const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
+  
+  // Get user type directly from currentUser
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isRenter = userType === 'renter';
+  
+  // For renters default to "orders", otherwise "sales"
+  const defaultTab = isRenter ? 'orders' : 'sales';
+  
   return (
     <NamedLink
       className={css.topbarLink}
       name="InboxPage"
-      params={{ tab: currentUserHasListings ? 'sales' : 'orders' }}
+      params={{ tab: defaultTab }}
     >
       <span className={css.topbarLinkLabel}>
         <FormattedMessage id="TopbarDesktop.inbox" />
@@ -64,9 +72,13 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
   
-  const user = ensureCurrentUser(currentUser);
-  // Check if current user has permission to post listings (i.e., is an owner)
-  const isOwner = user && hasPermissionToPostListings(user);
+  // Get user type directly from currentUser
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
+  const isRenter = userType === 'renter';
+  
+  // Check if user has permission to post listings
+  const hasListingPermission = currentUser && hasPermissionToPostListings(currentUser);
+  const isOwner = hasListingPermission && !isRenter;
 
   return (
     <Menu>
@@ -168,6 +180,7 @@ const TopbarDesktop = props => {
     <InboxLink
       notificationCount={notificationCount}
       currentUserHasListings={currentUserHasListings}
+      currentUser={currentUser}
     />
   ) : null;
 
@@ -215,7 +228,9 @@ const TopbarDesktop = props => {
 
       {inboxLinkMaybe}
       {profileMenuMaybe}
-      {/* Removing duplicate login/signup links */}
+      {/* No need to render these as they're already included in customLinks */}
+      {/* {!isAuthenticated && signupLinkMaybe}
+      {!isAuthenticated && loginLinkMaybe} */}
     </nav>
   );
 };

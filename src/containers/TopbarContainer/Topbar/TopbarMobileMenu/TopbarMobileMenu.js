@@ -62,49 +62,39 @@ const TopbarMobileMenu = props => {
     onClose,
   } = props;
 
-  const user = ensureCurrentUser(currentUser);
+  // Get user type directly from publicData
+  const userType = currentUser?.attributes?.profile?.publicData?.userType;
   
-  // Check if current user has permission to post listings (i.e., is an owner)
-  const isOwner = user && hasPermissionToPostListings(user);
+  // Check if the user is a renter (from publicData)
+  const isRenter = userType === 'renter';
+  
+  // Check permissions (more reliable than just checking userType)
+  const hasListingPermission = currentUser && hasPermissionToPostListings(currentUser);
+  
+  // User is an owner if they have permission to post listings AND they're not explicitly a renter
+  const isOwner = hasListingPermission && !isRenter;
 
-  const extraLinks = customLinks.map((linkConfig, index) => {
-    // Skip login/signup links when authenticated
-    if (isAuthenticated) {
-      // Check for login/signup links by name or text content
-      if (
-        (linkConfig.route && 
-         (linkConfig.route.name === 'LoginPage' || linkConfig.route.name === 'SignupPage')) ||
-        (linkConfig.text && 
-         (linkConfig.text.props?.id === 'TopbarMobileMenu.loginLink' || 
-          linkConfig.text.props?.id === 'TopbarMobileMenu.signupLink'))
-      ) {
-        return null;
-      }
-      
-      // If user is a renter (not an owner), hide the Captains link
-      if (!isOwner) {
-        // Check for Captains link by route name or text content
-        if (
-          (linkConfig.route && linkConfig.route.name === 'CaptainsPage') ||
-          (linkConfig.text && 
-           (typeof linkConfig.text === 'string' && linkConfig.text.includes('Captain')) ||
-           (linkConfig.text?.props?.id && 
-            (linkConfig.text.props.id === 'TopbarMobileMenu.captainsLink' || 
-             linkConfig.text.props.id.toLowerCase().includes('captain'))))
-        ) {
-          return null;
-        }
-      }
+  // Filter custom links based on user type
+  const filteredCustomLinks = customLinks ? customLinks.filter(linkConfig => {
+    // For non-authenticated users, show all links
+    if (!isAuthenticated) {
+      return true;
     }
     
-    return (
-      <CustomLinkComponent
-        key={`${linkConfig.text}_${index}`}
-        linkConfig={linkConfig}
-        currentPage={currentPage}
-      />
-    );
-  }).filter(link => link !== null); // Filter out null links
+    // Skip login/signup links when authenticated
+    if (linkConfig.route?.name === 'LoginPage' || linkConfig.route?.name === 'SignupPage') {
+      return false;
+    }
+    
+    // If user is a renter, remove owner-specific links
+    if (!isOwner && (linkConfig.route?.name === 'CaptainsPage' || 
+                    linkConfig.route?.name === 'ManageListingsPage' ||
+                    linkConfig.route?.name === 'NewListingPage')) {
+      return false;
+    }
+    
+    return true;
+  }) : [];
 
   const notificationCountBadge =
     notificationCount > 0 ? (
@@ -118,8 +108,8 @@ const TopbarMobileMenu = props => {
     return currentPage === page || isAccountSettingsPage || isInboxPage ? css.currentPage : null;
   };
 
-  // Set inbox tab based on user role - owners see sales, renters see orders
-  const inboxTab = isOwner ? 'sales' : 'orders';
+  // Set inbox tab based on user role - renters see orders, others see sales
+  const inboxTab = isRenter ? 'orders' : 'sales';
 
   return (
     <div className={css.root}>
@@ -133,90 +123,76 @@ const TopbarMobileMenu = props => {
       <div className={css.content}>
         {isAuthenticated ? (
           <>
-            {/* Authenticated user menu */}
             <div className={css.accountLinksWrapper}>
               <NamedLink
-                className={classNames(css.inbox, currentPageClass(`InboxPage:${inboxTab}`))}
+                className={classNames(css.inbox)}
                 name="InboxPage"
                 params={{ tab: inboxTab }}
               >
                 <FormattedMessage id="TopbarMobileMenu.inboxLink" />
                 {notificationCountBadge}
               </NamedLink>
-              
-              {/* Only show listings management links for owners */}
+
               {isOwner && (
-                <NamedLink
-                  className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}
-                  name="ManageListingsPage"
-                >
+                <NamedLink className={css.navigationLink} name="ManageListingsPage">
                   <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
                 </NamedLink>
               )}
-              
-              <NamedLink
-                className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}
-                name="ProfileSettingsPage"
-              >
+
+              <NamedLink className={css.navigationLink} name="ProfileSettingsPage">
                 <FormattedMessage id="TopbarMobileMenu.profileSettingsLink" />
               </NamedLink>
-              <NamedLink
-                className={classNames(css.navigationLink, currentPageClass('AccountSettingsPage'))}
-                name="AccountSettingsPage"
-              >
+              <NamedLink className={css.navigationLink} name="AccountSettingsPage">
                 <FormattedMessage id="TopbarMobileMenu.accountSettingsLink" />
               </NamedLink>
             </div>
-            
-            {/* Custom links (Extra menu items) */}
+
             <div className={css.customLinksWrapper}>
-              {extraLinks}
-              
-              {/* Add a boat link - shown to owners */}
+              {filteredCustomLinks.map((linkConfig, index) => (
+                <CustomLinkComponent
+                  key={`${linkConfig.text}_${index}`}
+                  linkConfig={linkConfig}
+                  currentPage={currentPage}
+                />
+              ))}
+
               {isOwner && (
                 <NamedLink className={css.navigationLink} name="NewListingPage">
-                  <span className={css.menuItemBorder} />
                   <FormattedMessage id="TopbarMobileMenu.addABoatLink" />
                 </NamedLink>
               )}
             </div>
-            
-            {/* Logout Button */}
+
             <InlineTextButton rootClassName={css.logoutButton} onClick={onLogout}>
               <FormattedMessage id="TopbarMobileMenu.logoutLink" />
             </InlineTextButton>
           </>
         ) : (
-          <>
-            {/* Non-authenticated user - show custom links */}
-            <div className={css.customLinksWrapper}>
-              {extraLinks}
-              
-              {/* Add a boat link - shown to non-authenticated users */}
-              <NamedLink className={css.navigationLink} name="NewListingPage">
-                <span className={css.menuItemBorder} />
-                <FormattedMessage id="TopbarMobileMenu.addABoatLink" />
-              </NamedLink>
-            </div>
-          </>
-        )}
-
-        <div className={css.spacer} />
-      </div>
-      
-      <div className={css.footer}>
-        {isAuthenticated ? (
-          isOwner ? (
-            <NamedLink className={css.createNewListingLink} name="NewListingPage">
-              <FormattedMessage id="TopbarMobileMenu.newListingLink" />
+          <div className={css.customLinksWrapper}>
+            {filteredCustomLinks.map((linkConfig, index) => (
+              <CustomLinkComponent
+                key={`${linkConfig.text}_${index}`}
+                linkConfig={linkConfig}
+                currentPage={currentPage}
+              />
+            ))}
+            
+            {/* Add Boat link for non-authenticated users */}
+            <NamedLink className={css.navigationLink} name="NewListingPage">
+              <FormattedMessage id="TopbarMobileMenu.addABoatLink" />
             </NamedLink>
-          ) : null
-        ) : (
+          </div>
+        )}
+      </div>
+
+      {/* Show "Add Boat" link in footer for owners OR when nobody is logged in */}
+      {(!isAuthenticated || (isAuthenticated && isOwner)) ? (
+        <div className={css.footer}>
           <NamedLink className={css.createNewListingLink} name="NewListingPage">
             <FormattedMessage id="TopbarMobileMenu.newListingLink" />
           </NamedLink>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 };
