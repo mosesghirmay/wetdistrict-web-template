@@ -39,8 +39,22 @@ const FieldDateRangeControllerComponent = props => {
     useMobileMargins,
     isDayBlocked = day => false,
     isOutsideRange,
+    controllerRef,
     ...rest
   } = props;
+  
+  // If a controller reference was provided, expose the onReset method
+  if (controllerRef) {
+    controllerRef.onReset = (startDate, endDate) => {
+      if (startDate === null && endDate === null) {
+        // Clear selection by forcing a change with null values
+        handleChange(parentOnChange, fieldOnChange)([null, null]);
+      } else if (startDate instanceof Date) {
+        // Reset to specific dates
+        handleChange(parentOnChange, fieldOnChange)([startDate, endDate || startDate]);
+      }
+    };
+  }
 
   // eslint-disable-next-line no-unused-vars
   const { onChange: fieldOnChange, type, checked, value, ...restOfInput } = input;

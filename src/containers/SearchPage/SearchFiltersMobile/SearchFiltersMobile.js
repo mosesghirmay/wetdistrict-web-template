@@ -55,7 +55,8 @@ const SearchFiltersMobile = ({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   const history = useHistory();
-  const { isMobileSearchFilerOpen } = useMyContext();
+  const myContext = useMyContext();
+  const { isMobileSearchFilerOpen, onOpenMobileSearchFilterModal } = myContext;
   const routeConfiguration = useRouteConfiguration();
 
   const openFilters = () => {
@@ -204,9 +205,6 @@ const SearchFiltersMobile = ({
   }, [isFiltersOpenOnMobile]);
 
   const cancelFilters = () => {
-    // Get the context function from the parent component
-    const { onOpenMobileSearchFilterModal } = useMyContext();
-    
     // Restore URL parameters
     history.push(
       createResourceLocatorString('SearchPage', routeConfiguration, {}, initialQueryParams)
@@ -241,7 +239,6 @@ const SearchFiltersMobile = ({
     setIsPickerOpen(false);
     
     // 2. Call context function if available
-    const { onOpenMobileSearchFilterModal } = useMyContext();
     if (onOpenMobileSearchFilterModal) {
       console.log("Closing filters via context");
       onOpenMobileSearchFilterModal(false);
@@ -273,12 +270,7 @@ const SearchFiltersMobile = ({
       }));
     }
     
-    // 6. Use history back as a last resort
-    setTimeout(() => {
-      if (window.__isMobileFilterOpen === false) {
-        window.history.back();
-      }
-    }, 200);
+    // IMPORTANT: Don't navigate away or use history.back() as this would lose the filter parameters
   };
 
   const classes = classNames(rootClassName || css.root, className);
@@ -406,18 +398,11 @@ const SearchFiltersMobile = ({
         id="SearchFiltersMobile.filters"
         isModalOpenOnMobile={isFiltersOpenOnMobile}
         onClose={() => {
-          // Direct approach: navigate to the same page without query params
-          console.log("Modal close triggered - direct close approach");
+          // Just close the modal without losing filter parameters
+          console.log("Modal close triggered - preserving filters");
           
-          // Remove query parameters
-          window.location.href = window.location.pathname;
-          
-          // Also try calling cancelFilters as backup
-          try {
-            cancelFilters();
-          } catch (e) {
-            console.error("Error in cancelFilters", e);
-          }
+          // Use closeFilters which preserves the current URL with its query parameters
+          closeFilters();
         }}
         hideCloseIcon={false}
         showAsModalMaxWidth={showAsModalMaxWidth}
@@ -469,32 +454,7 @@ const SearchFiltersMobile = ({
                     />
                   </div>
                   
-                  {/* Render TimeAvailabilityFilter directly under DatePicker */}
-                  {config.custom?.enableTimeAvailabilityFilter && dates?.startDate && (
-                    <div className={css.timePickerWrapper}>
-                      <h3 className={css.timePickerTitle}>
-                        {intl.formatMessage({ id: 'TimeAvailabilityFilter.label' })}
-                      </h3>
-                      <TimeAvailabilityFilter
-                        id="MobileTimePickerInline"
-                        queryParams={urlQueryParams}
-                        timeZone="Etc/UTC"
-                        showAsPopup={false}
-                        onSubmit={handleTimeFilterSubmit}
-                        onClear={() => {
-                          const paramsWithoutTimeFilter = { ...urlQueryParams };
-                          delete paramsWithoutTimeFilter.availability;
-                          delete paramsWithoutTimeFilter.start;
-                          delete paramsWithoutTimeFilter.end;
-                          delete paramsWithoutTimeFilter.availabilityDate;
-                          delete paramsWithoutTimeFilter.availabilityStartTime;
-                          delete paramsWithoutTimeFilter.availabilityEndTime;
-                          history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, paramsWithoutTimeFilter));
-                        }}
-                        intl={intl}
-                      />
-                    </div>
-                  )}
+                  {/* TimeAvailabilityFilter is now only rendered in one place - outside this component */}
   
                   <div className={css.actionButtons}>
                     {dates?.startDate && (
@@ -530,7 +490,7 @@ const SearchFiltersMobile = ({
                   <>
                     {child}
                     
-                    {/* Render time filter immediately after date filter */}
+                    {/* Time filter is always shown when configured, regardless of date selection */}
                     {config.custom?.enableTimeAvailabilityFilter && !isPickerOpen && (
                       <div className={css.standaloneTimeFilter}>
                         {timeAvailabilityFilter}
@@ -554,10 +514,13 @@ const SearchFiltersMobile = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Show listings button clicked - FORCE CLOSING");
+                console.log("Show listings button clicked - closing with filters applied");
                 
-                // Use location hash directly rather than reload
-                window.location.href = window.location.pathname;
+                // Close the filter modal while preserving the current URL parameters
+                closeFilters();
+                
+                // Don't navigate away - this would lose all the filter parameters
+                // Just close the modal to show filtered results
               }}
             >
               {showListingsLabel}

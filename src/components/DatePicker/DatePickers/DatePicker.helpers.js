@@ -109,12 +109,18 @@ export const getFirstOfMonth = date => {
 /**
  * Return the date part of the ISO date string: "2024-07-17"
  *
- * @param {Date} date
- * @returns string that contains ISO formatted date (e.g. "2025-01-01")
+ * @param {Date|null|undefined} date
+ * @returns string that contains ISO formatted date (e.g. "2025-01-01") or undefined if invalid
  */
 export const getISODateString = date => {
-  if (!(date instanceof Date)) {
-    return;
+  // Check for null, undefined, or not a Date object
+  if (date == null || !(date instanceof Date)) {
+    return undefined;
+  }
+  
+  // Check for invalid date (NaN timestamp)
+  if (isNaN(date.getTime())) {
+    return undefined;
   }
 
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
@@ -277,6 +283,11 @@ export const isDateInRange = (date, range) => {
   if (!date || !range || !range.from || !range.to) {
     return false;
   }
+  
+  // Special case for single date selection in range mode
+  if (isSameDay(range.from, range.to)) {
+    return isSameDay(date, range.from);
+  }
 
   const earlyDate = range.from < range.to ? range.from : range.to;
   const laterDate = range.from < range.to ? range.to : range.from;
@@ -302,15 +313,27 @@ export const isValidDateString = str => {
 /**
  * Check if the given dates point to the same day.
  *
- * @param {Date} date1
- * @param {Date} date2
+ * @param {Date|null|undefined} date1
+ * @param {Date|null|undefined} date2
  * @returns true if year, month and date match.
  */
 export const isSameDay = (date1, date2) => {
-  if (!date1 || !date2) {
+  // Check if either date is null or undefined
+  if (date1 == null || date2 == null) {
     return false;
   }
 
+  // Make sure both dates are proper Date objects
+  if (!(date1 instanceof Date) || !(date2 instanceof Date)) {
+    return false;
+  }
+
+  // Check for invalid date values (NaN timestamps)
+  if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+    return false;
+  }
+
+  // Compare year, month, and day
   return (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&

@@ -215,7 +215,7 @@ export class BookingDateRangeFilterComponent extends Component {
       ? intl.formatDate(startDate, format) 
       : intl.formatDate(currentDate, format);
     
-    // When no date is selected, show the current date in a placeholder format
+    // When no date is selected, only show label without date
     const labelForPlain = isSelected
       ? intl.formatMessage(
           { id: 'BookingDateRangeFilter.labelSelectedPlain' },
@@ -228,8 +228,8 @@ export class BookingDateRangeFilterComponent extends Component {
       ? `${label}`  // Only show "Date:" as the label
       : intl.formatMessage({ id: 'BookingDateRangeFilter.labelPlain' });
       
-    // Don't show placeholder date when not selected - it's confusing
-    const placeholderDate = null;
+    // Always show current date as placeholder when no date is selected
+    const placeholderDate = !isSelected ? formattedStartDate : null;
 
     const labelForPopup = isSelected
       ? intl.formatMessage(

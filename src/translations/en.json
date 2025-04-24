@@ -1172,5 +1172,6 @@
   "TimeFilterForm.fixedDurationLabel": "3 hours later",
   "TimeFilterForm.fixedDurationNote": "* All rentals are 3 hours",
   "TimeFilterForm.toLabel": "to",
-  "TimeFilterForm.submitButtonLabel": "Apply"
+  "TimeFilterForm.submitButtonLabel": "Apply",
+  "FieldDateAndTimeInput.clear": "Clear"
 }

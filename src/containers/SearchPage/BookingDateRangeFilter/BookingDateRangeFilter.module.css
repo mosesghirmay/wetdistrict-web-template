@@ -23,10 +23,12 @@
 
 .filterLabel {
   color: var(--colorBlack);
+  font-weight: normal;
 }
 
 .filterLabelSelected {
-  color: var(--marketplaceColor);
+  color: var(--black);
+  font-weight: bold;
 }
 
 .labelButton {

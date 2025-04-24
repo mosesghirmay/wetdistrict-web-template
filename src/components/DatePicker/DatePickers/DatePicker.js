@@ -306,6 +306,7 @@ const DatePicker = props => {
   const [allowSlide, setAllowSlide] = useState(true);
 
   useEffect(() => {
+    // Handle single date picker case
     if (!range && (isDate(value) || value == null) && value !== currentValue) {
       if (isDate(value)) {
         setCurrentDate(value);
@@ -314,21 +315,36 @@ const DatePicker = props => {
       }
       // Update single date
       setCurrentValue(value);
-    } else if (
-      range &&
-      isDateArray(value) &&
-      (value.length > 0 && isDateRangeChanged(value, currentValue))
-    ) {
-      if (isDate(value[0])) {
-        setCurrentDate(value[0]);
-      } else {
-        focusDate(currentDate);
+    } 
+    // Handle range date picker with special case for single date selection
+    else if (range) {
+      // Handle empty values
+      if (value === null || value === undefined) {
+        setCurrentValue([]);
+        return;
       }
-      // Update date range when range it exists and has been changed
-      setCurrentValue(value);
-    } else if (range && isDateArray(value) && value.length === 0 && currentValue.length > 0) {
-      // Update date range when range is set to empty
-      setCurrentValue(value);
+      
+      // Handle array values
+      if (isDateArray(value)) {
+        if (value.length > 0 && isDateRangeChanged(value, currentValue)) {
+          if (isDate(value[0])) {
+            setCurrentDate(value[0]);
+          } else {
+            focusDate(currentDate);
+          }
+          // Update date range when range exists and has been changed
+          setCurrentValue(value);
+        } else if (value.length === 0 && (currentValue?.length > 0 || !Array.isArray(currentValue))) {
+          // Update date range when range is set to empty
+          setCurrentValue([]);
+        }
+      }
+      // Handle case where a single date is provided but we're in range mode
+      else if (isDate(value)) {
+        setCurrentDate(value);
+        // Create a range with the same date for start and end
+        setCurrentValue([value, value]);
+      }
     }
   }, [value]);
 
@@ -379,37 +395,49 @@ const DatePicker = props => {
     Math.abs(start?.getTime() - end?.getTime()) >= minimumNights * 864e5;
 
   const onSelectDate = date => {
+    // Make sure we have a valid date object
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      console.error('Invalid date passed to onSelectDate:', date);
+      return;
+    }
+
     if (isDayBlocked(date)) {
       return;
     }
 
-    // Ensure we're working with the exact date that was clicked
-    // Create a clean date object with the same day, month, and year
-    const selectedDate = new Date(date);
-    // Reset time to midnight to ensure consistent behavior
-    selectedDate.setHours(0, 0, 0, 0);
+    // Create a fresh Date object with only the year, month, and day to avoid time issues
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create a new date object with just the date parts (no time)
+    const selectedDate = new Date(year, month, day, 0, 0, 0, 0);
 
-    // Date range:
+    // Date range mode:
     if (range) {
-      // Force single-date selection by immediately setting both start and end dates
-      // to the clicked date, rather than requiring two clicks to complete a range
+      // Single-date selection in range mode
+      // Set both start and end dates to the same date
       const newValue = [selectedDate, selectedDate];
       
-      // Log the exact date selected for debugging
-      console.log('Selected date:', {
-        original: date,
-        day: date.getDate(),
-        month: date.getMonth(),
-        year: date.getFullYear(),
-        dayOfWeek: date.getDay(), // 0 = Sunday, 1 = Monday, etc.
-        newValue
-      });
-      
-      onCurrentValueChange(newValue);
-    } else {
-      // Don't allow selecting the same day.
-      // This relies on assumption that date points to the same time of day. (00:00)
-      if (isSameDay(currentValue, selectedDate)) {
+      // Only update if we have a valid date
+      if (selectedDate instanceof Date && !isNaN(selectedDate.getTime())) {
+        // Don't reselect the same date if it's already selected
+        if (Array.isArray(currentValue) && 
+            currentValue.length === 2 && 
+            isSameDay(currentValue[0], selectedDate) && 
+            isSameDay(currentValue[1], selectedDate)) {
+          return;
+        }
+        
+        onCurrentValueChange(newValue);
+      }
+    } 
+    // Single date mode:
+    else {
+      // Don't allow selecting the same day if it's already selected
+      if (currentValue instanceof Date && 
+          !isNaN(currentValue.getTime()) && 
+          isSameDay(currentValue, selectedDate)) {
         return;
       }
 

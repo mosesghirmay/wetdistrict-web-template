@@ -131,6 +131,15 @@ export const SingleDatePicker = props => {
     ...(readOnly ? { readOnly } : {}),
   };
 
+  // If no date is selected, create placeholder text with current date
+  const currentDate = new Date();
+  const dateFormatOptionsPlaceholder = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  };
+  const todayFormatted = !value ? intl.formatDate(currentDate, dateFormatOptionsPlaceholder) : '';
+  
   return (
     <OutsideClickHandler className={classes} onOutsideClick={handleBlur}>
       <div id={pickerId} onKeyDown={handleKeyDown} ref={element}>
@@ -144,7 +153,7 @@ export const SingleDatePicker = props => {
           <input
             id={id}
             className={classNames(css.input, { [css.inputPlaceholder]: !value })}
-            placeholder={placeholderText}
+            placeholder={!value ? todayFormatted : placeholderText}
             value={dateData.formatted}
             {...inputProps}
           />

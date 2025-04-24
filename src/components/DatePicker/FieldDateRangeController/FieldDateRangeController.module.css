@@ -12,3 +12,14 @@
     margin: 0;
   }
 }
+
+/* Additional styles for date appearance */
+:global(.filterPlainSelectedDate) {
+  font-weight: bold !important;
+  color: var(--black) !important;
+}
+
+:global(.filterPlainPlaceholderDate) {
+  font-weight: normal !important;
+  color: var(--colorGrey500) !important;
+}

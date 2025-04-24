@@ -46,7 +46,19 @@ export const DateRangeController = props => {
     const cleanedValues = value.map(d => getStartOfDay(d));
     setDateRange(cleanedValues);
 
-    if (cleanedValues.length === 1) {
+    // Special case for single-date selection (when both dates are the same)
+    if (cleanedValues.length === 2 && 
+        cleanedValues[0] instanceof Date && 
+        cleanedValues[1] instanceof Date && 
+        cleanedValues[0].getTime() === cleanedValues[1].getTime()) {
+      // Only format the date once since it's the same date
+      const formattedDate = intl.formatDate(cleanedValues[0], dateFormatOptions);
+      setRawValues([formattedDate, formattedDate]);
+      
+      if (onChange) {
+        onChange(cleanedValues);
+      }
+    } else if (cleanedValues.length === 1) {
       setRawValues([intl.formatDate(cleanedValues[0], dateFormatOptions), '']);
       if (onChange) {
         onChange(cleanedValues);

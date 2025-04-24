@@ -90,10 +90,16 @@ class FilterPlainComponent extends Component {
       keepDirtyOnReinitialize = false,
     } = this.props;
 
+    // Apply date styling for date filters
+    const isDatesFilter = id === "datesFilter" || 
+                         id.includes("dates") ||
+                         plainClassName === "datesFilterHeader";
+                         
     // Ensure `plainClassName` is applied correctly to the root div
     // Also add isSelected class when a date is selected
     const classes = classNames(rootClassName || css.root, className, plainClassName, {
       isSelected: isSelected,
+      [css.dateSelected]: isSelected && isDatesFilter,
     });
 
     return (
@@ -106,9 +112,9 @@ class FilterPlainComponent extends Component {
                   {label}
                   {labelSelection && labelSelectionSeparator ? labelSelectionSeparator : null}
                   {labelSelection ? (
-                    <span className={css.labelSelected}>{labelSelection}</span>
+                    <span className={`${css.labelSelected} filterPlainSelectedDate`}>{labelSelection}</span>
                   ) : this.props.placeholderText ? (
-                    <span className={css.placeholderText}>{this.props.placeholderText}</span>
+                    <span className={`${css.placeholderText} filterPlainPlaceholderDate`}>{this.props.placeholderText}</span>
                   ) : null}
                 </span>
               </span>
