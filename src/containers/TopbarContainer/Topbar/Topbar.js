@@ -221,6 +221,72 @@ class TopbarComponent extends Component {
         }); // ✅ Fix: Ensure the promise chain has a `.catch()` to handle potential errors.
     }
     
+    renderFilterButtonText() {
+      const { location, intl } = this.props;
+      
+      // Parse URL query parameters
+      const { dates, availabilityStartTime, availabilityEndTime, pub_capacity } = parse(location.search);
+      
+      // If no filters are selected, show default text
+      if (!dates && !availabilityStartTime && !pub_capacity) {
+        return intl.formatMessage({ id: 'Topbar.chooseDate' }, { defaultMessage: 'Choose a date' });
+      }
+      
+      // Format selected filters
+      let displayText = '';
+      
+      // Format date if selected
+      if (dates) {
+        const dateValues = dates.split(',');
+        if (dateValues.length > 0 && dateValues[0]) {
+          const selectedDate = new Date(dateValues[0]);
+          if (!isNaN(selectedDate.getTime())) {
+            // Format as "Sat, May 9th" with day of week, month, and day with ordinal suffix
+            const dayOfWeek = selectedDate.toLocaleDateString(intl.locale, { weekday: 'short' });
+            const month = selectedDate.toLocaleDateString(intl.locale, { month: 'short' });
+            const day = selectedDate.getDate();
+            
+            // Add ordinal suffix (st, nd, rd, th)
+            let ordinalSuffix = 'th';
+            if (day % 10 === 1 && day !== 11) ordinalSuffix = 'st';
+            else if (day % 10 === 2 && day !== 12) ordinalSuffix = 'nd';
+            else if (day % 10 === 3 && day !== 13) ordinalSuffix = 'rd';
+            
+            displayText = `<b>${dayOfWeek}, ${month} ${day}${ordinalSuffix}</b>`;
+          }
+        }
+      }
+      
+      // Add only start time if selected
+      if (availabilityStartTime) {
+        // Format time to include AM/PM
+        const formatTime = (timeStr) => {
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          const hour12 = hours % 12 || 12;
+          return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        };
+        
+        const startFormatted = formatTime(availabilityStartTime);
+        
+        if (displayText) displayText += ' · ';
+        displayText += `<b>${startFormatted}</b>`;
+      }
+      
+      // Add guest count if selected
+      if (pub_capacity) {
+        // Extract number from format "number,"
+        const guestCount = parseInt(pub_capacity.replace(',', ''), 10);
+        if (!isNaN(guestCount)) {
+          if (displayText) displayText += ' · ';
+          displayText += `<b>${guestCount} ppl</b>`;
+        }
+      }
+      
+      return displayText ? <span dangerouslySetInnerHTML={{ __html: displayText }} /> : 
+        intl.formatMessage({ id: 'Topbar.chooseDate' }, { defaultMessage: 'Choose a date' });
+    }
+    
 
 
 render() {
@@ -336,7 +402,7 @@ render() {
         onClick={this.props.handleMobileFilterToggle}
       >
         <Icons name="calendar" className={css.searchIcon} /> 
-        Choose a date
+        {this.renderFilterButtonText()}
       </Button>
     </div>
   )}
