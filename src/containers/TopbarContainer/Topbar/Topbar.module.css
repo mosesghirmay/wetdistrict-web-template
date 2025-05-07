@@ -3,9 +3,12 @@
 .root {
   width: 100%;
 
+  /* Make topbar sticky on all viewport sizes */
+  position: sticky;
+  top: 0;
+  
   /* Top Bar's drop shadow should always be visible */
   z-index: var(--zIndexTopbar);
-  position: relative;
 }
 
 .container {
@@ -33,6 +36,14 @@
     display: none;
   }
 }
+
+
+.modalContainer {
+  width: 100%;
+  padding: 94px 0;
+  margin: 0 24px;
+}
+
 
 .logoutButton {
   margin: 0;
@@ -178,7 +189,7 @@
   }
 }
 .modalContainerSearchForm {
-  composes: modalContainer;
+  composes: marketplaceModalInMobileBaseStyles from global;
   padding: 0;
   @media (--viewportMedium) {
     padding: var(--modalPaddingMedium);

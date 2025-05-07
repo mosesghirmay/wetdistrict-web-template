@@ -1,0 +1,10 @@
+@import '../../../styles/customMediaQueries.css';
+
+.fieldRoot {
+  width: 100%;
+}
+
+.mobileMargins {
+  width: calc(100% - 48px);
+  margin: 0 24px;
+}

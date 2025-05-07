@@ -248,12 +248,18 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     // Seats filter cannot be applied without dates
     return hasDatesFilterInUse && seatsFilter ? { seats } : {};
   };
+  
+  // No special handling for capacity parameter
+  const capacitySearchParams = () => {
+    return {};
+  };
 
   const {
     perPage,
     price,
     dates,
     seats,
+    capacity,
     sort,
     mapSearch,
     listingTypePathParam,
@@ -264,6 +270,7 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   const datesMaybe = datesSearchParams(dates);
   const stockMaybe = stockFilters(datesMaybe);
   const seatsMaybe = seatsSearchParams(seats, datesMaybe);
+  const capacityMaybe = capacitySearchParams(capacity);
   const sortMaybe = sort === config.search.sortConfig.relevanceKey ? {} : { sort };
 
   const params = {
@@ -287,6 +294,7 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     ...datesMaybe,
     ...stockMaybe,
     ...seatsMaybe,
+    ...capacityMaybe,
     ...sortMaybe,
     perPage,
   };
@@ -365,6 +373,7 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'publicData.listingType',
         'publicData.transactionProcessAlias',
         'publicData.unitType',
+        'publicData.capacity',
         // These help rendering of 'purchase' listings,
         // when transitioning from search page to listing page
         'publicData.pickupEnabled',

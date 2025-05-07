@@ -8,9 +8,11 @@ import { convertCategoriesToSelectTreeOptions, constructQueryParamName } from '.
 import SelectSingleFilter from './SelectSingleFilter/SelectSingleFilter';
 import SelectMultipleFilter from './SelectMultipleFilter/SelectMultipleFilter';
 import BookingDateRangeFilter from './BookingDateRangeFilter/BookingDateRangeFilter';
+import BookingDateFilter from './BookingDateFilter/BookingDateFilter';
 import KeywordFilter from './KeywordFilter/KeywordFilter';
 import PriceFilter from './PriceFilter/PriceFilter';
 import IntegerRangeFilter from './IntegerRangeFilter/IntegerRangeFilter';
+import CapacityFilter from './CapacityFilter/CapacityFilter';
 import SeatsFilter from './SeatsFilter/SeatsFilter';
 
 /**
@@ -106,16 +108,13 @@ const FilterComponent = props => {
         />
       );
     case 'dates': {
-      const { dateRangeMode } = config;
-      const isNightlyMode = dateRangeMode === 'night';
       return (
-        <BookingDateRangeFilter
+        <BookingDateFilter
           id={componentId}
           label={intl.formatMessage({ id: 'FilterComponent.datesLabel' })}
           queryParamNames={[key]}
           initialValues={initialValues([key], liveEdit)}
           onSubmit={getHandleChangedValueFn(useHistoryPush)}
-          minimumNights={isNightlyMode ? 1 : 0}
           {...rest}
         />
       );
@@ -190,6 +189,26 @@ const FilterComponent = props => {
       const { minimum, maximum, scope, step, filterConfig = {} } = config;
       const { label } = filterConfig;
       const queryParamNames = [constructQueryParamName(key, scope)];
+      
+      // Use CapacityFilter for the capacity field specifically
+      if (key === 'capacity') {
+        return (
+          <CapacityFilter
+            id={componentId}
+            label={intl.formatMessage({ id: 'FilterComponent.howManyGuestsLabel' })}
+            name={name}
+            queryParamNames={queryParamNames}
+            initialValues={initialValues(queryParamNames, liveEdit)}
+            onSubmit={getHandleChangedValueFn(useHistoryPush)}
+            min={minimum}
+            max={maximum}
+            step={step}
+            {...rest}
+          />
+        );
+      }
+      
+      // Use IntegerRangeFilter for other LONG fields
       return (
         <IntegerRangeFilter
           id={componentId}

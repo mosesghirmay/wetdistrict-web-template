@@ -196,3 +196,17 @@ Remember to do required code changes also in FieldDateAndTimeInput.js!
 /**
 CSS for hiding the end date above
 **/
+
+.noteSection {
+  margin-top: 16px;
+  padding: 0 24px;
+}
+
+.note {
+  font-size: 14px;
+  color: var(--colorGrey500);
+  line-height: 1.4;
+  margin-top: 8px;
+  margin-bottom: 0;
+  font-style: italic;
+}

@@ -19,10 +19,11 @@ import {
 } from '../../../components';
 
 import MenuIcon from './MenuIcon';
-import SearchIcon from './SearchIcon';
-import TopbarSearchForm from './TopbarSearchForm/TopbarSearchForm';
+import SearchIcon from './SearchIcon'; // Still needed for the reference
+import TopbarSearchForm from './TopbarSearchForm/TopbarSearchForm'; // Still needed for the reference
 import TopbarMobileMenu from './TopbarMobileMenu/TopbarMobileMenu';
 import TopbarDesktop from './TopbarDesktop/TopbarDesktop';
+import { ModalInMobile } from '../../../components';
 
 import css from './Topbar.module.css';
 
@@ -31,6 +32,7 @@ const MAX_MOBILE_SCREEN_WIDTH = 1024;
 const SEARCH_DISPLAY_ALWAYS = 'always';
 const SEARCH_DISPLAY_NOT_LANDING_PAGE = 'notLandingPage';
 const SEARCH_DISPLAY_ONLY_SEARCH_PAGE = 'onlySearchPage';
+const SEARCH_DISPLAY_NONE = 'none';
 
 const redirectToURLWithModalState = (history, location, modalStateParam) => {
   const { pathname, search, state } = location;
@@ -125,36 +127,19 @@ const GenericError = props => {
   );
 };
 
-const TopbarComponent = props => {
-  const {
-    className,
-    rootClassName,
-    desktopClassName,
-    mobileRootClassName,
-    mobileClassName,
-    isAuthenticated,
-    isLoggedInAs,
-    authScopes = [],
-    authInProgress,
-    currentUser,
-    currentUserHasListings,
-    currentUserHasOrders,
-    currentPage,
-    notificationCount = 0,
-    intl,
-    history,
-    location,
-    onManageDisableScrolling,
-    onResendVerificationEmail,
-    sendVerificationEmailInProgress,
-    sendVerificationEmailError,
-    showGenericError,
-    config,
-    routeConfiguration,
-  } = props;
+class TopbarComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    
+    // Bind methods
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
+  }
+  
 
-  const handleSubmit = values => {
-    const { currentSearchParams, history, config, routeConfiguration } = props;
+  handleSubmit(values) {
+    const { currentSearchParams, history, config, routeConfiguration } = this.props;
 
     const topbarSearchParams = () => {
       if (isMainSearchTypeKeywords(config)) {
@@ -176,10 +161,11 @@ const TopbarComponent = props => {
       ...topbarSearchParams(),
     };
     history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, searchParams));
-  };
+  }
+  
 
-  const handleLogout = () => {
-    const { onLogout, history, routeConfiguration } = props;
+  handleLogout() {
+    const { onLogout, history, routeConfiguration } = this.props;
     onLogout().then(() => {
       const path = pathByRouteName('LandingPage', routeConfiguration);
 
@@ -193,7 +179,36 @@ const TopbarComponent = props => {
 
       console.log('logged out'); // eslint-disable-line
     });
-  };
+  }
+
+  render() {
+    const {
+      className,
+      rootClassName,
+      desktopClassName,
+      mobileRootClassName,
+      mobileClassName,
+      isAuthenticated,
+      isLoggedInAs,
+      authScopes = [],
+      authInProgress,
+      currentUser,
+      currentUserHasListings,
+      currentUserHasOrders,
+      currentPage,
+      notificationCount = 0,
+      intl,
+      history,
+      location,
+      onManageDisableScrolling,
+      onResendVerificationEmail,
+      sendVerificationEmailInProgress,
+      sendVerificationEmailError,
+      showGenericError,
+      config,
+      routeConfiguration,
+    } = this.props;
+
 
   const { mobilemenu, mobilesearch, keywords, address, origin, bounds } = parse(location.search, {
     latlng: ['origin'],
@@ -201,7 +216,18 @@ const TopbarComponent = props => {
   });
 
   // Custom links are sorted so that group="primary" are always at the beginning of the list.
-  const sortedCustomLinks = sortCustomLinks(config.topbar?.customLinks);
+  // Filter out any login or signup links to avoid duplicates
+  const filteredLinks = (config.topbar?.customLinks || []).filter(link => {
+    const linkText = (link.text || '').toLowerCase();
+    const href = (link.href || '').toLowerCase();
+    return !linkText.includes('login') && 
+           !linkText.includes('log in') && 
+           !linkText.includes('sign') && 
+           !linkText.includes('signup') && 
+           !href.includes('login') && 
+           !href.includes('signup');
+  });
+  const sortedCustomLinks = sortCustomLinks(filteredLinks);
   const customLinks = getResolvedCustomLinks(sortedCustomLinks, routeConfiguration);
   const resolvedCurrentPage = currentPage || getResolvedCurrentPage(location, routeConfiguration);
 
@@ -219,7 +245,7 @@ const TopbarComponent = props => {
       isAuthenticated={isAuthenticated}
       currentUserHasListings={currentUserHasListings}
       currentUser={currentUser}
-      onLogout={handleLogout}
+      onLogout={this.handleLogout}
       notificationCount={notificationCount}
       currentPage={resolvedCurrentPage}
       customLinks={customLinks}
@@ -250,28 +276,10 @@ const TopbarComponent = props => {
 
   const { display: searchFormDisplay = SEARCH_DISPLAY_ALWAYS } = config?.topbar?.searchBar || {};
 
-  // Search form is shown conditionally depending on configuration and
-  // the current page.
-  const showSearchOnAllPages = searchFormDisplay === SEARCH_DISPLAY_ALWAYS;
-  const showSearchOnSearchPage =
-    searchFormDisplay === SEARCH_DISPLAY_ONLY_SEARCH_PAGE && resolvedCurrentPage === 'SearchPage';
-  const showSearchNotOnLandingPage =
-    searchFormDisplay === SEARCH_DISPLAY_NOT_LANDING_PAGE && resolvedCurrentPage !== 'LandingPage';
-
-  const showSearchForm =
-    showSearchOnAllPages || showSearchOnSearchPage || showSearchNotOnLandingPage;
-
-  const mobileSearchButtonMaybe = showSearchForm ? (
-    <Button
-      rootClassName={css.searchMenu}
-      onClick={() => redirectToURLWithModalState(history, location, 'mobilesearch')}
-      title={intl.formatMessage({ id: 'Topbar.searchIcon' })}
-    >
-      <SearchIcon className={css.searchMenuIcon} />
-    </Button>
-  ) : (
-    <div className={css.searchMenu} />
-  );
+  // Always hide search
+  const showSearchForm = false;
+  const mobileSearchButtonMaybe = null;
+  
 
   return (
     <div className={classes}>
@@ -280,10 +288,15 @@ const TopbarComponent = props => {
         isLoggedInAs={isLoggedInAs}
         authScopes={authScopes}
         currentUser={currentUser}
-        onLogout={handleLogout}
+        onLogout={this.handleLogout}
         currentPage={resolvedCurrentPage}
       />
       <div className={classNames(mobileRootClassName || css.container, mobileClassName)}>
+        <LinkedLogo
+          layout={'mobile'}
+          alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
+          linkToExternalSite={config?.topbar?.logoLink}
+        />
         <Button
           rootClassName={css.menu}
           onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
@@ -292,12 +305,7 @@ const TopbarComponent = props => {
           <MenuIcon className={css.menuIcon} />
           {notificationDot}
         </Button>
-        <LinkedLogo
-          layout={'mobile'}
-          alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
-          linkToExternalSite={config?.topbar?.logoLink}
-        />
-        {mobileSearchButtonMaybe}
+        {/* Search button removed */}
       </div>
       <div className={css.desktop}>
         <TopbarDesktop
@@ -309,8 +317,8 @@ const TopbarComponent = props => {
           intl={intl}
           isAuthenticated={isAuthenticated}
           notificationCount={notificationCount}
-          onLogout={handleLogout}
-          onSearchSubmit={handleSubmit}
+          onLogout={this.handleLogout}
+          onSearchSubmit={this.handleSubmit}
           config={config}
           customLinks={customLinks}
           showSearchForm={showSearchForm}
@@ -326,26 +334,9 @@ const TopbarComponent = props => {
       >
         {authInProgress ? null : mobileMenu}
       </Modal>
-      <Modal
-        id="TopbarMobileSearch"
-        containerClassName={css.modalContainerSearchForm}
-        isOpen={isMobileSearchOpen}
-        onClose={() => redirectToURLWithoutModalState(history, location, 'mobilesearch')}
-        usePortal
-        onManageDisableScrolling={onManageDisableScrolling}
-      >
-        <div className={css.searchContainer}>
-          <TopbarSearchForm
-            onSubmit={handleSubmit}
-            initialValues={initialSearchFormValues}
-            isMobile
-            appConfig={config}
-          />
-          <p className={css.mobileHelp}>
-            <FormattedMessage id="Topbar.mobileSearchHelp" />
-          </p>
-        </div>
-      </Modal>
+      
+      
+      {/* Search modal removed */}
       <ModalMissingInformation
         id="MissingInformationReminder"
         containerClassName={css.missingInformationModal}
@@ -362,7 +353,8 @@ const TopbarComponent = props => {
       <GenericError show={showGenericError} />
     </div>
   );
-};
+    }
+}
 
 /**
  * Topbar containing logo, main search and navigation links.

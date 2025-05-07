@@ -237,7 +237,15 @@ const isOutsideRangeFn = (
  * a DateRangePicker component.
  */
 const isDayBlockedFn = params => {
-  const { allTimeSlots, monthlyTimeSlots, isDaily, startDate, endDate, timeZone } = params || {};
+  const {
+    allTimeSlots,
+    monthlyTimeSlots,
+    isDaily,
+    startDate,
+    endDate,
+    timeZone,
+    selectedVariantType,
+  } = params || {};
 
   const [startMonth, endMonth] = getMonthlyFetchRange(monthlyTimeSlots, timeZone);
   const timeSlotsData = timeSlotsPerDate(startMonth, endMonth, allTimeSlots, timeZone);
@@ -245,6 +253,19 @@ const isDayBlockedFn = params => {
   return day => {
     const localizedDay = timeOfDayFromLocalToTimeZone(day, timeZone);
     const dayInListingTZ = getStartOf(localizedDay, 'day', timeZone);
+    const dayOfWeek = dayInListingTZ.getDay(); // 0 = Sunday, 6 = Saturday
+    const dateISO = dayInListingTZ.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+    // Custom filtering
+    if (selectedVariantType === 'weekday' && (dayOfWeek < 1 || dayOfWeek > 4)) {
+      return true; // block Friday–Sunday (5–0)
+    }
+    if (selectedVariantType === 'weekend' && (dayOfWeek >= 1 && dayOfWeek <= 4)) {
+      return true; // block Monday–Thursday (1–4)
+    }
+    if (selectedVariantType === 'yachtclub' && dateISO !== '2025-05-24') {
+      return true; // block all except May 24
+    }
 
     const dayIdString = stringifyDateToISO8601(dayInListingTZ, timeZone);
     const hasAvailabilityOnDay = timeSlotsData[dayIdString]?.hasAvailability === true;
@@ -476,16 +497,7 @@ const combineConsecutiveTimeSlots = (slots, startDate) => {
   return [combinedSlot];
 };
 
-const onPriceVariantChange = props => value => {
-  const { form: formApi, seatsEnabled } = props;
-
-  formApi.batch(() => {
-    formApi.change('bookingDates', null);
-    if (seatsEnabled) {
-      formApi.change('seats', 1);
-    }
-  });
-};
+// removed onPriceVariantChange function as it's now passed from OrderPanel.js
 
 /**
  * A form for selecting booking dates.
@@ -668,6 +680,8 @@ export const BookingDatesForm = props => {
           listingId,
           onFetchTimeSlots
         );
+        const selectedVariantType = values?.selectedVariantType || null;
+        
         const isDayBlocked = isDayBlockedFn({
           allTimeSlots: relevantTimeSlots,
           monthlyTimeSlots,
@@ -675,6 +689,7 @@ export const BookingDatesForm = props => {
           startDate,
           endDate,
           timeZone,
+          selectedVariantType,
         });
         const isOutsideRange = isOutsideRangeFn(
           relevantTimeSlots,
@@ -702,7 +717,7 @@ export const BookingDatesForm = props => {
               <PriceVariantFieldComponent
                 priceVariants={priceVariants}
                 priceVariantName={priceVariantName}
-                onPriceVariantChange={onPriceVariantChange(formRenderProps)}
+                onPriceVariantChange={onPriceVariantChange(formApi)}
                 disabled={!isPublishedListing}
               />
             ) : null}

@@ -17,6 +17,8 @@ import {
   NotificationBadge,
 } from '../../../../components';
 
+// Use the specific WrittenLogo file that was requested
+
 import css from './TopbarMobileMenu.module.css';
 
 const CustomLinkComponent = ({ linkConfig, currentPage }) => {
@@ -110,6 +112,7 @@ const TopbarMobileMenu = props => {
     );
     return (
       <div className={css.root}>
+        <div className={css.logoWrapper}></div>
         <div className={css.content}>
           <div className={css.authenticationGreeting}>
             <FormattedMessage
@@ -118,13 +121,20 @@ const TopbarMobileMenu = props => {
             />
           </div>
 
-          <div className={css.customLinksWrapper}>{extraLinks}</div>
+          <div className={css.customLinksWrapper}>
+            {/* First render custom links */}
+            {extraLinks}
+            {/* Then add the "Add your boat" link */}
+            <NamedLink className={css.navigationLink} name="NewListingPage">
+              Add your boat
+            </NamedLink>
+          </div>
 
           <div className={css.spacer} />
         </div>
         <div className={css.footer}>
           <NamedLink className={css.createNewListingLink} name="NewListingPage">
-            <FormattedMessage id="TopbarMobileMenu.newListingLink" />
+            Add your boat
           </NamedLink>
         </div>
       </div>
@@ -147,6 +157,7 @@ const TopbarMobileMenu = props => {
 
   return (
     <div className={css.root}>
+      <div className={css.logoWrapper}></div>
       <AvatarLarge className={css.avatar} user={currentUser} />
       <div className={css.content}>
         <span className={css.greeting}>
@@ -165,12 +176,19 @@ const TopbarMobileMenu = props => {
             <FormattedMessage id="TopbarMobileMenu.inboxLink" />
             {notificationCountBadge}
           </NamedLink>
-          <NamedLink
-            className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}
-            name="ManageListingsPage"
-          >
-            <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
-          </NamedLink>
+          {/* Check if user is not a renter */}
+          {(() => {
+            const userRole = user?.attributes?.profile?.publicData?.userType?.trim?.().toLowerCase() || '';
+            const isRenter = userRole === 'renter';
+            return !isRenter && (
+              <NamedLink
+                className={classNames(css.navigationLink, currentPageClass('ManageListingsPage'))}
+                name="ManageListingsPage"
+              >
+                <FormattedMessage id="TopbarMobileMenu.yourListingsLink" />
+              </NamedLink>
+            );
+          })()}
           <NamedLink
             className={classNames(css.navigationLink, currentPageClass('ProfileSettingsPage'))}
             name="ProfileSettingsPage"
@@ -188,9 +206,18 @@ const TopbarMobileMenu = props => {
         <div className={css.spacer} />
       </div>
       <div className={css.footer}>
-        <NamedLink className={css.createNewListingLink} name="NewListingPage">
-          <FormattedMessage id="TopbarMobileMenu.newListingLink" />
-        </NamedLink>
+        {(() => {
+          const userRole = user?.attributes?.profile?.publicData?.userType?.trim?.().toLowerCase() || '';
+          const isRenter = userRole === 'renter';
+          return !isRenter && (
+            <NamedLink 
+              className={css.createNewListingLink}
+              name="NewListingPage"
+            >
+              <FormattedMessage id="TopbarMobileMenu.newListingLink" />
+            </NamedLink>
+          );
+        })()}
       </div>
     </div>
   );

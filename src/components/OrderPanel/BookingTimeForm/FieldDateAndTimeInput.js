@@ -16,6 +16,22 @@ import {
   getStartOf,
   stringifyDateToISO8601,
 } from '../../../util/dates';
+
+// Fixed pickup times - adjusted for timezone (UTC-5)
+// Adding 5 hours (18000000 ms) to each timestamp
+const FIXED_START_TIMES = [
+  { timestamp: '54000000', timeOfDay: '10:00 AM' }, // 36000000 + 18000000
+  { timestamp: '68400000', timeOfDay: '2:00 PM' },  // 50400000 + 18000000
+  { timestamp: '82800000', timeOfDay: '6:00 PM' },  // 64800000 + 18000000
+];
+
+// Fixed end times (1 hour after pickup) - adjusted for timezone (UTC-5)
+// Adding 5 hours (18000000 ms) to each timestamp
+const FIXED_END_TIMES = [
+  { timestamp: '57600000', timeOfDay: '11:00 AM' }, // 39600000 + 18000000
+  { timestamp: '72000000', timeOfDay: '3:00 PM' },  // 54000000 + 18000000
+  { timestamp: '86400000', timeOfDay: '7:00 PM' },  // 68400000 + 18000000
+];
 import { propTypes } from '../../../util/types';
 import { timeSlotsPerDate } from '../../../util/generators';
 import { bookingDateRequired } from '../../../util/validators';
@@ -47,72 +63,16 @@ import css from './FieldDateAndTimeInput.module.css';
 // https://www.sharetribe.com/api-reference/marketplace.html#query-time-slots
 
 const getAvailableStartTimes = params => {
-  const { intl, timeZone, bookingStart, timeSlotsOnSelectedDate } = params;
-
-  if (timeSlotsOnSelectedDate.length === 0 || !timeSlotsOnSelectedDate[0] || !bookingStart) {
-    return [];
-  }
-  const bookingStartDate = getStartOf(bookingStart, 'day', timeZone);
-
-  const allHours = timeSlotsOnSelectedDate.reduce((availableHours, t) => {
-    const startDate = t.attributes.start;
-    const endDate = t.attributes.end;
-    const nextDate = getStartOf(bookingStartDate, 'day', timeZone, 1, 'days');
-
-    // If the start date is after timeslot start, use the start date.
-    // Otherwise use the timeslot start time.
-    const startLimit = isDateSameOrAfter(bookingStartDate, startDate)
-      ? bookingStartDate
-      : startDate;
-
-    // If date next to selected start date is inside timeslot use the next date to get the hours of full day.
-    // Otherwise use the end of the timeslot.
-    const endLimit = isDateSameOrAfter(endDate, nextDate) ? nextDate : endDate;
-
-    const hours = getStartHours(startLimit, endLimit, timeZone, intl);
-    return availableHours.concat(hours);
-  }, []);
-  return allHours;
+  // Instead of calculating available times, return fixed pickup times
+  return FIXED_START_TIMES;
 };
 
 const getAvailableEndTimes = params => {
-  const { intl, timeZone, bookingStartTime, bookingEndDate, selectedTimeSlot } = params;
-  if (!selectedTimeSlot || !selectedTimeSlot.attributes || !bookingEndDate || !bookingStartTime) {
-    return [];
-  }
-
-  const endDate = selectedTimeSlot.attributes.end;
-  const bookingStartTimeAsDate = timestampToDate(bookingStartTime);
-
-  const dayAfterBookingEnd = getStartOf(bookingEndDate, 'day', timeZone, 1, 'days');
-  const dayAfterBookingStart = getStartOf(bookingStartTimeAsDate, 'day', timeZone, 1, 'days');
-  const startOfEndDay = getStartOf(bookingEndDate, 'day', timeZone);
-
-  let startLimit;
-  let endLimit;
-
-  if (!isDateSameOrAfter(startOfEndDay, bookingStartTimeAsDate)) {
-    startLimit = bookingStartTimeAsDate;
-    endLimit = isDateSameOrAfter(dayAfterBookingStart, endDate) ? endDate : dayAfterBookingStart;
-  } else {
-    // If the end date is on the same day as the selected booking start time
-    // use the start time as limit. Otherwise use the start of the selected end date.
-    startLimit = isDateSameOrAfter(bookingStartTimeAsDate, startOfEndDay)
-      ? bookingStartTimeAsDate
-      : startOfEndDay;
-
-    // If the selected end date is on the same day as timeslot end, use the timeslot end.
-    // Else use the start of the next day after selected date.
-    endLimit = isSameDate(getStartOf(endDate, 'day', timeZone), startOfEndDay)
-      ? endDate
-      : dayAfterBookingEnd;
-  }
-
-  return getEndHours(startLimit, endLimit, timeZone, intl);
+  // Instead of calculating available end times, return fixed end times
+  return FIXED_END_TIMES;
 };
 
-// Use start date to calculate the first possible start time or times, end date and end time or times.
-// If the selected value is passed to function it will be used instead of calculated value.
+// Simplified function to handle fixed time values
 const getAllTimeValues = (
   intl,
   timeZone,
@@ -123,154 +83,31 @@ const getAllTimeValues = (
   selectedEndTime,
   seatsEnabled
 ) => {
-  const startTimes = selectedStartTime
-    ? []
-    : getAvailableStartTimes({
-        intl,
-        timeZone,
-        bookingStart: startDate,
-        timeSlotsOnSelectedDate: getTimeSlotsOnDate(timeSlots, startDate, timeZone),
-      });
-
-  // Value selectedStartTime is a string when user has selected it through the form.
-  // That's why we need to convert also the timestamp we use as a default
-  // value to string for consistency. This is expected later when we
-  // want to compare the sartTime and endTime.
-  const startTime = selectedStartTime
+  // Use fixed start time if provided, otherwise use first available time
+  const startTime = selectedStartTime 
     ? selectedStartTime
-    : startTimes.length > 0 && startTimes[0] && startTimes[0].timestamp
-    ? startTimes[0].timestamp.toString()
-    : null;
-
+    : FIXED_START_TIMES[0].timestamp;
+  
+  // Get the matching end time based on the selected start time
+  let endTime;
+  const index = FIXED_START_TIMES.findIndex(time => time.timestamp === startTime);
+  if (index !== -1) {
+    endTime = FIXED_END_TIMES[index].timestamp;
+  } else {
+    endTime = FIXED_END_TIMES[0].timestamp;
+  }
+  
+  // Calculate the end date (same as start date for our use case)
+  const endDate = selectedEndDate || startDate;
+  
+  // Find the selected time slot for seats information
   const startTimeAsDate = startTime ? timestampToDate(startTime) : null;
-
-  // Note: We need to remove 1ms from the calculated endDate so that if the end
-  // date would be the next day at 00:00 the day in the form is still correct.
-  // Because we are only using the date and not the exact time we can remove the
-  // 1ms.
-  const endDate = selectedEndDate
-    ? selectedEndDate
-    : startTimeAsDate
-    ? new Date(findNextBoundary(startTimeAsDate, 1, 'hour', timeZone).getTime() - 1)
-    : null;
-
-  const selectedEndTimeAsDateObject = selectedEndTime ? timestampToDate(selectedEndTime) : null;
-
   const selectedTimeSlotIndex = timeSlots.findIndex(t =>
     isInRange(startTimeAsDate, t.attributes.start, t.attributes.end)
   );
-
-  const selectedTimeSlot =
-    selectedTimeSlotIndex >= 0 ? timeSlots[selectedTimeSlotIndex] : undefined;
-
-  const findLastAdjacent = index => {
-    const current = timeSlots[index];
-    const next = timeSlots[index + 1];
-    return next && isSameDate(current.attributes.end, next.attributes.start)
-      ? findLastAdjacent(index + 1)
-      : index;
-  };
-
-  const findFirstAdjacent = index => {
-    const current = timeSlots[index];
-    const previous = timeSlots[index - 1];
-    return previous && isSameDate(current.attributes.start, previous.attributes.end)
-      ? findFirstAdjacent(index - 1)
-      : index;
-  };
-
-  /**
-   * Finds the smallest number of seats in time slots that meet the specified conditions.
-   */
-  const findMinimumAvailableSeats = (
-    selectedEndTimeAsDateObject,
-    timeSlots,
-    selectedTimeSlotIndex
-  ) => {
-    // Retrieve the selected time slot from the list.
-    const selectedTimeSlot = timeSlots[selectedTimeSlotIndex];
-    if (!selectedTimeSlot) {
-      return null; // Return null if the selected time slot is invalid.
-    }
-
-    // Check if the selected end time falls within the selected time slot.
-    const endTimeIsWithinSelected = isInRange(
-      selectedEndTimeAsDateObject - 1,
-      selectedTimeSlot.attributes.start,
-      selectedTimeSlot.attributes.end
-    );
-
-    if (endTimeIsWithinSelected) {
-      return selectedTimeSlot.attributes.seats; // Return the seats for the selected time slot if end time and start time are within the same timeslot.
-    }
-
-    const lastIndex = findLastAdjacent(selectedTimeSlotIndex);
-
-    // Extract the relevant time slots to check (we choose all slots between the first )
-    const relevantTimeSlots = timeSlots.slice(selectedTimeSlotIndex, lastIndex + 1);
-
-    // Find the smallest number of seats in the relevant time slots.
-    const minSeats = relevantTimeSlots.reduce((smallest, timeslot) => {
-      const seats = timeslot.attributes.seats;
-
-      // Update the smallest seats found so far.
-      const newSmallest = Math.min(smallest, seats);
-
-      return newSmallest;
-    }, 100); // Max seats value is 100
-
-    return minSeats;
-  };
-
-  const combineTimeSlots = (currentTimeSlotIndex, timeSlots, seatsEnabled) => {
-    if (currentTimeSlotIndex < 0 || !timeSlots || timeSlots.length === 0) {
-      return null;
-    }
-
-    if (timeSlots.length === 1 || seatsEnabled === false) {
-      return timeSlots[0];
-    }
-    const lastIndex = findLastAdjacent(currentTimeSlotIndex);
-    const firstIndex = findFirstAdjacent(currentTimeSlotIndex);
-
-    const smallestSeats = seatsEnabled
-      ? findMinimumAvailableSeats(selectedEndTimeAsDateObject, timeSlots, currentTimeSlotIndex)
-      : 1;
-
-    const combinedTimeSlot = {
-      ...timeSlots[currentTimeSlotIndex],
-      attributes: {
-        ...timeSlots[currentTimeSlotIndex].attributes,
-        start: timeSlots[firstIndex].attributes.start,
-        end: timeSlots[lastIndex].attributes.end,
-        seats: smallestSeats,
-      },
-    };
-
-    return combinedTimeSlot;
-  };
-
-  const combinedTimeSlot = combineTimeSlots(selectedTimeSlotIndex, timeSlots, seatsEnabled) || {};
-
-  const endTimes = getAvailableEndTimes({
-    intl,
-    timeZone,
-    bookingStartTime: startTime,
-    bookingEndDate: endDate,
-    selectedTimeSlot: combinedTimeSlot,
-  });
-
-  // We need to convert the timestamp we use as a default value
-  // for endTime to string for consistency. This is expected later when we
-  // want to compare the sartTime and endTime.
-  const endTime =
-    endTimes.length > 0 && endTimes[0] && endTimes[0].timestamp
-      ? endTimes[0].timestamp.toString()
-      : null;
-
-  const finalTimeSlots = seatsEnabled ? combinedTimeSlot : selectedTimeSlot;
-
-  return { startTime, endDate, endTime, selectedTimeSlot: finalTimeSlots };
+  const selectedTimeSlot = selectedTimeSlotIndex >= 0 ? timeSlots[selectedTimeSlotIndex] : undefined;
+  
+  return { startTime, endDate, endTime, selectedTimeSlot };
 };
 
 const fetchMonthData = (
@@ -343,33 +180,13 @@ const handleMonthClick = (
 
 const updateBookingFieldsOnStartDateChange = params => {
   const {
-    timeSlotsOnDate,
-    monthlyTimeSlots,
-    startDate,
-    timeZone,
     seatsEnabled,
     formApi,
-    intl,
   } = params;
-  const minDurationStartingInDay = 60;
-  const timeSlotsOnSelectedDate = getTimeSlotsOnSelectedDate(
-    timeSlotsOnDate,
-    monthlyTimeSlots,
-    startDate,
-    timeZone,
-    seatsEnabled,
-    minDurationStartingInDay
-  );
-  const { startTime, endTime } = getAllTimeValues(
-    intl,
-    timeZone,
-    timeSlotsOnSelectedDate,
-    startDate,
-    null,
-    null,
-    null,
-    seatsEnabled
-  );
+  
+  // Use the first fixed pickup time (10:00 AM) as the default
+  const startTime = FIXED_START_TIMES[0].timestamp; // 10:00 AM
+  const endTime = FIXED_END_TIMES[0].timestamp; // 11:00 AM
 
   formApi.batch(() => {
     formApi.change('bookingStartTime', startTime);
@@ -392,7 +209,6 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
     seatsEnabled,
     listingId,
     onFetchTimeSlots,
-    values,
   } = props;
   if (!value || !value.date) {
     formApi.batch(() => {
@@ -407,8 +223,6 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 
     return;
   }
-
-  const priceVariantName = values.priceVariantName || null;
 
   // This callback function (onBookingStartDateChange) is called from DatePicker component.
   // It gets raw value as a param - browser's local time instead of time in listing's timezone.
@@ -452,7 +266,6 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 
     handleFetchLineItems({
       values: {
-        priceVariantName,
         bookingStartTime: startTime,
         bookingEndTime: endTime,
         seats: seatsEnabled ? 1 : undefined,
@@ -463,20 +276,20 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 
 const onBookingStartTimeChange = props => value => {
   const {
-    timeSlotsForDate,
-    timeZone,
-    intl,
     form: formApi,
-    values,
     handleFetchLineItems,
     seatsEnabled,
   } = props;
-  const priceVariantName = values.priceVariantName || null;
-  const startDate = values.bookingStartDate.date;
-  const bookingStartIdString = stringifyDateToISO8601(startDate, timeZone);
-  const timeSlotsOnSelectedDate = timeSlotsForDate[bookingStartIdString]?.timeSlots || [];
-
-  const { endTime } = getAllTimeValues(intl, timeZone, timeSlotsOnSelectedDate, startDate, value);
+  
+  // Find the corresponding end time based on the selected start time
+  let endTime;
+  const index = FIXED_START_TIMES.findIndex(time => time.timestamp === value);
+  if (index !== -1) {
+    endTime = FIXED_END_TIMES[index].timestamp;
+  } else {
+    // Default to first end time if no match found
+    endTime = FIXED_END_TIMES[0].timestamp;
+  }
 
   formApi.batch(() => {
     formApi.change('bookingEndTime', endTime);
@@ -486,7 +299,6 @@ const onBookingStartTimeChange = props => value => {
   });
   handleFetchLineItems({
     values: {
-      priceVariantName,
       bookingStartTime: value,
       bookingEndTime: endTime,
       seats: seatsEnabled ? 1 : undefined,
@@ -496,7 +308,6 @@ const onBookingStartTimeChange = props => value => {
 
 const onBookingEndTimeChange = props => value => {
   const { values, handleFetchLineItems, form: formApi, seatsEnabled } = props;
-  const priceVariantName = values.priceVariantName || null;
 
   if (seatsEnabled) {
     formApi.change('seats', 1);
@@ -504,7 +315,6 @@ const onBookingEndTimeChange = props => value => {
 
   handleFetchLineItems({
     values: {
-      priceVariantName,
       bookingStartTime: values.bookingStartTime,
       bookingEndTime: value,
       seats: seatsEnabled ? 1 : undefined,
@@ -537,7 +347,6 @@ const onBookingEndTimeChange = props => value => {
  * @param {string} [props.rootClassName] - Custom class that overrides the default class for the root element
  * @param {string} [props.className] - Custom class that extends the default class for the root element
  * @param {string} [props.formId] - The ID of the form
- * @param {boolean} [props.disabled] - Whether the field is disabled
  * @param {Object} [props.startDateInputProps] - The props for the start date input
  * @param {Object} [props.startTimeInputProps] - The props for the start time input
  * @param {Object} [props.endTimeInputProps] - The props for the end time input
@@ -557,7 +366,6 @@ const FieldDateAndTimeInput = props => {
     rootClassName,
     className,
     formId,
-    disabled,
     startDateInputProps,
     values,
     listingId,
@@ -612,12 +420,8 @@ const FieldDateAndTimeInput = props => {
     minDurationStartingInDay
   );
 
-  const availableStartTimes = getAvailableStartTimes({
-    intl,
-    timeZone,
-    bookingStart: bookingStartDate,
-    timeSlotsOnSelectedDate: timeSlotsOnDate,
-  });
+  // Use the fixed pickup times defined at the top of the file
+  const availableStartTimes = FIXED_START_TIMES;
 
   const firstAvailableStartTime =
     availableStartTimes.length > 0 && availableStartTimes[0] && availableStartTimes[0].timestamp
@@ -686,13 +490,8 @@ const FieldDateAndTimeInput = props => {
     setSeatsOptions(seatsOptions);
   }, [selectedTimeSlot?.attributes?.seats]);
 
-  const availableEndTimes = getAvailableEndTimes({
-    intl,
-    timeZone,
-    bookingStartTime: bookingStartTime || startTime,
-    bookingEndDate: bookingEndDate || endDate,
-    selectedTimeSlot,
-  });
+  // Use the fixed end times defined at the top of the file
+  const availableEndTimes = FIXED_END_TIMES;
 
   const onMonthClick = handleMonthClick(
     currentMonth,
@@ -730,6 +529,10 @@ const FieldDateAndTimeInput = props => {
 
   const startOfToday = getStartOf(TODAY, 'day', timeZone);
   const bookingEndTimeAvailable = bookingStartDate && (bookingStartTime || startTime);
+  
+  console.log('Rendering start time options:', FIXED_START_TIMES);
+  console.log('Available start times:', availableStartTimes);
+  console.log('Current bookingStartTime value:', bookingStartTime);
   return (
     <div className={classes}>
       <div className={css.formRow}>
@@ -738,8 +541,6 @@ const FieldDateAndTimeInput = props => {
             className={css.fieldDatePicker}
             inputClassName={css.fieldDateInput}
             popupClassName={css.fieldDatePopup}
-            disabled={disabled}
-            showLabelAsDisabled={disabled}
             name="bookingStartDate"
             id={formId ? `${formId}.bookingStartDate` : 'bookingStartDate'}
             label={startDateInputProps.label}
@@ -772,12 +573,11 @@ const FieldDateAndTimeInput = props => {
               setCurrentMonth(bookingStartDate || startOfToday);
             }}
             fallback={
-              <div className={classNames(css.fieldDatePicker, { [css.disabled]: disabled })}>
+              <div className={css.fieldDatePicker}>
                 <label>{startDateInputProps.label}</label>
                 <input
                   className={classNames(css.fieldDateInput, css.fieldDateInputFallback)}
                   placeholder={startDateInputProps.placeholderText}
-                  disabled={disabled}
                 />
               </div>
             }
@@ -793,11 +593,10 @@ const FieldDateAndTimeInput = props => {
             selectClassName={bookingStartDate ? css.select : css.selectDisabled}
             label={intl.formatMessage({ id: 'FieldDateAndTimeInput.startTime' })}
             disabled={!bookingStartDate}
-            showLabelAsDisabled={!bookingStartDate}
             onChange={onBookingStartTimeChange(props)}
           >
             {bookingStartDate ? (
-              availableStartTimes.map(p => (
+              FIXED_START_TIMES.map(p => (
                 <option key={p.timestamp} value={p.timestamp}>
                   {p.timeOfDay}
                 </option>
@@ -818,11 +617,10 @@ const FieldDateAndTimeInput = props => {
             selectClassName={bookingStartDate ? css.select : css.selectDisabled}
             label={intl.formatMessage({ id: 'FieldDateAndTimeInput.endTime' })}
             disabled={!bookingEndTimeAvailable}
-            showLabelAsDisabled={!bookingEndTimeAvailable}
             onChange={onBookingEndTimeChange(props)}
           >
             {bookingEndTimeAvailable ? (
-              availableEndTimes.map(p => (
+              FIXED_END_TIMES.map(p => (
                 <option key={p.timestamp} value={p.timestamp}>
                   {p.timeOfDay}
                 </option>
@@ -832,6 +630,10 @@ const FieldDateAndTimeInput = props => {
             )}
           </FieldSelect>
         </div>
+      </div>
+      <div className={css.noteSection}>
+        <p className={css.note}>* All rentals are 3 hours, additional time may be purchased during booking.</p>
+        <p className={css.note}>* Pick up location in or around Washington D.C. - exact location provided after payment is complete.</p>
       </div>
     </div>
   );

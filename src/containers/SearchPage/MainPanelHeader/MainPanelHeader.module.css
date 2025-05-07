@@ -17,6 +17,11 @@
   margin-bottom: 11px;
   margin-left: 0px;
   margin-right: 8px;
+  
+  /* Hide on mobile */
+  @media (max-width: 767px) {
+    display: none;
+  }
 }
 
 .loadingResults {

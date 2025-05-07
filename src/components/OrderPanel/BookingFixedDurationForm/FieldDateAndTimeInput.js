@@ -39,6 +39,14 @@ import {
 
 import css from './FieldDateAndTimeInput.module.css';
 
+// Fixed pickup times - adjusted for timezone (UTC-5)
+// Adding 5 hours (18000000 ms) to each timestamp
+const FIXED_START_TIMES = [
+  { timestamp: '54000000', timeOfDay: '10:00 AM' }, // 36000000 + 18000000
+  { timestamp: '68400000', timeOfDay: '2:00 PM' },  // 50400000 + 18000000
+  { timestamp: '82800000', timeOfDay: '6:00 PM' },  // 64800000 + 18000000
+];
+
 // dayCountAvailableForBooking is the maximum number of days forwards during which a booking can be made.
 // This is limited due to Stripe holding funds up to 90 days from the
 // moment they are charged:
@@ -48,64 +56,8 @@ import css from './FieldDateAndTimeInput.module.css';
 // https://www.sharetribe.com/api-reference/marketplace.html#query-time-slots
 
 const getAvailableStartTimes = params => {
-  const {
-    intl,
-    timeZone,
-    bookingStart,
-    timeSlotsOnSelectedDate,
-    bookingLengthInMinutes,
-    startTimeInterval,
-  } = params;
-
-  if (timeSlotsOnSelectedDate.length === 0 || !timeSlotsOnSelectedDate[0] || !bookingStart) {
-    return [];
-  }
-  const bookingStartDate = getStartOf(bookingStart, 'day', timeZone);
-  const nextDay = getStartOf(bookingStartDate, 'day', timeZone, 1, 'days');
-  const timeUnitConfig = bookingTimeUnits[startTimeInterval];
-  const overlapWithNextDay = !!timeUnitConfig?.timeUnitInMinutes
-    ? bookingLengthInMinutes - timeUnitConfig.timeUnitInMinutes
-    : bookingLengthInMinutes;
-  const nextDayPlusBookingLength = getStartOf(
-    nextDay,
-    'minute',
-    timeZone,
-    overlapWithNextDay,
-    'minutes'
-  );
-
-  const allStartTimes = timeSlotsOnSelectedDate.reduce((availableStartTimes, t) => {
-    const startDate = t.attributes.start;
-    const endDate = t.attributes.end;
-
-    // If the time slot starts before the selected booking start date, use bookingStartDate
-    const startLimit = isDateSameOrAfter(bookingStartDate, startDate)
-      ? bookingStartDate
-      : startDate;
-
-    // If the time slot ends after the next day, use nextDate.
-    const endOfTimeSlotOrDay = isDateSameOrAfter(endDate, nextDayPlusBookingLength)
-      ? nextDayPlusBookingLength
-      : endDate;
-    const endLimit = getStartOf(
-      endOfTimeSlotOrDay,
-      'minute',
-      timeZone,
-      -1 * bookingLengthInMinutes,
-      'minutes'
-    );
-
-    const startTimes = getBoundaries(
-      startLimit,
-      endLimit,
-      1,
-      timeUnitConfig.timeUnit,
-      timeZone,
-      intl
-    );
-    return availableStartTimes.concat(startTimes);
-  }, []);
-  return allStartTimes;
+  // Instead of calculating available times, return fixed pickup times
+  return FIXED_START_TIMES;
 };
 
 const getBookingEndTimeAsDate = (bookingStartTime, bookingLengthInMinutes) => {
@@ -722,6 +674,10 @@ const FieldDateAndTimeInput = props => {
   let placeholderTime = getPlaceholder('08:00', timeZone, intl);
 
   const startOfToday = getStartOf(TODAY, 'day', timeZone);
+  
+  console.log('BookingFixedDurationForm - FIXED_START_TIMES:', FIXED_START_TIMES);
+  console.log('BookingFixedDurationForm - availableStartTimes:', availableStartTimes);
+  console.log('BookingFixedDurationForm - bookingStartTime:', bookingStartTime);
   return (
     <div className={classes}>
       <div className={css.formRow}>
@@ -788,7 +744,7 @@ const FieldDateAndTimeInput = props => {
             onChange={onBookingStartTimeChange(props)}
           >
             {bookingStartDate ? (
-              availableStartTimes.map(p => (
+              FIXED_START_TIMES.map(p => (
                 <option key={p.timestamp} value={p.timestamp}>
                   {p.timeOfDay}
                 </option>
@@ -799,6 +755,10 @@ const FieldDateAndTimeInput = props => {
           </FieldSelect>
           <FieldHidden name="bookingEndTime" value={bookingEndTime} />
         </div>
+      </div>
+      <div className={css.noteSection}>
+        <p className={css.note}>* All rentals are 3 hours, additional time may be purchased during booking.</p>
+        <p className={css.note}>* Pick up location in or around Washington D.C. - exact location provided after payment is complete.</p>
       </div>
     </div>
   );

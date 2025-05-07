@@ -1,0 +1,13 @@
+@import '../../../styles/customMediaQueries.css';
+
+.root {
+}
+
+.selectWrapper {
+  margin: 24px 0;
+  min-width: 250px;
+}
+
+.select {
+  width: 100%;
+}

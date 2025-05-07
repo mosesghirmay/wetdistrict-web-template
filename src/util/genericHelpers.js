@@ -13,28 +13,22 @@ import { ensureListing, ensureUser } from '../../util/data';
 import { richText } from '../../util/richText';
 import { createSlug } from '../../util/urlHelpers';
 import { isBookingProcessAlias } from '../../transactions/transaction';
-import { types as sdkTypes } from '../../util/sdkLoader';
 
 import { AspectRatioWrapper, NamedLink, ResponsiveImage } from '../../components';
 
 import css from './ListingCard.module.css';
+import { capitalizeFirstLetter } from '../../util/genericHelpers';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
 const priceData = (price, currency, intl) => {
-  const Money = sdkTypes.Money;
-
   if (price && price.currency === currency) {
-    // Calculate hourly price
-    const hourlyAmount = Math.round(price.amount / 3); // divide session price by 3
-    const hourlyPrice = new Money(hourlyAmount, price.currency);
+    let formattedPrice = formatMoney(intl, price);
 
-    const formattedPrice = formatMoney(intl, hourlyPrice).replace(/\.\d{2}/, ''); // remove cents
+    // Remove cents by rounding the price and formatting without decimals
+    formattedPrice = formattedPrice.replace(/\.\d{2}/, '');
 
-    return {
-      formattedPrice: `Starting at ${formattedPrice} per hour`,
-      priceTitle: `${formattedPrice} per hour`,
-    };
+    return { formattedPrice, priceTitle: formattedPrice };
   } else if (price) {
     return {
       formattedPrice: intl.formatMessage(
@@ -103,7 +97,6 @@ export const ListingCardComponent = ({
   const slug = createSlug(title);
   const author = ensureUser(listing.author);
   const authorName = author.attributes.profile.displayName;
-  // Ensure we handle images properly even if they aren't fully loaded
   const firstImage =
     currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
 
@@ -112,9 +105,8 @@ export const ListingCardComponent = ({
     aspectHeight = 1,
     variantPrefix = 'listing-card',
   } = config.layout.listingImage;
-  // Safely access variants, ensuring we don't crash if image structure isn't as expected
-  const variants = firstImage?.attributes?.variants
-    ? Object.keys(firstImage.attributes.variants || {}).filter(k => k.startsWith(variantPrefix))
+  const variants = firstImage
+    ? Object.keys(firstImage?.attributes?.variants).filter(k => k.startsWith(variantPrefix))
     : [];
 
   const setActivePropsMaybe = setActiveListing
@@ -123,8 +115,14 @@ export const ListingCardComponent = ({
         onMouseLeave: () => setActiveListing(null),
       }
     : null;
-    
-  // No debug logs in production code
+  
+  // Check multiple possible field names for capacity
+  const capacityValue = publicData?.capacity || publicData?.maxGuests || publicData?.guests;
+  
+  // Enhanced display with proper formatting
+  const guestCapacity = capacityValue 
+    ? <span><strong>{capacityValue}</strong> guests</span> 
+    : 'No guest limit';
 
   return (
     <NamedLink className={classes} name="ListingPage" params={{ id, slug }}>
@@ -150,15 +148,11 @@ export const ListingCardComponent = ({
               longWordClass: css.longWord,
             })}
           </div>
+          <div className={css.category}>
+            {publicData?.vessels ? capitalizeFirstLetter(publicData?.vessels) : ''}
+          </div>
           <div className={css.guests}>
-            {/* Try to get capacity from either guests or capacity field */}
-            {publicData && (
-              typeof publicData.guests !== 'undefined' 
-              ? `${publicData.guests} guests` 
-              : typeof publicData.capacity !== 'undefined'
-                ? `${publicData.capacity} guests`
-                : '2 guests'
-            )}
+            {guestCapacity}
           </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>

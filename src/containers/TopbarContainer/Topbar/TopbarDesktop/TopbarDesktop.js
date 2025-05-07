@@ -19,25 +19,27 @@ import CustomLinksMenu from './CustomLinksMenu/CustomLinksMenu';
 
 import css from './TopbarDesktop.module.css';
 
-const SignupLink = () => {
-  return (
-    <NamedLink name="SignupPage" className={css.topbarLink}>
-      <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.signup" />
-      </span>
-    </NamedLink>
-  );
-};
+const SignupLink = () => (
+  <NamedLink 
+    name="SignupPage" 
+    className={css.topbarLink}
+  >
+    <span className={css.topbarLinkLabel}>
+      <FormattedMessage id="TopbarDesktop.signup" />
+    </span>
+  </NamedLink>
+);
 
-const LoginLink = () => {
-  return (
-    <NamedLink name="LoginPage" className={css.topbarLink}>
-      <span className={css.topbarLinkLabel}>
-        <FormattedMessage id="TopbarDesktop.login" />
-      </span>
-    </NamedLink>
-  );
-};
+const LoginLink = () => (
+  <NamedLink 
+    name="LoginPage" 
+    className={css.topbarLink}
+  >
+    <span className={css.topbarLinkLabel}>
+      <FormattedMessage id="TopbarDesktop.login" />
+    </span>
+  </NamedLink>
+);
 
 const InboxLink = ({ notificationCount, currentUserHasListings }) => {
   const notificationDot = notificationCount > 0 ? <div className={css.notificationDot} /> : null;
@@ -61,6 +63,10 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
       page === 'AccountSettingsPage' && ACCOUNT_SETTINGS_PAGES.includes(currentPage);
     return currentPage === page || isAccountSettingsPage ? css.currentPage : null;
   };
+  
+  // Check if user has the "renter" type in publicData
+  const userRole = currentUser?.attributes?.profile?.publicData?.userType?.trim?.().toLowerCase() || '';
+  const isRenter = userRole === 'renter';
 
   return (
     <Menu>
@@ -68,15 +74,17 @@ const ProfileMenu = ({ currentPage, currentUser, onLogout }) => {
         <Avatar className={css.avatar} user={currentUser} disableProfileLink />
       </MenuLabel>
       <MenuContent className={css.profileMenuContent}>
-        <MenuItem key="ManageListingsPage">
-          <NamedLink
-            className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
-            name="ManageListingsPage"
-          >
-            <span className={css.menuItemBorder} />
-            <FormattedMessage id="TopbarDesktop.yourListingsLink" />
-          </NamedLink>
-        </MenuItem>
+        {!isRenter && (
+          <MenuItem key="ManageListingsPage">
+            <NamedLink
+              className={classNames(css.menuLink, currentPageClass('ManageListingsPage'))}
+              name="ManageListingsPage"
+            >
+              <span className={css.menuItemBorder} />
+              <FormattedMessage id="TopbarDesktop.yourListingsLink" />
+            </NamedLink>
+          </MenuItem>
+        )}
         <MenuItem key="ProfileSettingsPage">
           <NamedLink
             className={classNames(css.menuLink, currentPageClass('ProfileSettingsPage'))}
@@ -150,41 +158,25 @@ const TopbarDesktop = props => {
   }, []);
 
   const marketplaceName = config.marketplaceName;
-  const authenticatedOnClientSide = mounted && isAuthenticated;
-  const isAuthenticatedOrJustHydrated = isAuthenticated || !mounted;
-
-  const giveSpaceForSearch = customLinks == null || customLinks?.length === 0;
   const classes = classNames(rootClassName || css.root, className);
 
-  const inboxLinkMaybe = authenticatedOnClientSide ? (
+  const inboxLinkMaybe = isAuthenticated ? (
     <InboxLink
       notificationCount={notificationCount}
       currentUserHasListings={currentUserHasListings}
     />
   ) : null;
 
-  const profileMenuMaybe = authenticatedOnClientSide ? (
+  const profileMenuMaybe = isAuthenticated ? (
     <ProfileMenu currentPage={currentPage} currentUser={currentUser} onLogout={onLogout} />
   ) : null;
 
-  const signupLinkMaybe = isAuthenticatedOrJustHydrated ? null : <SignupLink />;
-  const loginLinkMaybe = isAuthenticatedOrJustHydrated ? null : <LoginLink />;
+  // Use conditional rendering based directly on currentUser presence
+  const signupLinkMaybe = currentUser ? null : <SignupLink />;
+  const loginLinkMaybe = currentUser ? null : <LoginLink />;
 
-  const searchFormMaybe = showSearchForm ? (
-    <TopbarSearchForm
-      className={classNames(css.searchLink, { [css.takeAvailableSpace]: giveSpaceForSearch })}
-      desktopInputRoot={css.topbarSearchWithLeftPadding}
-      onSubmit={onSearchSubmit}
-      initialValues={initialSearchFormValues}
-      appConfig={config}
-    />
-  ) : (
-    <div
-      className={classNames(css.spacer, css.topbarSearchWithLeftPadding, {
-        [css.takeAvailableSpace]: giveSpaceForSearch,
-      })}
-    />
-  );
+  // Always hide search form
+  const searchFormMaybe = null;
 
   return (
     <nav className={classes}>
@@ -194,13 +186,14 @@ const TopbarDesktop = props => {
         alt={intl.formatMessage({ id: 'TopbarDesktop.logo' }, { marketplaceName })}
         linkToExternalSite={config?.topbar?.logoLink}
       />
-      {searchFormMaybe}
+      {/* Search form removed */}
 
       <CustomLinksMenu
         currentPage={currentPage}
         customLinks={customLinks}
         intl={intl}
-        hasClientSideContentReady={authenticatedOnClientSide || !isAuthenticatedOrJustHydrated}
+        hasClientSideContentReady={true}
+        currentUser={currentUser}
       />
 
       {inboxLinkMaybe}

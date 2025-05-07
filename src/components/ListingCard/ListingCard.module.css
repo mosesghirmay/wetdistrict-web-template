@@ -39,20 +39,18 @@
 }
 
 .price {
-  composes: textSmall from global;
   /* Layout */
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
   flex-shrink: 0;
   margin-bottom: 4px;
-  color: var(--colorGrey700);
 }
 
 .priceValue {
   /* Font */
+  composes: textSmall from global;
   font-weight: var(--fontWeightSemiBold);
-  color: var(--marketplaceColor);
 
   /* Remove default margins from font */
   margin-top: 0;
@@ -66,8 +64,13 @@
 
 .perUnit {
   /* Font */
+  composes: textSmall from global;
   font-weight: var(--fontWeightSemiBold);
+
   color: var(--marketplaceColor);
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
 
   /* Remove default margins from font */
   margin-top: 0;
@@ -117,4 +120,23 @@
   /* use break-word if available */
   word-break: break-word;
   hyphens: auto;
+}
+
+.category {
+  /* Font */
+  composes: textSmall from global;
+  font-size: 14px;
+  color: var(--marketplaceColor);
+  margin: 0;
+  margin-top: 4px;
+}
+
+.guests {
+  /* Font */
+  composes: textSmall from global;
+  font-size: 14px;
+  color: var(--colorGrey700);
+  margin: 0;
+  margin-top: 4px;
+  margin-bottom: 8px;
 }

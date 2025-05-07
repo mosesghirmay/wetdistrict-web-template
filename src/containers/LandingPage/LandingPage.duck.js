@@ -1,7 +1,15 @@
-import { fetchPageAssets } from '../../ducks/hostedAssets.duck';
+import { loadData as search } from '../SearchPage/SearchPage.duck';
+
 export const ASSET_NAME = 'landing-page';
 
-export const loadData = (params, search) => dispatch => {
-  const pageAsset = { landingPage: `content/pages/${ASSET_NAME}.json` };
-  return dispatch(fetchPageAssets(pageAsset, true));
+// Use the same loadData function as SearchPage, but with some default parameters
+export const loadData = (params, searchQuery, config) => {
+  // Use the same search function from SearchPage but with customized default parameters
+  const defaultSearchParams = {
+    ...params,
+    perPage: 24,
+    sort: 'createdAt',
+  };
+  
+  return search(defaultSearchParams, searchQuery, config);
 };

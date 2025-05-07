@@ -263,6 +263,7 @@ const hasValidPriceVariants = priceVariants => {
  */
 const OrderPanel = props => {
   const [mounted, setMounted] = useState(false);
+  const [selectedVariantType, setSelectedVariantType] = useState(null);
   const intl = useIntl();
   const location = useLocation();
   const history = useHistory();
@@ -383,6 +384,21 @@ const OrderPanel = props => {
 
   const showInvalidPriceVariantsMessage =
     isPriceVariationsInUse && !hasValidPriceVariants(priceVariants);
+    
+  const handlePriceVariantChange = formApi => value => {
+    const variant = value?.target?.value || '';
+    let variantType;
+    if (variant === 'Weekday') variantType = 'weekday';
+    else if (variant === 'Weekend') variantType = 'weekend';
+    else if (variant === 'Saturday May 24th Yacht Party') variantType = 'yachtclub';
+
+    setSelectedVariantType(variantType);
+
+    formApi.batch(() => {
+      formApi.change('bookingDates', null);
+      formApi.change('selectedVariantType', variantType);
+    });
+  };
 
   const sharedProps = {
     lineItemUnitType,
@@ -397,6 +413,8 @@ const OrderPanel = props => {
     fetchLineItemsInProgress,
     fetchLineItemsError,
     payoutDetailsWarning,
+    onPriceVariantChange: handlePriceVariantChange,
+    selectedVariantType,
   };
 
   const showClosedListingHelpText = listing.id && isClosed;

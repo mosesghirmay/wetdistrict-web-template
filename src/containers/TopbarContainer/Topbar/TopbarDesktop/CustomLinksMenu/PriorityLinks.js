@@ -15,9 +15,19 @@ import css from './PriorityLinks.module.css';
  * @returns div with only one link inside.
  */
 export const CreateListingMenuLink = props => {
+  const { customLinksMenuClass, isRenter } = props;
+  
+  // If user is a renter, don't render the link at all
+  if (isRenter) {
+    return <div className={customLinksMenuClass}></div>;
+  }
+  
   return (
-    <div className={props.customLinksMenuClass}>
-      <NamedLink name="NewListingPage" className={classNames(css.priorityLink, css.highlight)}>
+    <div className={customLinksMenuClass}>
+      <NamedLink 
+        name="NewListingPage" 
+        className={classNames(css.priorityLink, css.highlight)}
+      >
         <span className={css.priorityLinkLabel}>
           <FormattedMessage id="TopbarDesktop.createListing" />
         </span>

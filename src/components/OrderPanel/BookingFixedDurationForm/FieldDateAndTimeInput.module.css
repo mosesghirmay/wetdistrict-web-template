@@ -176,3 +176,17 @@
 .unitTypeHidden {
   display: none;
 }
+
+.noteSection {
+  margin-top: 16px;
+  padding: 0 24px;
+}
+
+.note {
+  font-size: 14px;
+  color: var(--colorGrey500);
+  line-height: 1.4;
+  margin-top: 8px;
+  margin-bottom: 0;
+  font-style: italic;
+}

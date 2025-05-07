@@ -6,15 +6,28 @@
   justify-content: space-between;
   background-color: var(--colorGrey50);
 
-  /* sticky result summary in mobile */
+  /* sticky result summary in mobile, positioned right below the topbar */
   position: sticky;
-  top: 0;
-  z-index: 1;
+  top: var(--topbarHeight);
+  z-index: calc(var(--zIndexTopbar) - 1);
+  margin-top: 0;
+  padding-top: 0;
+  
+  /* Add box shadow for visual separation */
+  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  
+  /* Remove any margin between topbar and filters */
+  margin: 0;
+  
+  @media (--viewportMedium) {
+    top: var(--topbarHeightDesktop);
+  }
 }
 
 .searchResultSummary {
   composes: h3 from global;
-  margin-top: 6px;
+  margin-top: 0;
+  padding-top: 6px;
 
   display: flex;
   justify-content: space-between;
@@ -22,7 +35,7 @@
   background-color: var(--colorGrey50);
 
   @media (--viewportMedium) {
-    margin-top: 8px;
+    padding-top: 8px;
   }
 }
 

@@ -83,6 +83,9 @@ export class SearchPageComponent extends Component {
 
     // SortBy
     this.handleSortBy = this.handleSortBy.bind(this);
+    
+    // Support for landingPageData when used on LandingPage
+    this.landingPageData = props.landingPageData;
   }
 
   // Invoked when a modal is opened from a child component,
@@ -340,13 +343,40 @@ export class SearchPageComponent extends Component {
       />
     );
 
-    const { title, description, schema } = createSearchResultSchema(
-      listings,
-      searchParamsInURL || {},
-      intl,
-      routeConfiguration,
-      config
-    );
+    // Use landing page data for SEO if available (when used on landing page)
+    // Otherwise fall back to search page schema
+    let title, description, schema;
+    
+    if (this.landingPageData && typeof this.landingPageData === 'object') {
+      // If landing page data is provided directly
+      title = this.landingPageData.title || (config?.marketplaceName ? config.marketplaceName : 'Marketplace');
+      description = this.landingPageData.description || '';
+      schema = this.landingPageData.schema || {};
+    } else if (config && routeConfiguration) {
+      // Only create search result schema if we have all required dependencies
+      try {
+        const schemaData = createSearchResultSchema(
+          listings,
+          searchParamsInURL || {},
+          intl,
+          routeConfiguration,
+          config
+        );
+        title = schemaData.title;
+        description = schemaData.description;
+        schema = schemaData.schema;
+      } catch (error) {
+        console.error('Error creating search result schema:', error);
+        title = config.marketplaceName || 'Marketplace';
+        description = '';
+        schema = {};
+      }
+    } else {
+      // Fallback in case config is not available
+      title = 'Marketplace';
+      description = '';
+      schema = {};
+    }
 
     // Set topbar class based on if a modal is open in
     // a child component

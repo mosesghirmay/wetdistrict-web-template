@@ -91,21 +91,31 @@ const calculateContainerWidth = (containerRefTarget, parentWidth) => {
  * Note: this component is inherently a bit fragile as it needs to deal with DOM directly. If you customize TopbarDesktop,
  * test the responsiveness thoroughly.
  *
- * props:
- * - customLinks: array of link configurations.
- * - hasClientSideContentReady: indicates if TopbarDesktop is ready to render
- * - currentPage: string that indicates if this is "LandingPage" or "SearchPage", etc.
- * - intl: React Intl instance
- *
- * @param {*} props contains currentPage, customLinks, intl, and hasClientSideContentReady
- * @returns component to be placed inside TopbarDesktop
+ * @param {Object} props Component props
+ * @param {string} props.currentPage string that indicates if this is "LandingPage" or "SearchPage", etc.
+ * @param {Array} props.customLinks array of link configurations
+ * @param {boolean} props.hasClientSideContentReady indicates if TopbarDesktop is ready to render
+ * @param {Object} props.intl React Intl instance
+ * @param {Object} props.currentUser Current user object
+ * @returns {JSX.Element} component to be placed inside TopbarDesktop
  */
-const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentReady, intl }) => {
+const CustomLinksMenu = (props) => {
+  const { currentPage, customLinks = [], hasClientSideContentReady, intl, currentUser } = props;
+  
   const containerRef = useRef(null);
   const observer = useRef(null);
   const [mounted, setMounted] = useState(false);
   const [moreLabelWidth, setMoreLabelWidth] = useState(0);
-  const [links, setLinks] = useState([createListingLinkConfig(intl), ...customLinks]);
+  
+  // Check if user has the "renter" type in publicData
+  const userRole = currentUser?.attributes?.profile?.publicData?.userType?.trim?.().toLowerCase() || '';
+  const isRenter = userRole === 'renter';
+  
+  // Only include the create listing link if user is not a renter
+  const initialLinks = isRenter
+    ? [...customLinks]
+    : [createListingLinkConfig(intl), ...customLinks];
+  const [links, setLinks] = useState(initialLinks);
   const [layoutData, setLayoutData] = useState({
     priorityLinks: links,
     menuLinks: links,
@@ -177,9 +187,12 @@ const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentRe
 
   const { priorityLinks, menuLinks, containerWidth } = layoutData;
 
-  // If there are no custom links, just render createListing link.
+  // If there are no custom links, just render createListing link with CSS handling visibility
   if (customLinks?.length === 0) {
-    return <CreateListingMenuLink customLinksMenuClass={css.createListingLinkOnly} />;
+    return <CreateListingMenuLink 
+      customLinksMenuClass={css.createListingLinkOnly} 
+      isRenter={isRenter}
+    />;
   }
 
   const styleMaybe = mounted ? { style: { width: `${containerWidth}px` } } : {};

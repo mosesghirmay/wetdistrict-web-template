@@ -1,0 +1,11 @@
+@import '../../../styles/customMediaQueries.css';
+
+.popupSize {
+  /* 300px for the calendar */
+  min-width: 300px;
+}
+
+/* This calendar override was previously needed for custom styling */
+.calendar {
+  overflow: visible;
+}

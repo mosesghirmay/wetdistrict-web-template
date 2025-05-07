@@ -50,3 +50,8 @@
   text-decoration: inherit;
   text-wrap: nowrap;
 }
+
+/* Hide elements for users with renter role */
+.hiddenForRenterRole {
+  display: none !important;
+}

@@ -5,14 +5,14 @@ import { MenuItem } from '../../components';
 import css from './MenuContent.module.css';
 
 /**
- * MenuContent is a immediate child of Menu component sibling to MenuLabel.
+ * MenuContent is an immediate child of Menu component, sibling to MenuLabel.
  * Clicking MenuLabel toggles visibility of MenuContent.
  *
  * @component
  * @param {Object} props
- * @param {string?} props.className add more style rules in addition to components own css.root
- * @param {string?} props.rootClassName overwrite components own css.root
- * @param {string?} props.contentClassName overwrite components own css.content, which is given to <ul>
+ * @param {string?} props.className add more style rules in addition to component's own css.root
+ * @param {string?} props.rootClassName overwrite component's own css.root
+ * @param {string?} props.contentClassName overwrite component's own css.content, which is given to <ul>
  * @param {ReactNode} props.children
  * @param {number?} props.arrowPosition
  * @param {Function} props.contentRef
@@ -38,7 +38,7 @@ const MenuContent = props => {
   const contentClasses = classNames(contentClassName || css.content);
 
   const arrowPositionStyle =
-    arrowPosition && style.right != null
+    arrowPosition && style?.right != null
       ? { position: 'absolute', right: arrowPosition, top: 0 }
       : { position: 'absolute', left: arrowPosition, top: 0 };
 
@@ -50,6 +50,8 @@ const MenuContent = props => {
   ) : null;
 
   React.Children.forEach(children, child => {
+    if (!child || typeof child !== 'object') return;
+
     if (child.type !== MenuItem) {
       throw new Error('All children of MenuContent must be MenuItems.');
     }

@@ -307,3 +307,6 @@
     }
   }
 }
+
+/* These classes are no longer used as we're using conditional rendering
+   rather than CSS-based hiding for authentication state and user types */

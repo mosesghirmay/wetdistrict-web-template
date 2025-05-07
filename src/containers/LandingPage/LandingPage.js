@@ -1,50 +1,57 @@
 import React from 'react';
-import loadable from '@loadable/component';
-
-import { bool, object } from 'prop-types';
-import { compose } from 'redux';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { useIntl } from '../../util/reactIntl';
+import { getListingsById } from '../../ducks/marketplaceData.duck';
+import { isScrollingDisabled, manageDisableScrolling } from '../../ducks/ui.duck';
+import { useConfiguration } from '../../context/configurationContext';
+import { useRouteConfiguration } from '../../context/routeConfigurationContext';
 
-import { camelize } from '../../util/string';
-import { propTypes } from '../../util/types';
+import SearchPage from '../SearchPage/SearchPageWithGrid';
 
-import FallbackPage from './FallbackPage';
-import { ASSET_NAME } from './LandingPage.duck';
+const LandingPageComponent = props => {
+  const intl = useIntl();
+  const config = useConfiguration();
+  const routeConfiguration = useRouteConfiguration();
+  const {
+    listings = [],
+    searchParams = {},
+  } = props;
 
-const PageBuilder = loadable(() =>
-  import(/* webpackChunkName: "PageBuilder" */ '../PageBuilder/PageBuilder')
-);
+  // Only create landingPageData if we have all required data
+  // This will prevent the "Cannot read properties of undefined" error
+  const landingPageData = config && routeConfiguration ? {
+    title: config.marketplaceName || 'Marketplace',
+    description: '',
+    schema: {}
+  } : null;
 
-export const LandingPageComponent = props => {
-  const { pageAssetsData, inProgress, error } = props;
-
-  return (
-    <PageBuilder
-      pageAssetsData={pageAssetsData?.[camelize(ASSET_NAME)]?.data}
-      inProgress={inProgress}
-      error={error}
-      fallbackPage={<FallbackPage error={error} />}
-    />
-  );
-};
-
-LandingPageComponent.propTypes = {
-  pageAssetsData: object,
-  inProgress: bool,
-  error: propTypes.error,
+  return <SearchPage 
+    {...props} 
+    config={config}
+    routeConfiguration={routeConfiguration}
+    landingPageData={landingPageData} 
+  />;
 };
 
 const mapStateToProps = state => {
-  const { pageAssetsData, inProgress, error } = state.hostedAssets || {};
-  return { pageAssetsData, inProgress, error };
+  const { currentPageResultIds = [], pagination, searchParams } = state.SearchPage || {};
+  return {
+    listings: getListingsById(state, currentPageResultIds || []),
+    pagination,
+    searchParams,
+    currentUser: state.user.currentUser,
+    scrollingDisabled: isScrollingDisabled(state),
+    searchInProgress: state.SearchPage?.searchInProgress,
+    searchListingsError: state.SearchPage?.searchListingsError,
+  };
 };
 
-// Note: it is important that the withRouter HOC is **outside** the
-// connect HOC, otherwise React Router won't rerender any Route
-// components since connect implements a shouldComponentUpdate
-// lifecycle hook.
-//
-// See: https://github.com/ReactTraining/react-router/issues/4671
-const LandingPage = compose(connect(mapStateToProps))(LandingPageComponent);
+const mapDispatchToProps = dispatch => ({
+  onManageDisableScrolling: (componentId, disable) =>
+    dispatch(manageDisableScrolling(componentId, disable)),
+});
 
-export default LandingPage;
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps)
+)(LandingPageComponent);

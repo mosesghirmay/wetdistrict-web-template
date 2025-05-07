@@ -105,6 +105,7 @@ export { default as LocationAutocompleteInput, FieldLocationAutocompleteInput } 
 export const FieldDateRangePicker = loadable(() => import(/* webpackChunkName: "FieldDateRangePicker" */ './DatePicker/FieldDateRangePicker/FieldDateRangePicker'));
 export const FieldSingleDatePicker = loadable(() => import(/* webpackChunkName: "FieldSingleDatePicker" */ './DatePicker/FieldSingleDatePicker/FieldSingleDatePicker'));
 export const FieldDateRangeController = loadable(() => import(/* webpackChunkName: "FieldDateRangeController" */ './DatePicker/FieldDateRangeController/FieldDateRangeController'));
+export const FieldDateController = loadable(() => import(/* webpackChunkName: "FieldDateController" */ './DatePicker/FieldDateController/FieldDateController'));
 
 // Tab navigation
 export { default as TabNav } from './TabNav/TabNav';
