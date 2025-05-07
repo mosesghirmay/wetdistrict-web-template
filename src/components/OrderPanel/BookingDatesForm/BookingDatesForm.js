@@ -366,6 +366,17 @@ const calculateLineItems = (
 ) => formValues => {
   const { startDate, endDate, priceVariantName, seats } = formValues?.values || {};
 
+  if (!startDate || !endDate) {
+    console.error('⛔️ Booking failed: Missing startDate or endDate');
+    return;
+  }
+
+  console.log('🧾 Submitting booking with values:', {
+    priceVariantName,
+    startDate,
+    endDate
+  });
+
   const priceVariantMaybe = priceVariantName ? { priceVariantName } : {};
   const seatCount = seats ? parseInt(seats, 10) : 1;
 
@@ -401,14 +412,29 @@ const showPreviousMonthStepper = (currentMonth, timeZone) => {
 };
 
 const getStartAndEndOnTimeZone = (startDate, endDate, isDaily, timeZone) => {
+  // Validate we have actual date objects and not epoch dates (Jan 1, 1970)
+  const isValidDate = date => {
+    if (!date) return false;
+    const epoch = new Date(0); // Jan 1, 1970
+    return date.getFullYear() > epoch.getFullYear();
+  };
+
+  if (!isValidDate(startDate) || !isValidDate(endDate)) {
+    console.warn('Invalid dates detected in getStartAndEndOnTimeZone', { 
+      startYear: startDate?.getFullYear(),
+      endYear: endDate?.getFullYear() 
+    });
+    return { startDate: null, endDate: null };
+  }
+
   // Parse the startDate and endDate into the target time zone
   const parsedStart = startDate
     ? getStartOf(timeOfDayFromLocalToTimeZone(startDate, timeZone), 'day', timeZone)
-    : startDate;
+    : null;
 
   const parsedEnd = endDate
     ? getStartOf(timeOfDayFromLocalToTimeZone(endDate, timeZone), 'day', timeZone)
-    : endDate;
+    : null;
 
   // Adjust endDate for API if isDaily is true
   const endDateForAPI = parsedEnd && isDaily ? getExclusiveEndDate(parsedEnd, timeZone) : parsedEnd;
@@ -607,7 +633,25 @@ export const BookingDatesForm = props => {
     listingId,
     isOwnListing,
     fetchLineItemsInProgress,
-    onFetchTransactionLineItems,
+    (params) => {
+      const { bookingStart, bookingEnd, priceVariantName } = params.orderData || {};
+      
+      console.log('📦 fetchSpeculatedTransaction called with:', {
+        bookingStart,
+        bookingEnd,
+        priceVariantName,
+      });
+      
+      if (!bookingStart || !bookingEnd || bookingStart.getFullYear() === 1970) {
+        console.warn('⛔ Skipping speculate call — invalid dates:', {
+          bookingStart,
+          bookingEnd,
+        });
+        return;
+      }
+      
+      onFetchTransactionLineItems(params);
+    },
     seatsEnabled
   );
 
@@ -752,6 +796,13 @@ export const BookingDatesForm = props => {
               }}
               parse={v => {
                 const { startDate, endDate } = v || {};
+                
+                // Additional validation to catch epoch dates
+                if (startDate && startDate.getFullYear() === 1970) {
+                  console.warn('Caught 1970 date in parse function');
+                  return { startDate: null, endDate: null };
+                }
+                
                 return v ? getStartAndEndOnTimeZone(startDate, endDate, isDaily, timeZone) : v;
               }}
               useMobileMargins
@@ -783,18 +834,28 @@ export const BookingDatesForm = props => {
                 setCurrentMonth(startDate || endDate || startOfToday);
               }}
               onChange={values => {
-                const { startDate: startDateFromValues, endDate: endDateFromValues } = values || {};
-                const { startDate, endDate } = values
-                  ? getStartAndEndOnTimeZone(
-                      startDateFromValues,
-                      endDateFromValues,
-                      isDaily,
-                      timeZone
-                    )
-                  : {};
+                const { startDate, endDate } = values?.bookingDates || {};
+                
+                // Comprehensive validation to catch invalid dates
+                if (!startDate || !endDate) {
+                  console.warn('Blocked line item fetch: missing start/end date');
+                  return;
+                }
+                
+                // Check for Jan 1, 1970 epoch dates
+                const isEpochDate = date => date && date.getFullYear() === 1970;
+                if (isEpochDate(startDate) || isEpochDate(endDate)) {
+                  console.warn('Blocked line item fetch: detected epoch date (1970)', {
+                    startYear: startDate?.getFullYear(),
+                    endYear: endDate?.getFullYear()
+                  });
+                  return;
+                }
+                
                 if (seatsEnabled) {
                   formApi.change('seats', 1);
                 }
+                
                 onHandleFetchLineItems({
                   values: {
                     priceVariantName,

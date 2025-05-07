@@ -396,6 +396,8 @@ const OrderPanel = props => {
 
     formApi.batch(() => {
       formApi.change('bookingDates', null);
+      formApi.change('startDate', null);
+      formApi.change('endDate', null);
       formApi.change('selectedVariantType', variantType);
     });
   };
@@ -408,7 +410,25 @@ const OrderPanel = props => {
     listingId: listing.id,
     isOwnListing,
     marketplaceName,
-    onFetchTransactionLineItems,
+    onFetchTransactionLineItems: (params) => {
+      const { bookingStart, bookingEnd, priceVariantName } = params.orderData || {};
+      
+      console.log('📦 fetchSpeculatedTransaction called from OrderPanel with:', {
+        bookingStart,
+        bookingEnd,
+        priceVariantName,
+      });
+      
+      if (!bookingStart || !bookingEnd || bookingStart.getFullYear() === 1970) {
+        console.warn('⛔ Skipping speculate call from OrderPanel — invalid dates:', {
+          bookingStart,
+          bookingEnd,
+        });
+        return;
+      }
+      
+      onFetchTransactionLineItems(params);
+    },
     lineItems,
     fetchLineItemsInProgress,
     fetchLineItemsError,
@@ -559,14 +579,10 @@ const OrderPanel = props => {
             )}
             disabled={isOutOfStock}
           >
-            {isBooking ? (
-              <FormattedMessage id="OrderPanel.ctaButtonMessageBooking" />
-            ) : isOutOfStock ? (
+            {isOutOfStock ? (
               <FormattedMessage id="OrderPanel.ctaButtonMessageNoStock" />
-            ) : isPurchase ? (
-              <FormattedMessage id="OrderPanel.ctaButtonMessagePurchase" />
             ) : (
-              <FormattedMessage id="OrderPanel.ctaButtonMessageInquiry" />
+              "Add your boat"
             )}
           </PrimaryButton>
         )}

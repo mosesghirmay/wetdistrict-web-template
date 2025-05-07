@@ -126,7 +126,7 @@ const TopbarMobileMenu = props => {
             {extraLinks}
             {/* Then add the "Add your boat" link */}
             <NamedLink className={css.navigationLink} name="NewListingPage">
-              Add your boat
+              <FormattedMessage id="TopbarMobileMenu.newListingLink" />
             </NamedLink>
           </div>
 
@@ -134,7 +134,7 @@ const TopbarMobileMenu = props => {
         </div>
         <div className={css.footer}>
           <NamedLink className={css.createNewListingLink} name="NewListingPage">
-            Add your boat
+            <FormattedMessage id="TopbarMobileMenu.newListingLink" />
           </NamedLink>
         </div>
       </div>

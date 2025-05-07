@@ -187,6 +187,19 @@
   }
 }
 
+/* Custom style for the "Add your boat" button with thicker border */
+.openOrderForm :global(.buttonPrimary) {
+  border: 2px solid var(--colorWhite);
+  font-weight: var(--fontWeightBold);
+}
+
+/* Override any dynamically set content for the button */
+.openOrderForm :global(.buttonPrimary)::after,
+.openOrderForm :global(.buttonPrimary) span::after {
+  content: "Add your boat" !important;
+  display: inline !important;
+}
+
 .priceContainerInCTA,
 .priceContainer {
   /* Layout */

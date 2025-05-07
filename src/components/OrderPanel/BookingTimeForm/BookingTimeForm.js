@@ -30,11 +30,27 @@ const handleFetchLineItems = props => formValues => {
   const startDate = bookingStartTime ? timestampToDate(bookingStartTime) : null;
   const endDate = bookingEndTime ? timestampToDate(bookingEndTime) : null;
 
+  if (!bookingStartTime || !bookingEndTime) {
+    console.error('⛔️ Booking failed: Missing bookingStartTime or bookingEndTime');
+    return;
+  }
+
   // Note: we expect values bookingStartTime and bookingEndTime to be strings
   // which is the default case when the value has been selected through the form
   const isStartBeforeEnd = bookingStartTime < bookingEndTime;
-  const seatsMaybe = seatsEnabled && seats > 0 ? { seats: parseInt(seats, 10) } : {};
+  
+  if (!isStartBeforeEnd) {
+    console.error('⛔️ Booking failed: Start time must be before end time');
+    return;
+  }
+  
+  console.log('🧾 Submitting booking with values:', {
+    priceVariantName,
+    startDate,
+    endDate
+  });
 
+  const seatsMaybe = seatsEnabled && seats > 0 ? { seats: parseInt(seats, 10) } : {};
   const priceVariantMaybe = priceVariantName ? { priceVariantName } : {};
 
   if (bookingStartTime && bookingEndTime && isStartBeforeEnd && !fetchLineItemsInProgress) {
@@ -44,6 +60,20 @@ const handleFetchLineItems = props => formValues => {
       ...seatsMaybe,
       ...priceVariantMaybe,
     };
+    console.log('📦 fetchSpeculatedTransaction called with:', {
+      bookingStart: startDate,
+      bookingEnd: endDate,
+      priceVariantName,
+    });
+    
+    if (!startDate || !endDate || startDate.getFullYear() === 1970) {
+      console.warn('⛔ Skipping speculate call — invalid dates:', {
+        bookingStart: startDate,
+        bookingEnd: endDate,
+      });
+      return;
+    }
+    
     onFetchTransactionLineItems({
       orderData,
       listingId,

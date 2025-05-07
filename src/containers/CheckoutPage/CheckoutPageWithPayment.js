@@ -166,6 +166,32 @@ const fetchSpeculatedTransactionIfNeeded = (orderParams, pageData, fetchSpeculat
       ? process.transitions.REQUEST_PAYMENT_AFTER_INQUIRY
       : process.transitions.REQUEST_PAYMENT;
     const isPrivileged = process.isPrivileged(requestTransition);
+    
+    // Extract booking dates from orderParams
+    const { bookingDates } = orderParams;
+    const bookingStart = bookingDates?.startDate;
+    const bookingEnd = bookingDates?.endDate;
+    const priceVariantName = orderParams.priceVariantName;
+    
+    console.log('📦 fetchSpeculatedTransaction called with:', {
+      bookingStart,
+      bookingEnd,
+      priceVariantName,
+    });
+    
+    // 🛡 Prevent API call with null or epoch dates
+    if (
+      !bookingStart ||
+      !bookingEnd ||
+      bookingStart.getFullYear() === 1970 ||
+      bookingEnd.getFullYear() === 1970
+    ) {
+      console.warn('⛔ Skipping speculative transaction — invalid or missing dates', {
+        bookingStart,
+        bookingEnd,
+      });
+      return;
+    }
 
     fetchSpeculatedTransaction(
       orderParams,

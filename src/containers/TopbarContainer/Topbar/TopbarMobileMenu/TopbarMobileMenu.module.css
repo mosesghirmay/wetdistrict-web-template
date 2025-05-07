@@ -165,12 +165,15 @@
 }
 
 .createNewListingLink {
-  composes: buttonPrimary from global;
+  composes: buttonSecondaryInline from global;
   width: 100%;
   text-align: center;
-  padding: 14px;
+  padding: 18px;
   font-weight: var(--fontWeightBold);
   font-size: 16px;
+  background-color: white;
+  color: var(--matterColor);
+  border: 2px solid var(--marketplaceColor);
 }
 
 .authenticationGreeting {

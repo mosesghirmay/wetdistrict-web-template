@@ -38,7 +38,7 @@ const defaultTimeZone = () =>
 const createEntryDayGroups = (entries = {}) => {
   // Collect info about which days are active in the availability plan form:
   let activePlanDays = [];
-  return entries.reduce((groupedEntries, entry) => {
+  const result = entries.reduce((groupedEntries, entry) => {
     const { startTime, endTime: endHour, dayOfWeek, seats } = entry;
     const dayGroup = groupedEntries[dayOfWeek] || [];
     activePlanDays = activePlanDays.includes(dayOfWeek)
@@ -54,18 +54,26 @@ const createEntryDayGroups = (entries = {}) => {
           seats,
         },
       ],
-      activePlanDays,
     };
   }, {});
+  
+  // Explicitly add the activePlanDays property
+  result.activePlanDays = activePlanDays;
+  return result;
 };
 
 // Create initial values for the availability plan
 const createInitialPlanValues = availabilityPlan => {
   const { timezone, entries } = availabilityPlan || {};
   const tz = timezone || defaultTimeZone();
+  const entryGroups = createEntryDayGroups(entries);
+  // If we have default entries for all days but no activePlanDays, add them explicitly
+  if (entries && entries.length === 7 && !entryGroups.activePlanDays) {
+    entryGroups.activePlanDays = WEEKDAYS;
+  }
   return {
     timezone: tz,
-    ...createEntryDayGroups(entries),
+    ...entryGroups,
   };
 };
 
@@ -195,13 +203,13 @@ const EditListingAvailabilityPanel = props => {
     type: 'availability-plan/time',
     timezone: defaultTimeZone(),
     entries: [
-      // { dayOfWeek: 'mon', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'tue', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'wed', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'thu', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'fri', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'sat', startTime: '09:00', endTime: '17:00', seats: 1 },
-      // { dayOfWeek: 'sun', startTime: '09:00', endTime: '17:00', seats: 1 },
+      { dayOfWeek: 'mon', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'tue', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'wed', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'thu', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'fri', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'sat', startTime: '10:00', endTime: '24:00', seats: 1 },
+      { dayOfWeek: 'sun', startTime: '10:00', endTime: '24:00', seats: 1 },
     ],
   };
   const availabilityPlan = listingAttributes?.availabilityPlan || defaultAvailabilityPlan;
