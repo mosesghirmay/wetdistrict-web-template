@@ -622,7 +622,7 @@
   "OrderBreakdown.total": "Total price",
   "OrderPanel.author": "{name}",
   "OrderPanel.closedListingButtonText": "Sorry, this listing has been closed.",
-  "OrderPanel.ctaButtonMessageBooking": "Add your boat",
+  "OrderPanel.ctaButtonMessageBooking": "Request to book",
   "OrderPanel.ctaButtonMessageInquiry": "Send an inquiry",
   "OrderPanel.ctaButtonMessageNoStock": "Out of stock",
   "OrderPanel.ctaButtonMessagePurchase": "Buy now",

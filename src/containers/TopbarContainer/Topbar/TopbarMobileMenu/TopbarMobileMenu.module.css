@@ -168,7 +168,7 @@
   composes: buttonSecondaryInline from global;
   width: 100%;
   text-align: center;
-  padding: 18px;
+  padding: 12px;
   font-weight: var(--fontWeightBold);
   font-size: 16px;
   background-color: white;
@@ -176,11 +176,34 @@
   border: 2px solid var(--marketplaceColor);
 }
 
+/* Replace the button text with "Add your boat" */
+.createNewListingLink span,
+.navigationLink[href="/l/new"] span {
+  font-size: 0 !important;
+  visibility: hidden !important;
+}
+
+.createNewListingLink span::before {
+  content: "Add your boat" !important;
+  visibility: visible !important;
+  font-size: 16px !important;
+  display: inline-block !important;
+}
+
+.navigationLink[href="/l/new"] span::before {
+  content: "Add your boat" !important;
+  visibility: visible !important;
+  font-size: 21px !important;
+  line-height: 24px !important;
+  font-weight: var(--fontWeightBold) !important;
+  display: inline-block !important;
+}
+
 .authenticationGreeting {
   /* Font */
   composes: h1 from global;
 
-  margin-bottom: 48px;
+  margin-bottom: 40px;
   margin-top: var(--TopbarMobileMenu_topMargin);
 }
 .authenticationLinks {

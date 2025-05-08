@@ -162,6 +162,7 @@ const PriceMaybe = props => {
   //       Instead, we show the currency code in place of the price
   return showCurrencyMismatch ? (
     <div className={css.priceContainerInCTA}>
+      <div className={css.startingAt}>Starting at</div>
       <div className={css.priceValueInCTA} title={priceTitle}>
         <FormattedMessage
           id="OrderPanel.priceInMobileCTA"
@@ -169,7 +170,7 @@ const PriceMaybe = props => {
         />
       </div>
       <div className={css.perUnitInCTA}>
-        <FormattedMessage id="OrderPanel.perUnit" values={{ unitType }} />
+        for 3 hours
       </div>
     </div>
   ) : (
@@ -578,11 +579,12 @@ const OrderPanel = props => {
               location
             )}
             disabled={isOutOfStock}
+            style={{ "--content-override": "none" }}
           >
             {isOutOfStock ? (
               <FormattedMessage id="OrderPanel.ctaButtonMessageNoStock" />
             ) : (
-              "Add your boat"
+              "Request to book"
             )}
           </PrimaryButton>
         )}

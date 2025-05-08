@@ -1,0 +1,10 @@
+
+/* Custom fix for button text duplication */
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez::after,
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez::before {
+  content: none \!important;
+}
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez {
+  content: "Request to book" \!important;
+}
+

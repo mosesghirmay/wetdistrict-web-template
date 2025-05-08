@@ -187,17 +187,29 @@
   }
 }
 
-/* Custom style for the "Add your boat" button with thicker border */
+/* Custom style for the button with thicker border */
 .openOrderForm :global(.buttonPrimary) {
   border: 2px solid var(--colorWhite);
   font-weight: var(--fontWeightBold);
 }
 
-/* Override any dynamically set content for the button */
+/* Fix for button text duplication issue */
+.openOrderForm :global(.buttonPrimary)::before,
 .openOrderForm :global(.buttonPrimary)::after,
-.openOrderForm :global(.buttonPrimary) span::after {
-  content: "Add your boat" !important;
-  display: inline !important;
+.openOrderForm :global(.buttonPrimary) span::before,
+.openOrderForm :global(.buttonPrimary) span::after,
+.openOrderForm :global(.buttonPrimary) *::before,
+.openOrderForm :global(.buttonPrimary) *::after,
+:global(.Button_primaryButtonRoot__xQMAW)::before,
+:global(.Button_primaryButtonRoot__xQMAW)::after,
+:global(.Button_primaryButtonRoot__xQMAW) *::before,
+:global(.Button_primaryButtonRoot__xQMAW) *::after,
+:global(.Button_primaryButton__jkoez)::before,
+:global(.Button_primaryButton__jkoez)::after,
+:global(.Button_primaryButton__jkoez) *::before,
+:global(.Button_primaryButton__jkoez) *::after {
+  content: none !important;
+  display: none !important;
 }
 
 .priceContainerInCTA,
@@ -226,6 +238,17 @@
   align-items: center;
   justify-content: center;
   gap: unset;
+}
+
+.startingAt {
+  /* Font */
+  composes: marketplaceTinyFontStyles from global;
+  color: var(--marketplaceColor);
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 10px;
+  padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .priceValueInCTA {

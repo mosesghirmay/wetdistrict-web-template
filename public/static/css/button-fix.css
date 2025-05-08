@@ -1,0 +1,10 @@
+
+/* Custom fix for button text duplication */
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez::after,
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez::before,
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez *::after,
+.Button_primaryButtonRoot__xQMAW.buttonPrimary.Button_primaryButton__jkoez *::before {
+  content: none \!important;
+  display: none \!important;
+}
+
