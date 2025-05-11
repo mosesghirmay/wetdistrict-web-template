@@ -276,6 +276,14 @@ class PageComponent extends Component {
           
           {/* Add iOS-specific meta tags that help with iMessage previews */}
           <meta name="apple-mobile-web-app-title" content={socialSharing?.title || pageTitle} />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+          
+          {/* Enhanced meta tags specifically for iMessage link previews */}
+          <meta property="og:image:secure_url" content={facebookImgs[0]?.url} />
+          <meta property="og:image:type" content="image/jpeg" />
+          <meta property="og:image:alt" content={`${marketplaceName} - ${pageTitle}`} />
+          <meta itemprop="image" content={facebookImgs[0]?.url} />
           
           {/* Add legacy meta tags for better compatibility with various platforms */}
           <meta name="thumbnail" content={facebookImgs[0]?.url} />

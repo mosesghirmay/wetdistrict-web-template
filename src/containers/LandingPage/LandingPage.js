@@ -16,7 +16,8 @@ const LandingPageComponent = props => {
   
   // Define the custom image paths for the yacht imagery with absolute URLs
   const absoluteRootUrl = config?.marketplaceRootURL || '';
-  const facebookImagePath = `${absoluteRootUrl}/images/facebook-preview.jpg`;
+  // Use the dedicated iMessage preview image for Facebook (also used by iMessage)
+  const facebookImagePath = `${absoluteRootUrl}/images/wetdistrict-imessage-preview.jpg`;
   const twitterImagePath = `${absoluteRootUrl}/images/twitter-preview.jpg`;
   
   const {

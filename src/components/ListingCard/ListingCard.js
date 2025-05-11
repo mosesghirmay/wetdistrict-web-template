@@ -151,14 +151,37 @@ export const ListingCardComponent = ({
             })}
           </div>
           <div className={css.guests}>
-            {/* Try to get capacity from either guests or capacity field */}
-            {publicData && (
-              typeof publicData.guests !== 'undefined' 
-              ? `${publicData.guests} guests` 
-              : typeof publicData.capacity !== 'undefined'
-                ? `${publicData.capacity} guests`
-                : '2 guests'
-            )}
+            {/* Try to get capacity from either guests or capacity field with robust error handling */}
+            {(() => {
+              // Only log in development environment
+              if (process.env.NODE_ENV === 'development') {
+                console.log('ListingCard - publicData:', publicData);
+                console.log('ListingCard - guests value:', publicData?.guests);
+                console.log('ListingCard - capacity value:', publicData?.capacity);
+              }
+              
+              // IIFE for cleaner variable scoping and multiple return statements
+              if (!publicData) return '';
+              
+              // First try guests field with robust type checking
+              if (publicData.guests != null) {
+                const guestNum = Number(publicData.guests);
+                if (!isNaN(guestNum) && guestNum > 0) {
+                  return `${guestNum} guests`;
+                }
+              }
+              
+              // Then try capacity field with robust type checking
+              if (publicData.capacity != null) {
+                const capacityNum = Number(publicData.capacity);
+                if (!isNaN(capacityNum) && capacityNum > 0) {
+                  return `${capacityNum} guests`;
+                }
+              }
+              
+              // If we couldn't get a valid guest count, return empty string instead of a default
+              return '';
+            })()}
           </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>

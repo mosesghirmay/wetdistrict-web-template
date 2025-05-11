@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const _ = require('lodash');
 const { types } = require('sharetribe-flex-sdk');
+const { getExtraMetaTags } = require('./resources/metatags');
 
 const buildPath = path.resolve(__dirname, '..', 'build');
 
@@ -105,6 +106,8 @@ exports.render = function(requestUrl, context, data, renderApp, webExtractor, no
     hostedConfig,
     collectWebChunks
   ).then(({ head, body }) => {
+    // Get the root URL from the preloaded state
+    const rootUrl = preloadedState?.config?.marketplaceRootURL || '';
     // Preloaded state needs to be passed for client side too.
     // For security reasons we ensure that preloaded state is considered as a string
     // by replacing '<' character with its unicode equivalent.
@@ -124,11 +127,15 @@ exports.render = function(requestUrl, context, data, renderApp, webExtractor, no
     // Add nonce to server-side rendered script tags
     const nonceParamMaybe = nonce ? { nonce } : {};
 
+    // Add our extra meta tags to enhance social media previews
+    const extraMetaTags = getExtraMetaTags(rootUrl);
+    
     return template({
       htmlAttributes: head.htmlAttributes.toString(),
       title: head.title.toString(),
       link: head.link.toString(),
-      meta: head.meta.toString(),
+      // Add our extra meta tags to the existing meta tags for better sharing previews
+      meta: head.meta.toString() + extraMetaTags,
       script: head.script.toString(),
       preloadedStateScript,
       ssrStyles: webExtractor.getStyleTags(),

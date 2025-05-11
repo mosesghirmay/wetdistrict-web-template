@@ -155,6 +155,19 @@ if (TRUST_PROXY === 'true') {
 }
 
 app.use(compression());
+
+// Add CORS headers specifically for image files to allow sharing on all platforms
+app.use('/images', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+  next();
+});
+
+// Serve images directory with long cache time
+app.use('/images', express.static(path.join(buildPath, 'images'), { maxAge: '1d' }));
+
 app.use('/static', express.static(path.join(buildPath, 'static')));
 app.use(cookieParser());
 
