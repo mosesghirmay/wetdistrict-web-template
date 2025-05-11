@@ -140,3 +140,13 @@
   margin-top: 4px;
   margin-bottom: 8px;
 }
+
+.debugElement {
+  background-color: yellow;
+  border: 2px solid red;
+  color: black;
+  padding: 4px;
+  margin: 4px 0;
+  font-weight: bold;
+  font-size: 12px;
+}

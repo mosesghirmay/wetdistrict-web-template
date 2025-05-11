@@ -388,6 +388,10 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'publicData.transactionProcessAlias',
         'publicData.unitType',
         'publicData.capacity',
+        'publicData.guests',
+        // Explicitly include these fields to ensure they're available
+        'attributes.publicData.capacity',
+        'attributes.publicData.guests',
         // These help rendering of 'purchase' listings,
         // when transitioning from search page to listing page
         'publicData.pickupEnabled',
