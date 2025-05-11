@@ -22,7 +22,27 @@ const LandingPageComponent = props => {
   // This will prevent the "Cannot read properties of undefined" error
   const landingPageData = config && routeConfiguration ? {
     title: config.marketplaceName || 'Marketplace',
-    description: '',
+    description: config.marketplace?.description || 'Find what you need',
+    socialSharing: {
+      title: config.marketplaceName || 'Marketplace',
+      description: config.marketplace?.description || 'Find what you need',
+      images1200: [
+        {
+          name: 'facebook',
+          url: config.branding?.facebookImageURL,
+          width: 1200,
+          height: 630,
+        }
+      ],
+      images600: [
+        {
+          name: 'twitter',
+          url: config.branding?.twitterImageURL,
+          width: 600,
+          height: 314,
+        }
+      ]
+    },
     schema: {}
   } : null;
 

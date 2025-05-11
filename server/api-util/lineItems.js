@@ -171,7 +171,9 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
    * - includedFor
    */
 
-  const code = `line-item/${unitType}`;
+  // Generate appropriate line item code, supporting variants if needed
+  const isVariant = !!priceVariantName;
+  const code = isVariant ? `line-item/variant-${unitType}` : `line-item/${unitType}`;
 
   // Here "extra line-items" means line-items that are tied to unit type
   // E.g. by default, "shipping-fee" is tied to 'item' aka buying products.

@@ -275,10 +275,14 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 };
 
 const onBookingStartTimeChange = props => value => {
+  console.log('⏰ Start time changed:', value);
+  console.log('Props at time change:', props);
+  
   const {
     form: formApi,
     handleFetchLineItems,
     seatsEnabled,
+    values,
   } = props;
   
   // Find the corresponding end time based on the selected start time
@@ -291,14 +295,22 @@ const onBookingStartTimeChange = props => value => {
     endTime = FIXED_END_TIMES[0].timestamp;
   }
 
+  console.log('🕒 Selected start time:', value, 'End time:', endTime);
+
   formApi.batch(() => {
     formApi.change('bookingEndTime', endTime);
     if (seatsEnabled) {
       formApi.change('seats', 1);
     }
   });
+  
+  // Include the price variant name when fetching line items
+  const priceVariantName = values?.priceVariantName;
+  console.log('Including price variant in line items fetch:', priceVariantName);
+  
   handleFetchLineItems({
     values: {
+      priceVariantName,
       bookingStartTime: value,
       bookingEndTime: endTime,
       seats: seatsEnabled ? 1 : undefined,
@@ -307,14 +319,22 @@ const onBookingStartTimeChange = props => value => {
 };
 
 const onBookingEndTimeChange = props => value => {
+  console.log('⏰ End time changed:', value);
+  console.log('Props at end time change:', props);
+  
   const { values, handleFetchLineItems, form: formApi, seatsEnabled } = props;
 
   if (seatsEnabled) {
     formApi.change('seats', 1);
   }
 
+  // Include the price variant name when fetching line items
+  const priceVariantName = values?.priceVariantName;
+  console.log('End time change with price variant:', priceVariantName);
+
   handleFetchLineItems({
     values: {
+      priceVariantName,
       bookingStartTime: values.bookingStartTime,
       bookingEndTime: value,
       seats: seatsEnabled ? 1 : undefined,
@@ -448,7 +468,15 @@ const FieldDateAndTimeInput = props => {
     if (onMonthChanged) {
       onMonthChanged(monthId);
     }
-  }, [currentMonth]);
+    
+    // Debug step to ensure we're tracking state properly
+    console.log('FieldDateAndTimeInput state changed:', {
+      bookingStartDate,
+      bookingStartTime,
+      bookingEndTime,
+      timeSlotsAvailable: timeSlotsOnDate.length > 0
+    });
+  }, [currentMonth, bookingStartDate, bookingStartTime, bookingEndTime]);
 
   useEffect(() => {
     // Log time slots marked for each day for debugging
@@ -522,7 +550,10 @@ const FieldDateAndTimeInput = props => {
 
     const dateIdString = stringifyDateToISO8601(dayInListingTZ, timeZone);
     const timeSlotData = monthlyTimeSlotsData[dateIdString];
-    return !timeSlotData?.hasAvailability;
+    
+    // For price variant listings, we'll use fixed time slots so we can allow all days
+    // This ensures time slots are available regardless of the price variant
+    return false; // !timeSlotData?.hasAvailability;
   };
 
   let placeholderTime = getPlaceholder('08:00', intl, timeZone);

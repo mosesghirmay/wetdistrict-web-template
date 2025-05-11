@@ -83,7 +83,8 @@ const estimatedCustomerTransaction = (
   timeZone,
   process,
   processName,
-  marketplaceCurrency
+  marketplaceCurrency,
+  priceVariantName // Add priceVariantName parameter
 ) => {
   const transitions = process?.transitions;
   const now = new Date();
@@ -121,8 +122,16 @@ const estimatedCustomerTransaction = (
 };
 
 const EstimatedCustomerBreakdownMaybe = props => {
+  console.log('🎯 EstimatedCustomerBreakdownMaybe - ALL props:', props);
+  console.log('Breakdown data:', props.breakdownData);
+  
+  console.log('🔍 Received line items:');
+  props.lineItems?.forEach(item => {
+    console.log(`- ${item.code}: ${JSON.stringify(item, null, 2)}`);
+  });
+  
   const { breakdownData = {}, lineItems, timeZone, currency, marketplaceName, processName } = props;
-  const { startDate, endDate } = breakdownData;
+  const { startDate, endDate, priceVariantName } = breakdownData;
 
   let process = null;
   try {
@@ -135,13 +144,33 @@ const EstimatedCustomerBreakdownMaybe = props => {
     );
   }
 
-  const unitLineItem = lineItems?.find(
-    item => LISTING_UNIT_TYPES.includes(item.code) && !item.reversal
-  );
+  const unitLineItem = lineItems?.find(item => {
+    const isStandard = LISTING_UNIT_TYPES.includes(item.code);
+    const isVariant = item.code?.startsWith('line-item/variant-');
+    return (isStandard || isVariant) && !item.reversal;
+  });
   const lineItemUnitType = unitLineItem?.code;
   const shouldHaveBooking = [LINE_ITEM_DAY, LINE_ITEM_NIGHT].includes(lineItemUnitType);
   const hasLineItems = lineItems && lineItems.length > 0;
   const hasRequiredBookingData = !shouldHaveBooking || (startDate && endDate);
+  
+  // Additional logging for price variant related issues
+  console.log('Estimated customer breakdown details:', {
+    unitLineItem: unitLineItem?.code,
+    lineItemCount: lineItems?.length || 0,
+    hasLineItems,
+    hasRequiredBookingData,
+    lineItems: lineItems?.map(item => item.code)
+  });
+  
+  console.log('💡 Building transaction estimate with:', {
+    lineItems,
+    startDate,
+    endDate,
+    unitLineItem: unitLineItem?.code,
+    processName,
+    priceVariantName
+  });
 
   const tx =
     hasLineItems && hasRequiredBookingData
@@ -153,7 +182,8 @@ const EstimatedCustomerBreakdownMaybe = props => {
           timeZone,
           process,
           processName,
-          currency
+          currency,
+          priceVariantName  // Pass price variant name to transaction
         )
       : null;
 

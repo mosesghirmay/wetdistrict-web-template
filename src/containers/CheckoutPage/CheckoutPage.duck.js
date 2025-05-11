@@ -419,6 +419,7 @@ export const speculateTransaction = (
     ...quantityMaybe,
     ...bookingParamsMaybe,
     ...otherOrderParams,
+    ...(priceVariantName ? { unitType: 'hour' } : {}),
     cardToken: 'CheckoutPage_speculative_card_token',
   };
 

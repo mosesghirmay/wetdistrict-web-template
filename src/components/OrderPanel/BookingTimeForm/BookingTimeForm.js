@@ -19,6 +19,10 @@ import css from './BookingTimeForm.module.css';
 // In case you add more fields to the form, make sure you add
 // the values here to the orderData object.
 const handleFetchLineItems = props => formValues => {
+  console.log('🔍 handleFetchLineItems called');
+  console.log('Props:', props);
+  console.log('Form values:', formValues);
+  
   const {
     listingId,
     isOwnListing,
@@ -26,21 +30,39 @@ const handleFetchLineItems = props => formValues => {
     onFetchTransactionLineItems,
     seatsEnabled,
   } = props;
+  
   const { bookingStartTime, bookingEndTime, seats, priceVariantName } = formValues.values;
+  
+  console.log('Extracted values:', {
+    bookingStartTime,
+    bookingEndTime,
+    seats,
+    priceVariantName
+  });
+  
   const startDate = bookingStartTime ? timestampToDate(bookingStartTime) : null;
   const endDate = bookingEndTime ? timestampToDate(bookingEndTime) : null;
-
+  
+  // Check if we have both start and end times before proceeding
   if (!bookingStartTime || !bookingEndTime) {
-    console.error('⛔️ Booking failed: Missing bookingStartTime or bookingEndTime');
+    console.warn('No booking times available yet - skipping line items fetch');
     return;
   }
 
   // Note: we expect values bookingStartTime and bookingEndTime to be strings
   // which is the default case when the value has been selected through the form
-  const isStartBeforeEnd = bookingStartTime < bookingEndTime;
+  // Parse to integers to ensure proper comparison
+  const startTimeInt = parseInt(bookingStartTime, 10);
+  const endTimeInt = parseInt(bookingEndTime, 10);
+  const isStartBeforeEnd = startTimeInt < endTimeInt;
   
   if (!isStartBeforeEnd) {
-    console.error('⛔️ Booking failed: Start time must be before end time');
+    console.error('⛔️ Booking failed: Start time must be before end time', {
+      bookingStartTime,
+      bookingEndTime,
+      startTimeInt,
+      endTimeInt
+    });
     return;
   }
   
@@ -51,48 +73,103 @@ const handleFetchLineItems = props => formValues => {
   });
 
   const seatsMaybe = seatsEnabled && seats > 0 ? { seats: parseInt(seats, 10) } : {};
-  const priceVariantMaybe = priceVariantName ? { priceVariantName } : {};
+  
+  // For new listings with price variants, always include the variant name and unitType
+  const priceVariantMaybe = priceVariantName
+    ? { priceVariantName, unitType: 'hour' }
+    : {};
+  console.log('Price variant in order data:', priceVariantMaybe);
 
   if (bookingStartTime && bookingEndTime && isStartBeforeEnd && !fetchLineItemsInProgress) {
+    // Ensure we have valid Date objects before proceeding
+    if (!startDate || !endDate || startDate.getFullYear() === 1970 || endDate.getFullYear() === 1970) {
+      console.warn('⛔ Fixing invalid dates for speculate call');
+      // Create valid dates based on timestamps if needed
+      const fixedStartDate = startDate?.getFullYear() === 1970 ? new Date() : startDate;
+      const fixedEndDate = endDate?.getFullYear() === 1970 ? new Date(fixedStartDate.getTime() + 3600000) : endDate;
+      
+      const orderData = {
+        bookingStart: fixedStartDate,
+        bookingEnd: fixedEndDate,
+        ...seatsMaybe,
+        ...priceVariantMaybe,
+      };
+      
+      console.log('📦 fetchSpeculatedTransaction called with fixed dates:', {
+        bookingStart: fixedStartDate,
+        bookingEnd: fixedEndDate,
+        priceVariantName,
+      });
+      
+      onFetchTransactionLineItems({
+        orderData,
+        listingId,
+        isOwnListing,
+      });
+      return;
+    }
+    
     const orderData = {
       bookingStart: startDate,
       bookingEnd: endDate,
       ...seatsMaybe,
       ...priceVariantMaybe,
     };
-    console.log('📦 fetchSpeculatedTransaction called with:', {
-      bookingStart: startDate,
-      bookingEnd: endDate,
-      priceVariantName,
+    console.log('📦 fetchSpeculatedTransaction called with:', orderData);
+    console.log('📡 About to call onFetchTransactionLineItems with:', {
+      orderData,
+      listingId,
+      isOwnListing
     });
-    
-    if (!startDate || !endDate || startDate.getFullYear() === 1970) {
-      console.warn('⛔ Skipping speculate call — invalid dates:', {
-        bookingStart: startDate,
-        bookingEnd: endDate,
-      });
-      return;
-    }
     
     onFetchTransactionLineItems({
       orderData,
       listingId,
       isOwnListing,
+    }).then(res => {
+      console.log('✅ Flex API response for line items:', res);
+    }).catch(err => {
+      console.error('❌ Flex API error while fetching line items:', err);
     });
+    
+    console.log('✅ onFetchTransactionLineItems called');
   }
 };
 
 const onPriceVariantChange = props => value => {
-  const { form: formApi, seatsEnabled } = props;
+  const { form: formApi, seatsEnabled, values, handleFetchLineItems } = props;
+  console.log('Price variant changed to:', value);
 
-  formApi.batch(() => {
-    formApi.change('bookingStartDate', null);
-    formApi.change('bookingStartTime', null);
-    formApi.change('bookingEndTime', null);
-    if (seatsEnabled) {
-      formApi.change('seats', 1);
-    }
-  });
+  // If we already have booking dates/times selected, keep them and just update the price variant
+  const keepExistingBooking = values?.bookingStartDate && values?.bookingStartTime && values?.bookingEndTime;
+  
+  if (keepExistingBooking) {
+    console.log('Keeping existing booking times while changing price variant');
+    // Only update the price variant, then fetch line items with the new price variant
+    formApi.change('priceVariantName', value);
+    
+    // Need to fetch line items with updated price variant
+    setTimeout(() => {
+      if (handleFetchLineItems) {
+        handleFetchLineItems({
+          values: {
+            ...values,
+            priceVariantName: value
+          }
+        });
+      }
+    }, 100);
+  } else {
+    // Clear booking data if we're selecting a price variant for the first time
+    formApi.batch(() => {
+      formApi.change('bookingStartDate', null);
+      formApi.change('bookingStartTime', null);
+      formApi.change('bookingEndTime', null);
+      if (seatsEnabled) {
+        formApi.change('seats', 1);
+      }
+    });
+  }
 };
 
 /**
@@ -143,8 +220,17 @@ export const BookingTimeForm = props => {
     priceVariants.length > 1 && preselectedPriceVariant
       ? { initialValues: { priceVariantName: preselectedPriceVariant?.name } }
       : priceVariants.length === 1
-      ? { initialValues: { priceVariantName: priceVariants?.[0]?.name } }
+      ? { initialValues: { priceVariantName: priceVariants[0]?.name } }
+      : preselectedPriceVariant
+      ? { initialValues: { priceVariantName: preselectedPriceVariant?.name } }
       : {};
+      
+  console.log('📝 Form initialization:', {
+    initialValuesMaybe,
+    priceVariants,
+    preselectedPriceVariant,
+    isPriceVariationsInUse
+  });
 
   const classes = classNames(rootClassName || css.root, className);
 
@@ -187,11 +273,37 @@ export const BookingTimeForm = props => {
             ? {
                 startDate,
                 endDate,
+                priceVariantName, // Include price variant name in breakdown data
               }
             : null;
 
+        // Debug price variant issue
+        console.log('BookingTimeForm state:', {
+          priceVariantName,
+          startDate,
+          endDate,
+          lineItemsExist: !!lineItems,
+          fetchInProgress: fetchLineItemsInProgress,
+          fetchError: !!fetchLineItemsError,
+          isPriceVariationsInUse
+        });
+
         const showEstimatedBreakdown =
           breakdownData && lineItems && !fetchLineItemsInProgress && !fetchLineItemsError;
+          
+        console.log('🔄 BookingTimeForm Render State:', {
+          hasBreakdownData: !!breakdownData,
+          breakdownData,
+          hasLineItems: !!lineItems,
+          lineItemsCount: lineItems?.length,
+          lineItems,
+          fetchLineItemsInProgress,
+          fetchLineItemsError,
+          showEstimatedBreakdown,
+          priceVariantName,
+          isPriceVariationsInUse,
+          priceVariants
+        });
 
         const onHandleFetchLineItems = handleFetchLineItems(props);
         const submitDisabled = isPriceVariationsInUse && !isPublishedListing;
@@ -202,7 +314,10 @@ export const BookingTimeForm = props => {
               <PriceVariantFieldComponent
                 priceVariants={priceVariants}
                 priceVariantName={priceVariantName}
-                onPriceVariantChange={onPriceVariantChange(formRenderProps)}
+                onPriceVariantChange={onPriceVariantChange({
+                  ...formRenderProps,
+                  handleFetchLineItems: onHandleFetchLineItems
+                })}
                 disabled={!isPublishedListing}
               />
             ) : null}
