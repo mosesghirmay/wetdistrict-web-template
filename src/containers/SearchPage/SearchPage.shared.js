@@ -127,6 +127,9 @@ export const validURLParamForExtendedData = (
     return hasValidDates ? { [queryParamName]: paramValue } : {};
   } else if (queryParamName === 'seats') {
     return paramValue ? { [queryParamName]: paramValue } : {};
+  } else if (queryParamName === 'capacity') {
+    // Add explicit handling for capacity parameter
+    return paramValue ? { [queryParamName]: paramValue } : {};
   }
 
   // Resolve configurations for extended data filters
