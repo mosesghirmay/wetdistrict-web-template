@@ -273,6 +273,14 @@ class PageComponent extends Component {
 
           <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
           <meta httpEquiv="Content-Language" content={intl.locale} />
+          
+          {/* Add iOS-specific meta tags that help with iMessage previews */}
+          <meta name="apple-mobile-web-app-title" content={socialSharing?.title || pageTitle} />
+          
+          {/* Add legacy meta tags for better compatibility with various platforms */}
+          <meta name="thumbnail" content={facebookImgs[0]?.url} />
+          <link rel="image_src" href={facebookImgs[0]?.url} />
+          
           {metaToHead.map((metaProps, i) => (
             <meta key={i} {...metaProps} />
           ))}

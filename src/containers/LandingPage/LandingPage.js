@@ -14,9 +14,10 @@ const LandingPageComponent = props => {
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
   
-  // Define the custom image paths for the yacht imagery
-  const facebookImagePath = '/images/facebook-preview.jpg';
-  const twitterImagePath = '/images/twitter-preview.jpg';
+  // Define the custom image paths for the yacht imagery with absolute URLs
+  const absoluteRootUrl = config?.marketplaceRootURL || '';
+  const facebookImagePath = `${absoluteRootUrl}/images/facebook-preview.jpg`;
+  const twitterImagePath = `${absoluteRootUrl}/images/twitter-preview.jpg`;
   
   const {
     listings = [],
@@ -54,7 +55,7 @@ const LandingPageComponent = props => {
       '@type': 'Organization',
       name: 'WETDISTRICT',
       description: 'Renting a yacht has never been easier.',
-      image: facebookImagePath,
+      image: facebookImagePath, // Using absolute URL here
       url: config.marketplaceRootURL || '',
       sameAs: [
         // Add your social media URLs here if available
