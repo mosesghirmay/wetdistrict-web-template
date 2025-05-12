@@ -48,14 +48,14 @@
 }
 
 .priceValue {
-  /* Font */
+  /* Typography */
   composes: textSmall from global;
   font-weight: var(--fontWeightSemiBold);
-
-  /* Remove default margins from font */
+  
+  /* Spacing */
   margin-top: 0;
   margin-bottom: 2px;
-
+  
   @media (--viewportMedium) {
     margin-top: 0;
     margin-bottom: 2px;

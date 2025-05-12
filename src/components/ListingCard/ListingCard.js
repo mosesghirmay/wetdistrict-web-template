@@ -24,42 +24,41 @@ const MIN_LENGTH_FOR_LONG_WORDS = 10;
 const priceData = (price, publicData, currency, intl) => {
   const Money = sdkTypes.Money;
   
-  // Helper function to find price variants by name
-  const findVariant = name =>
-    publicData?.priceVariants?.find(pv => pv.name.toLowerCase().includes(name.toLowerCase()));
-  
-  // Helper function to format hourly prices
+  // Format price as hourly rate
   const formatHourly = cents => {
     if (!cents) return null;
-    const hourlyAmount = Math.round(cents / 3); // divide 3-hour session price by 3 for hourly rate
+    const hourlyAmount = Math.round(cents / 3); // divide session price by 3 for hourly rate
     const money = new Money(hourlyAmount, currency);
     return formatMoney(intl, money).replace(/\.\d{2}/, ''); // remove cents
   };
   
-  // Try to find weekday and weekend variants
-  const weekday = findVariant('Weekday');
-  const weekend = findVariant('Weekend');
-  
-  // If we found both variants, return their formatted prices
-  if (weekday?.price && weekend?.price) {
+  // Check if we have price variants
+  if (publicData?.priceVariants && Array.isArray(publicData.priceVariants) && publicData.priceVariants.length > 0) {
+    // Map each variant to a formatted price object
+    const formattedVariants = publicData.priceVariants.map(variant => {
+      return {
+        name: variant.name,
+        formattedPrice: formatHourly(variant.price?.amount)
+      };
+    }).filter(v => v.formattedPrice); // Remove any invalid prices
+    
     return {
-      weekdayPrice: formatHourly(weekday.price.amount),
-      weekendPrice: formatHourly(weekend.price.amount),
-      hasVariants: true
+      hasVariants: formattedVariants.length > 0,
+      variants: formattedVariants
     };
   } 
   
-  // Fallback to using the base price if variants aren't available
+  // Fallback to using the base price
   if (price && price.currency === currency) {
     const formattedPrice = formatHourly(price.amount);
-    
     return {
+      hasVariants: false,
       formattedPrice: `Starting at ${formattedPrice} per hour`,
-      priceTitle: `${formattedPrice} per hour`,
-      hasVariants: false
+      priceTitle: `${formattedPrice} per hour`
     };
   } else if (price) {
     return {
+      hasVariants: false,
       formattedPrice: intl.formatMessage(
         { id: 'ListingCard.unsupportedPrice' },
         { currency: price.currency }
@@ -67,8 +66,7 @@ const priceData = (price, publicData, currency, intl) => {
       priceTitle: intl.formatMessage(
         { id: 'ListingCard.unsupportedPriceTitle' },
         { currency: price.currency }
-      ),
-      hasVariants: false
+      )
     };
   }
   
@@ -84,27 +82,24 @@ const PriceMaybe = props => {
   const validListingTypes = config.listing.listingTypes;
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const showPrice = displayPrice(foundListingTypeConfig);
+  
   if (!showPrice && price) {
     return null;
   }
 
   const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
   const priceInfo = priceData(price, publicData, config.currency, intl);
-  const { formattedPrice, priceTitle, hasVariants, weekdayPrice, weekendPrice } = priceInfo;
+  const { formattedPrice, priceTitle, hasVariants, variants } = priceInfo;
 
-  // Return differently based on whether we found price variants
   return (
     <div className={css.price}>
       {hasVariants ? (
-        // Show both weekday and weekend prices
-        <>
-          <div className={css.priceValue} title={`Weekday rate: ${weekdayPrice}`}>
-            {weekdayPrice} per hour weekdays
+        // Show all price variants with their names
+        variants.map((variant, index) => (
+          <div key={index} className={css.priceValue}>
+            {variant.formattedPrice} per hour {variant.name}
           </div>
-          <div className={css.priceValue} title={`Weekend rate: ${weekendPrice}`}>
-            {weekendPrice} per hour weekends
-          </div>
-        </>
+        ))
       ) : (
         // Fallback to single price display
         <div className={css.priceValue} title={priceTitle}>
