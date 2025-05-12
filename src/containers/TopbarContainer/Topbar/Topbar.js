@@ -297,6 +297,14 @@ class TopbarComponent extends React.Component {
           alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
           linkToExternalSite={config?.topbar?.logoLink}
         />
+        
+        {/* Centered logo */}
+        <img 
+          src="/images/WrittenLogo.png" 
+          alt="Wet District" 
+          className={css.centeredLogo} 
+        />
+        
         <Button
           rootClassName={css.menu}
           onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}

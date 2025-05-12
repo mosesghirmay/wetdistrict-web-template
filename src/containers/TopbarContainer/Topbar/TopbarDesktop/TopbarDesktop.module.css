@@ -12,6 +12,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 0 12px 0 0;
+  position: relative; /* For absolute positioning of centered logo */
 
   /* fill */
   background-color: var(--colorWhite);
@@ -22,6 +23,15 @@
   @media (--viewportLarge) {
     padding: 0 24px 0 0;
   }
+}
+
+.centeredLogo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 40px; /* Restored to original size */
+  z-index: 1;
 }
 
 /* logo */

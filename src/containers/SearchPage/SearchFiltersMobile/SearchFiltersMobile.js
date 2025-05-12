@@ -98,17 +98,30 @@ class SearchFiltersMobileComponent extends Component {
       <div className={classes}>
         {/* Results count removed */}
         <div className={css.buttons}>
-          <PopupOpenerButton isSelected={selectedFiltersCount > 0} toggleOpen={this.openFilters}>
-            <FormattedMessage
-              id="SearchFiltersMobile.filtersButtonLabel"
-              className={css.mapIconText}
-            />
-          </PopupOpenerButton>
-
-          {sortByComponent}
+          <div className={css.buttonWrapper}>
+            <PopupOpenerButton isSelected={selectedFiltersCount > 0} toggleOpen={this.openFilters}>
+              <FormattedMessage
+                id="SearchFiltersMobile.filtersButtonLabel"
+                className={css.mapIconText}
+              />
+            </PopupOpenerButton>
+          </div>
+          <a 
+            href="https://wetdistrict.com/p/yachtclub" 
+            className={css.yachtButton}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            5.24 Yacht Party
+          </a>
+          <div className={css.buttonWrapper}>
+            {sortByComponent}
+          </div>
           {isMapVariant ? (
-            <div className={css.mapIcon} onClick={onMapIconClick}>
-              <FormattedMessage id="SearchFiltersMobile.openMapView" className={css.mapIconText} />
+            <div className={css.buttonWrapper}>
+              <div className={css.mapIcon} onClick={onMapIconClick}>
+                <FormattedMessage id="SearchFiltersMobile.openMapView" className={css.mapIconText} />
+              </div>
             </div>
           ) : null}
         </div>

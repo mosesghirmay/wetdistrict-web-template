@@ -186,7 +186,13 @@ const TopbarDesktop = props => {
         alt={intl.formatMessage({ id: 'TopbarDesktop.logo' }, { marketplaceName })}
         linkToExternalSite={config?.topbar?.logoLink}
       />
-      {/* Search form removed */}
+      
+      {/* Centered logo */}
+      <img 
+        src="/images/WrittenLogo.png" 
+        alt="Wet District" 
+        className={css.centeredLogo} 
+      />
 
       <CustomLinksMenu
         currentPage={currentPage}
