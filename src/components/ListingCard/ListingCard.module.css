@@ -41,7 +41,7 @@
 .price {
   /* Layout */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   flex-shrink: 0;
   margin-bottom: 4px;
@@ -54,11 +54,11 @@
 
   /* Remove default margins from font */
   margin-top: 0;
-  margin-bottom: 0;
+  margin-bottom: 2px;
 
   @media (--viewportMedium) {
     margin-top: 0;
-    margin-bottom: 0;
+    margin-bottom: 2px;
   }
 }
 

@@ -21,19 +21,42 @@ import css from './ListingCard.module.css';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
-const priceData = (price, currency, intl) => {
+const priceData = (price, publicData, currency, intl) => {
   const Money = sdkTypes.Money;
-
+  
+  // Helper function to find price variants by name
+  const findVariant = name =>
+    publicData?.priceVariants?.find(pv => pv.name.toLowerCase().includes(name.toLowerCase()));
+  
+  // Helper function to format hourly prices
+  const formatHourly = cents => {
+    if (!cents) return null;
+    const hourlyAmount = Math.round(cents / 3); // divide 3-hour session price by 3 for hourly rate
+    const money = new Money(hourlyAmount, currency);
+    return formatMoney(intl, money).replace(/\.\d{2}/, ''); // remove cents
+  };
+  
+  // Try to find weekday and weekend variants
+  const weekday = findVariant('Weekday');
+  const weekend = findVariant('Weekend');
+  
+  // If we found both variants, return their formatted prices
+  if (weekday?.price && weekend?.price) {
+    return {
+      weekdayPrice: formatHourly(weekday.price.amount),
+      weekendPrice: formatHourly(weekend.price.amount),
+      hasVariants: true
+    };
+  } 
+  
+  // Fallback to using the base price if variants aren't available
   if (price && price.currency === currency) {
-    // Calculate hourly price
-    const hourlyAmount = Math.round(price.amount / 3); // divide session price by 3
-    const hourlyPrice = new Money(hourlyAmount, price.currency);
-
-    const formattedPrice = formatMoney(intl, hourlyPrice).replace(/\.\d{2}/, ''); // remove cents
-
+    const formattedPrice = formatHourly(price.amount);
+    
     return {
       formattedPrice: `Starting at ${formattedPrice} per hour`,
       priceTitle: `${formattedPrice} per hour`,
+      hasVariants: false
     };
   } else if (price) {
     return {
@@ -45,9 +68,11 @@ const priceData = (price, currency, intl) => {
         { id: 'ListingCard.unsupportedPriceTitle' },
         { currency: price.currency }
       ),
+      hasVariants: false
     };
   }
-  return {};
+  
+  return { hasVariants: false };
 };
 
 
@@ -64,19 +89,28 @@ const PriceMaybe = props => {
   }
 
   const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
-  const { formattedPrice, priceTitle } = priceData(price, config.currency, intl);
+  const priceInfo = priceData(price, publicData, config.currency, intl);
+  const { formattedPrice, priceTitle, hasVariants, weekdayPrice, weekendPrice } = priceInfo;
 
+  // Return differently based on whether we found price variants
   return (
     <div className={css.price}>
-      <div className={css.priceValue} title={priceTitle}>
-        {formattedPrice}
-      </div>
-      {isBookable ? (
-        <div className={css.perUnit}>
-          {' '}
-          <FormattedMessage id="ListingCard.perUnit" values={{ unitType: publicData?.unitType }} />
+      {hasVariants ? (
+        // Show both weekday and weekend prices
+        <>
+          <div className={css.priceValue} title={`Weekday rate: ${weekdayPrice}`}>
+            {weekdayPrice} per hour weekdays
+          </div>
+          <div className={css.priceValue} title={`Weekend rate: ${weekendPrice}`}>
+            {weekendPrice} per hour weekends
+          </div>
+        </>
+      ) : (
+        // Fallback to single price display
+        <div className={css.priceValue} title={priceTitle}>
+          {formattedPrice}
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
