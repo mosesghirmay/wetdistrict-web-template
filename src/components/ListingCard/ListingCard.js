@@ -150,21 +150,9 @@ export const ListingCardComponent = ({
               longWordClass: css.longWord,
             })}
           </div>
-          {/* Temporary debug element to help diagnose structure in production */}
-          <div className={css.debugElement}>
-            ENV: {process.env.NODE_ENV || 'unknown'} 
-            | Has Data: {publicData ? 'YES' : 'NO'}
-            | Keys: {publicData ? Object.keys(publicData).join(',') : 'none'}
-          </div>
-        
           <div className={css.guests}>
-            {/* Implementation with added debug element and forced display for production */}
             {(() => {
               try {
-                // Force logging in all environments to debug production issues
-                console.log('WETDISTRICT ListingCard - publicData:', 
-                  typeof publicData === 'object' ? JSON.stringify(publicData) : publicData);
-                
                 // Get capacity from either guests or capacity with multiple fallbacks
                 let guestCount = null;
                 
