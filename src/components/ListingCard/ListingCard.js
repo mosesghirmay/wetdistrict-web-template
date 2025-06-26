@@ -21,19 +21,41 @@ import css from './ListingCard.module.css';
 
 const MIN_LENGTH_FOR_LONG_WORDS = 10;
 
-const priceData = (price, currency, intl) => {
+const priceData = (price, publicData, currency, intl) => {
   const Money = sdkTypes.Money;
-
+  
+  // Helper function to format hourly prices
+  const formatHourly = cents => {
+    if (!cents) return null;
+    const hourlyAmount = Math.round(cents / 3); // divide 3-hour session price by 3 for hourly rate
+    const money = new Money(hourlyAmount, currency);
+    return formatMoney(intl, money).replace(/\.\d{2}/, ''); // remove cents
+  };
+  
+  // Process all price variants if they exist
+  if (publicData?.priceVariants && publicData.priceVariants.length > 0) {
+    const variants = publicData.priceVariants.map(variant => ({
+      name: variant.name,
+      price: formatHourly(variant.price?.amount || variant.priceInSubunits)
+    })).filter(v => v.name && v.price); // Ensure we have both name and price
+    
+    // If we have valid variants
+    if (variants.length > 0) {
+      return {
+        variants,
+        hasVariants: variants.length > 0
+      };
+    }
+  }
+  
+  // Fallback to using the base price if variants aren't available
   if (price && price.currency === currency) {
-    // Calculate hourly price
-    const hourlyAmount = Math.round(price.amount / 3); // divide session price by 3
-    const hourlyPrice = new Money(hourlyAmount, price.currency);
-
-    const formattedPrice = formatMoney(intl, hourlyPrice).replace(/\.\d{2}/, ''); // remove cents
-
+    const formattedPrice = formatHourly(price.amount);
+    
     return {
-      formattedPrice: `Starting at ${formattedPrice} per hour`,
+      formattedPrice: formattedPrice,
       priceTitle: `${formattedPrice} per hour`,
+      hasVariants: false
     };
   } else if (price) {
     return {
@@ -45,9 +67,11 @@ const priceData = (price, currency, intl) => {
         { id: 'ListingCard.unsupportedPriceTitle' },
         { currency: price.currency }
       ),
+      hasVariants: false
     };
   }
-  return {};
+  
+  return { hasVariants: false };
 };
 
 
@@ -64,19 +88,27 @@ const PriceMaybe = props => {
   }
 
   const isBookable = isBookingProcessAlias(publicData?.transactionProcessAlias);
-  const { formattedPrice, priceTitle } = priceData(price, config.currency, intl);
+  const { formattedPrice, priceTitle, hasVariants, variants } = priceData(price, publicData, config.currency, intl);
 
+  // Return differently based on whether we found price variants
   return (
     <div className={css.price}>
-      <div className={css.priceValue} title={priceTitle}>
-        {formattedPrice}
-      </div>
-      {isBookable ? (
-        <div className={css.perUnit}>
-          {' '}
-          <FormattedMessage id="ListingCard.perUnit" values={{ unitType: publicData?.unitType }} />
+      {hasVariants && variants?.length > 0 ? (
+        // Show all price variants with modern styling
+        variants.map((variant, index) => (
+          <div key={`variant-${index}`} className={css.priceValue} title={`${variant.name}: ${variant.price}`}>
+            <span className={css.priceNumber}>{variant.price}</span>
+            <span className={css.priceLabel}>/hr</span>
+            {variant.name && <span className={css.priceLabel}> · {variant.name}</span>}
+          </div>
+        ))
+      ) : (
+        // Fallback to single price display
+        <div className={css.priceValue} title={priceTitle}>
+          <span className={css.priceNumber}>{formattedPrice}</span>
+          <span className={css.priceLabel}> /hr</span>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
@@ -96,6 +128,8 @@ export const ListingCardComponent = ({
   const currentListing = ensureListing(listing);
   const id = currentListing.id.uuid;
   let { title = '', price, publicData } = currentListing.attributes;
+  
+  // Remove development debug logs
   
   // Replace double quotes with single quotes to signify feet
   title = title.replace(/"/g, "'");
@@ -144,21 +178,49 @@ export const ListingCardComponent = ({
       </AspectRatioWrapper>
       <div className={css.info}>
         <div className={css.mainInfo}>
-          <div className={css.title}>
-            {richText(title, {
-              longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
-              longWordClass: css.longWord,
-            })}
-          </div>
-          <div className={css.guests}>
-            {/* Try to get capacity from either guests or capacity field */}
-            {publicData && (
-              typeof publicData.guests !== 'undefined' 
-              ? `${publicData.guests} guests` 
-              : typeof publicData.capacity !== 'undefined'
-                ? `${publicData.capacity} guests`
-                : '2 guests'
-            )}
+          <div className={css.titleRow}>
+            <div className={css.title}>
+              {richText(title, {
+                longWordMinLength: MIN_LENGTH_FOR_LONG_WORDS,
+                longWordClass: css.longWord,
+              })}
+            </div>
+            <div className={css.guests}>
+              {(() => {
+                try {
+                  // Get capacity from either guests or capacity with multiple fallbacks
+                  let guestCount = null;
+                  
+                  // Method 1: Direct publicData.guests access
+                  if (publicData && publicData.guests != null) {
+                    const num = Number(publicData.guests);
+                    if (!isNaN(num) && num > 0) guestCount = num;
+                  }
+                  // Method 2: Direct publicData.capacity access
+                  else if (publicData && publicData.capacity != null) {
+                    const num = Number(publicData.capacity);
+                    if (!isNaN(num) && num > 0) guestCount = num;
+                  }
+                  // Method 3: Nested publicData.attributes.guests access
+                  else if (publicData && publicData.attributes && publicData.attributes.guests != null) {
+                    const num = Number(publicData.attributes.guests);
+                    if (!isNaN(num) && num > 0) guestCount = num;
+                  }
+                  // Method 4: Nested publicData.attributes.capacity access
+                  else if (publicData && publicData.attributes && publicData.attributes.capacity != null) {
+                    const num = Number(publicData.attributes.capacity);
+                    if (!isNaN(num) && num > 0) guestCount = num;
+                  }
+                  
+                  // If we have valid guest count, show it with streamlined format
+                  const count = guestCount !== null ? guestCount : 2;
+                  return `${count} guests`;
+                } catch (error) {
+                  console.error('Error in guest display:', error);
+                  return '2 guests'; // Fallback in case of any error
+                }
+              })()}
+            </div>
           </div>
           <PriceMaybe price={price} publicData={publicData} config={config} intl={intl} />
         </div>

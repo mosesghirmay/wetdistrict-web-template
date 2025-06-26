@@ -11,10 +11,10 @@
   top: var(--topbarHeight);
   z-index: calc(var(--zIndexTopbar) - 1);
   margin-top: 0;
-  padding-top: 0;
+  padding-top: 12px;
   
   /* Add box shadow for visual separation */
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0.1);
   
   /* Remove any margin between topbar and filters */
   margin: 0;
@@ -41,22 +41,86 @@
 
 .buttons {
   display: flex;
+  gap: 8px; /* Ensures consistent spacing between all buttons */
+  width: 100%;
+  justify-content: space-between;
+}
+
+.buttonWrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.buttonWrapper > button,
+.buttonWrapper > div {
+  width: 100%;
 }
 
 .mapIcon {
   /* Font */
   composes: marketplaceTinyFontStyles from global;
   font-weight: var(--fontWeightMedium);
+  text-align: center;
 
   /* background map image */
   background-image: url(./images/map_icon216x105.png);
   background-size: cover;
 
   border-radius: 3px;
-  width: 72px;
+  width: 100%;
   height: 35px;
-  padding: 9px 22px;
+  padding: 9px 0;
   margin: 0;
+  line-height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.yachtButton {
+  /* Exact same font styling as PopupOpenerButton */
+  font-weight: var(--fontWeightMedium);
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.2px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--colorBlack);
+
+  /* Button styling to exactly match other buttons */
+  display: inline-block;
+  flex: 1; /* Make button take equal space */
+  width: 100%; /* Full width within its flex space */
+  height: 35px;
+  min-height: 35px;
+  padding: 0 10px; /* Reduced padding to fit text */
+  margin: 0; /* Remove margin to match other buttons */
+  border-radius: var(--borderRadiusMedium);
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  transition: all var(--transitionStyleButton);
+  cursor: pointer;
+  line-height: 35px; /* Center text vertically */
+  white-space: nowrap; /* Prevent text wrapping */
+
+  &:hover,
+  &:focus {
+    border-color: var(--colorGrey300);
+    text-decoration: none;
+    outline: none;
+    box-shadow: var(--boxShadowFilterButton);
+  }
+
+  @media (--viewportMedium) {
+    height: auto;
+    min-height: 0;
+    padding: var(--marketplaceButtonSmallDesktopPadding);
+    margin: 0;
+    font-weight: var(--fontWeightMedium);
+    font-size: 13px;
+    line-height: 20px;
+  }
 }
 
 .modalContainer {

@@ -63,6 +63,13 @@ export const priceFilter = {
 //   schemaType: 'keywords',
 // }
 
+// Enable seatsFilter for filtering by guest capacity
+export const seatsFilter = {
+  enabled: true,
+  schemaType: 'seats',
+  label: 'Guests',
+};
+
 export const sortConfig = {
   // Enable/disable the sorting control in the SearchPage
   active: true,

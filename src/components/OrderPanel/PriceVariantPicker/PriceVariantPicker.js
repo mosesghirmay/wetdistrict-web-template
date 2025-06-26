@@ -8,7 +8,7 @@ import { FieldSelect } from '../../../components';
 
 import css from './PriceVariantPicker.module.css';
 
-const DEFAULT_PRICE_VARIANT_NAME = 'default-variant-name';
+// Removed DEFAULT_PRICE_VARIANT_NAME constant
 
 const VariantNameMaybe = props => {
   const { className, priceVariant } = props;
@@ -23,9 +23,9 @@ const VariantNameMaybe = props => {
 };
 
 const FieldHidden = props => {
-  const { name, ...rest } = props;
+  const { name, value, ...rest } = props;
   return (
-    <Field id={name} name={name} type="hidden" className={css.hidden} {...rest}>
+    <Field id={name} name={name} type="hidden" className={css.hidden} value={value} {...rest}>
       {fieldRenderProps => <input {...fieldRenderProps?.input} />}
     </Field>
   );
@@ -62,13 +62,7 @@ const PriceVariantPicker = props => {
       <VariantNameMaybe priceVariant={priceVariants?.[0]} className={css.priceVariantName} />
       <FieldHidden
         name="priceVariantName"
-        format={value => {
-          return value == null ? DEFAULT_PRICE_VARIANT_NAME : value;
-        }}
-        parse={value => {
-          const response = value === DEFAULT_PRICE_VARIANT_NAME ? null : value;
-          return response;
-        }}
+        value={priceVariants[0].name}
       />
     </>
   ) : null;

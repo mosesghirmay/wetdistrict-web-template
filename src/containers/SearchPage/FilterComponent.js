@@ -192,6 +192,19 @@ const FilterComponent = props => {
       
       // Use CapacityFilter for the capacity field specifically
       if (key === 'capacity') {
+        // Add debug logging in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.log('FilterComponent - rendering CapacityFilter', {
+            componentId,
+            name,
+            queryParamNames,
+            minimum,
+            maximum,
+            step,
+            initialValues: initialValues(queryParamNames, liveEdit)
+          });
+        }
+        
         return (
           <CapacityFilter
             id={componentId}

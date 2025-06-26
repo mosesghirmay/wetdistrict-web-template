@@ -89,6 +89,8 @@ const defaultConfig = {
   // Note 1: The path must match the path defined in Asset Delivery API
   // Note 2: If you customize the app and rely on custom code instead of a config assets,
   //         you should remove the unnecessary config asset from this list.
+  appCdnBaseUrl: `https://cdn.st-api.com/v1/assets/pub/${process.env.REACT_APP_SHARETRIBE_SDK_CLIENT_ID}`,
+  
   appCdnAssets: {
     translations: '/content/translations.json',
     footer: '/content/footer.json',

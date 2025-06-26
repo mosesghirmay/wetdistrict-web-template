@@ -35,31 +35,43 @@
   /* Layout */
   display: flex;
   flex-direction: column;
-  padding: 14px 0 2px 0;
+  padding: 14px 2px 2px 2px; /* Added horizontal padding to ensure alignment with card edge */
 }
 
 .price {
   /* Layout */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   flex-shrink: 0;
   margin-bottom: 4px;
+  margin-top: 8px;
 }
 
 .priceValue {
-  /* Font */
+  /* Typography */
   composes: textSmall from global;
-  font-weight: var(--fontWeightSemiBold);
-
-  /* Remove default margins from font */
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+  
+  /* Spacing */
   margin-top: 0;
-  margin-bottom: 0;
-
+  margin-bottom: 4px;
+  
   @media (--viewportMedium) {
     margin-top: 0;
-    margin-bottom: 0;
+    margin-bottom: 4px;
   }
+}
+
+.priceNumber {
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--marketplaceColor);
+}
+
+.priceLabel {
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
 }
 
 .perUnit {
@@ -87,12 +99,20 @@
   flex-direction: column;
 }
 
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
 .title {
   /* Font */
   composes: textSmall from global;
   font-weight: var(--fontWeightBold);
   color: var(--colorGrey700);
   margin: 0;
+  flex: 1;
 }
 
 .authorInfo {
@@ -135,8 +155,10 @@
   /* Font */
   composes: textSmall from global;
   font-size: 14px;
-  color: var(--colorGrey700);
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey600);
   margin: 0;
-  margin-top: 4px;
-  margin-bottom: 8px;
+  text-align: right;
+  padding-left: 12px;
+  white-space: nowrap;
 }

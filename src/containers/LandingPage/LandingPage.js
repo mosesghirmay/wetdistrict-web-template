@@ -13,6 +13,13 @@ const LandingPageComponent = props => {
   const intl = useIntl();
   const config = useConfiguration();
   const routeConfiguration = useRouteConfiguration();
+  
+  // Define the custom image paths for the yacht imagery with absolute URLs
+  const absoluteRootUrl = config?.marketplaceRootURL || '';
+  // Use the dedicated iMessage preview image for Facebook (also used by iMessage)
+  const facebookImagePath = `${absoluteRootUrl}/images/wetdistrict-imessage-preview.jpg`;
+  const twitterImagePath = `${absoluteRootUrl}/images/twitter-preview.jpg`;
+  
   const {
     listings = [],
     searchParams = {},
@@ -21,9 +28,42 @@ const LandingPageComponent = props => {
   // Only create landingPageData if we have all required data
   // This will prevent the "Cannot read properties of undefined" error
   const landingPageData = config && routeConfiguration ? {
-    title: config.marketplaceName || 'Marketplace',
-    description: '',
-    schema: {}
+    title: 'WETDISTRICT - Yacht Rentals',
+    description: 'Renting a yacht has never been easier.',
+    socialSharing: {
+      title: 'WETDISTRICT - Yacht Rentals',
+      description: 'Renting a yacht has never been easier.',
+      images1200: [
+        {
+          name: 'facebook',
+          url: facebookImagePath,
+          width: 1200,
+          height: 630,
+        }
+      ],
+      images600: [
+        {
+          name: 'twitter',
+          url: twitterImagePath,
+          width: 600,
+          height: 314,
+        }
+      ]
+    },
+    // You can add additional schema metadata for SEO if needed
+    schema: {
+      '@context': 'http://schema.org',
+      '@type': 'Organization',
+      name: 'WETDISTRICT',
+      description: 'Renting a yacht has never been easier.',
+      image: facebookImagePath, // Using absolute URL here
+      url: config.marketplaceRootURL || '',
+      sameAs: [
+        // Add your social media URLs here if available
+        // 'https://www.facebook.com/wetdistrict',
+        // 'https://www.instagram.com/wetdistrict',
+      ],
+    }
   } : null;
 
   return <SearchPage 

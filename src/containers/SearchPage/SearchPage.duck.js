@@ -249,9 +249,19 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
     return hasDatesFilterInUse && seatsFilter ? { seats } : {};
   };
   
-  // No special handling for capacity parameter
-  const capacitySearchParams = () => {
-    return {};
+  // Handle capacity parameter similar to seats parameter
+  const capacitySearchParams = (capacity) => {
+    // Log capacity value in development mode to help with debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Search - capacitySearchParams capacity value:', capacity);
+    }
+    
+    // Convert capacity to a number and ensure it's valid
+    const capacityNum = capacity ? Number(capacity) : null;
+    const isValidCapacity = capacityNum && !isNaN(capacityNum) && capacityNum > 0;
+    
+    // If capacity is a valid number, return it in the search params
+    return isValidCapacity ? { capacity: capacityNum } : {};
   };
 
   const {
@@ -270,6 +280,10 @@ export const searchListings = (searchParams, config) => (dispatch, getState, sdk
   const datesMaybe = datesSearchParams(dates);
   const stockMaybe = stockFilters(datesMaybe);
   const seatsMaybe = seatsSearchParams(seats, datesMaybe);
+  // Process the capacity parameter and log it in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.log('SearchPage.duck.js - capacity parameter:', capacity);
+  }
   const capacityMaybe = capacitySearchParams(capacity);
   const sortMaybe = sort === config.search.sortConfig.relevanceKey ? {} : { sort };
 
@@ -374,6 +388,10 @@ export const loadData = (params, search, config) => (dispatch, getState, sdk) =>
         'publicData.transactionProcessAlias',
         'publicData.unitType',
         'publicData.capacity',
+        'publicData.guests',
+        // Explicitly include these fields to ensure they're available
+        'attributes.publicData.capacity',
+        'attributes.publicData.guests',
         // These help rendering of 'purchase' listings,
         // when transitioning from search page to listing page
         'publicData.pickupEnabled',

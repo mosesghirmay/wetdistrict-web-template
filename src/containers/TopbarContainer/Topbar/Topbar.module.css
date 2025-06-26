@@ -21,6 +21,7 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  position: relative; /* For absolute positioning of centered logo */
 
   /* fill */
   background-color: var(--colorWhite);
@@ -34,6 +35,19 @@
 
   @media (--viewportLarge) {
     display: none;
+  }
+}
+
+.centeredLogo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 40px; /* Increased from 30px to 40px for mobile */
+  z-index: 1;
+
+  @media (--viewportMedium) {
+    height: 50px; /* Increased from 40px to 50px for tablet/medium screens */
   }
 }
 

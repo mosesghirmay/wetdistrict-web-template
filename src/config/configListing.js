@@ -53,6 +53,32 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
+  // Add capacity as a filterable listing field
+  {
+    "key": "capacity",
+    "scope": "public",
+    "label": "Capacity",
+    "schemaType": "long",
+    "numberConfig": {
+      "minimum": 1,
+      "maximum": 50
+    },
+    "filterConfig": {
+      "indexForSearch": true,
+      "group": "primary",
+      "label": "Guests"
+    },
+    "showConfig": {
+      "label": "Capacity",
+      "isDetail": true
+    },
+    "saveConfig": {
+      "label": "Capacity",
+      "placeholderMessage": "Enter the number of guests",
+      "isRequired": true,
+      "requiredMessage": "Please specify the capacity"
+    }
+  },
   // {
   //   "scope": "public",
   //   "label": "Gears",
