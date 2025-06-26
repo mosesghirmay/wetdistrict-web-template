@@ -304,8 +304,11 @@ const fetchMonthData = (
     };
 
     // Fetch time slots for given time range
-    onFetchTimeSlots(listingId, start, end, timeZone, options);
+    return onFetchTimeSlots(listingId, start, end, timeZone, options);
   }
+  
+  // Return resolved promise when no fetch is needed
+  return Promise.resolve();
 };
 
 const handleMonthClick = (
@@ -442,23 +445,31 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 
   // Note: the first fetch for start-times (and line-items) is using monthlyTimeSlots.
   // This fetches all the date-specific time slots, which are update to option list asynchronously.
-  onFetchTimeSlots(listingId, startLimit, endLimit, timeZone, {
+  const fetchPromise = onFetchTimeSlots(listingId, startLimit, endLimit, timeZone, {
     useFetchTimeSlotsForDate: true,
-  }).then(timeSlots => {
-    updateBookingFieldsOnStartDateChange({
-      timeSlotsOnDate: timeSlots,
-      ...commonParamsForUpdateBookingFields,
-    });
-
-    handleFetchLineItems({
-      values: {
-        priceVariantName,
-        bookingStartTime: startTime,
-        bookingEndTime: endTime,
-        seats: seatsEnabled ? 1 : undefined,
-      },
-    });
   });
+  
+  if (fetchPromise && typeof fetchPromise.then === 'function') {
+    fetchPromise.then(timeSlots => {
+      updateBookingFieldsOnStartDateChange({
+        timeSlotsOnDate: timeSlots,
+        ...commonParamsForUpdateBookingFields,
+      });
+
+      handleFetchLineItems({
+        values: {
+          priceVariantName,
+          bookingStartTime: startTime,
+          bookingEndTime: endTime,
+          seats: seatsEnabled ? 1 : undefined,
+        },
+      });
+    }).catch(error => {
+      console.error('Error fetching time slots:', error);
+    });
+  } else {
+    console.warn('onFetchTimeSlots did not return a Promise');
+  }
 };
 
 const onBookingStartTimeChange = props => value => {
@@ -473,7 +484,6 @@ const onBookingStartTimeChange = props => value => {
     values,
     handleFetchLineItems,
     seatsEnabled,
-    values,
   } = props;
   const priceVariantName = values.priceVariantName || null;
   const startDate = values.bookingStartDate.date;
@@ -492,7 +502,6 @@ const onBookingStartTimeChange = props => value => {
   });
   
   // Include the price variant name when fetching line items
-  const priceVariantName = values?.priceVariantName;
   console.log('Including price variant in line items fetch:', priceVariantName);
   
   handleFetchLineItems({
@@ -517,7 +526,6 @@ const onBookingEndTimeChange = props => value => {
   }
 
   // Include the price variant name when fetching line items
-  const priceVariantName = values?.priceVariantName;
   console.log('End time change with price variant:', priceVariantName);
 
   handleFetchLineItems({
@@ -744,15 +752,9 @@ const FieldDateAndTimeInput = props => {
   };
 
   const isDayBlocked = day => {
-    const timeOfDay = timeOfDayFromLocalToTimeZone(day, timeZone);
-    const dayInListingTZ = getStartOf(timeOfDay, 'day', timeZone);
-
-    const dateIdString = stringifyDateToISO8601(dayInListingTZ, timeZone);
-    const timeSlotData = monthlyTimeSlotsData[dateIdString];
-    
     // For price variant listings, we'll use fixed time slots so we can allow all days
     // This ensures time slots are available regardless of the price variant
-    return false; // !timeSlotData?.hasAvailability;
+    return false;
   };
 
   let placeholderTime = getPlaceholder('08:00', intl, timeZone);
