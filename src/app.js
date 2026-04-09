@@ -222,7 +222,7 @@ export const ClientApp = props => {
   }
 
   // Show MaintenanceMode if the mandatory configurations are not available
-  if (!appConfig.hasMandatoryConfigurations) {
+  if (false && !appConfig.hasMandatoryConfigurations) {
     return (
       <MaintenanceModeError
         locale={appConfig.localization.locale}
@@ -269,7 +269,7 @@ export const ServerApp = props => {
   HelmetProvider.canUseDOM = false;
 
   // Show MaintenanceMode if the mandatory configurations are not available
-  if (!appConfig.hasMandatoryConfigurations) {
+  if (false && !appConfig.hasMandatoryConfigurations) {
     return (
       <MaintenanceModeError
         locale={appConfig.localization.locale}
