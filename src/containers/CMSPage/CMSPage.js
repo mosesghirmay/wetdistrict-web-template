@@ -7,6 +7,8 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import NotFoundPage from '../../containers/NotFoundPage/NotFoundPage';
+import YachtClubVideoHero from './YachtClubVideoHero';
+
 const PageBuilder = loadable(() =>
   import(/* webpackChunkName: "PageBuilder" */ '../PageBuilder/PageBuilder')
 );
@@ -19,12 +21,17 @@ export const CMSPageComponent = props => {
     return <NotFoundPage staticContext={props.staticContext} />;
   }
 
+  const isYachtClub = pageId === 'yachtclub';
+
   return (
-    <PageBuilder
-      pageAssetsData={pageAssetsData?.[pageId]?.data}
-      inProgress={inProgress}
-      schemaType="Article"
-    />
+    <>
+      {isYachtClub && <YachtClubVideoHero />}
+      <PageBuilder
+        pageAssetsData={pageAssetsData?.[pageId]?.data}
+        inProgress={inProgress}
+        schemaType="Article"
+      />
+    </>
   );
 };
 
