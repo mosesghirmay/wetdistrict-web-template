@@ -13,6 +13,9 @@ const PageBuilder = loadable(() =>
   import(/* webpackChunkName: "PageBuilder" */ '../PageBuilder/PageBuilder')
 );
 
+// Synthetic section type that renders the video inside the PageBuilder layout
+const YACHT_VIDEO_SECTION = { sectionType: 'yacht-club-video', sectionId: 'promo-video' };
+
 export const CMSPageComponent = props => {
   const { params, pageAssetsData, inProgress, error } = props;
   const pageId = params.pageId || props.pageId;
@@ -22,16 +25,25 @@ export const CMSPageComponent = props => {
   }
 
   const isYachtClub = pageId === 'yachtclub';
+  const rawData = pageAssetsData?.[pageId]?.data;
+
+  // For the yacht club page, prepend the video as the first section so it
+  // renders inside the existing layout (below the topbar).
+  const pageData = isYachtClub
+    ? { ...rawData, sections: [YACHT_VIDEO_SECTION, ...(rawData?.sections || [])] }
+    : rawData;
+
+  const options = isYachtClub
+    ? { sectionComponents: { 'yacht-club-video': { component: YachtClubVideoHero } } }
+    : undefined;
 
   return (
-    <>
-      {isYachtClub && <YachtClubVideoHero />}
-      <PageBuilder
-        pageAssetsData={pageAssetsData?.[pageId]?.data}
-        inProgress={inProgress}
-        schemaType="Article"
-      />
-    </>
+    <PageBuilder
+      pageAssetsData={pageData}
+      inProgress={inProgress}
+      schemaType="Article"
+      options={options}
+    />
   );
 };
 

@@ -7,8 +7,9 @@ const EMBED_URL = `https://drive.google.com/file/d/${DRIVE_FILE_ID}/preview`;
 /**
  * Full-width 9:16 vertical video hero for the Yacht Club page.
  * Embeds the promo video from Google Drive via iframe.
+ * Receives section props from SectionBuilder but ignores them.
  */
-const YachtClubVideoHero = () => {
+const YachtClubVideoHero = _props => {
   return (
     <div className={css.root}>
       <div className={css.videoWrapper}>
