@@ -112,7 +112,7 @@ class SearchFiltersMobileComponent extends Component {
             target="_blank"
             rel="noopener noreferrer"
           >
-            AUG 17 YACHT PARTY
+            MD WKND YACHT PARTIES
           </a>
           <div className={css.buttonWrapper}>
             {sortByComponent}
