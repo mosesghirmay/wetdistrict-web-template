@@ -53,6 +53,20 @@
  *   - requiredMessage (optional):    Message for those fields, which are mandatory.
  */
 export const listingFields = [
+  // Promo video URL (9:16 vertical MP4 shown on the listing page)
+  {
+    key: 'promoVideoUrl',
+    scope: 'public',
+    schemaType: 'text',
+    showConfig: {
+      label: 'Promo Video',
+    },
+    saveConfig: {
+      label: 'Promo Video URL',
+      placeholderMessage: 'https://... (direct link to an MP4 file)',
+      isRequired: false,
+    },
+  },
   // Add capacity as a filterable listing field
   {
     "key": "capacity",

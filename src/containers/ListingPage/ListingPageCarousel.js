@@ -82,6 +82,7 @@ import SectionAuthorMaybe from './SectionAuthorMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
 import SectionGallery from './SectionGallery';
 import CustomListingFields from './CustomListingFields';
+import SectionVerticalVideoMaybe from './SectionVerticalVideoMaybe';
 
 import css from './ListingPage.module.css';
 
@@ -345,6 +346,7 @@ export const ListingPageComponent = props => {
               </H4>
             </div>
             <SectionTextMaybe text={description} showAsIngress />
+            <SectionVerticalVideoMaybe videoUrl={publicData.promoVideoUrl} />
 
             <CustomListingFields
               publicData={publicData}
