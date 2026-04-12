@@ -69,17 +69,33 @@ const getResolvedCustomLinks = (customLinks, routeConfiguration) => {
   const links = Array.isArray(customLinks) ? customLinks : [];
   return links.map(linkConfig => {
     const { type, href } = linkConfig;
-    const isInternalLink = type === 'internal' || href.charAt(0) === '/';
+
+    // Normalize absolute URLs that point to the production domain into relative
+    // paths so they work correctly in local development too.
+    // e.g. "https://www.wetdistrict.com/s" → "/s"
+    let resolvedHref = href;
+    try {
+      const parsed = new URL(href);
+      const isAbsolute = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      if (isAbsolute) {
+        resolvedHref = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+    } catch (_) {
+      // href is already a relative path — use as-is
+    }
+
+    const isInternalLink = type === 'internal' || resolvedHref.charAt(0) === '/';
     if (isInternalLink) {
       // Internal link
       try {
-        const testURL = new URL('http://my.marketplace.com' + href);
+        const testURL = new URL('http://my.marketplace.com' + resolvedHref);
         const matchedRoutes = matchPathname(testURL.pathname, routeConfiguration);
         if (matchedRoutes.length > 0) {
           const found = matchedRoutes[0];
           const to = { search: testURL.search, hash: testURL.hash };
           return {
             ...linkConfig,
+            href: resolvedHref,
             route: {
               name: found.route?.name,
               params: found.params,
@@ -88,10 +104,10 @@ const getResolvedCustomLinks = (customLinks, routeConfiguration) => {
           };
         }
       } catch (e) {
-        return linkConfig;
+        return { ...linkConfig, href: resolvedHref };
       }
     }
-    return linkConfig;
+    return { ...linkConfig, href: resolvedHref };
   });
 };
 
