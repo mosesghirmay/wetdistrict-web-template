@@ -1,29 +1,27 @@
 .root {
+  /* Match the padding/spacing of other CMS page sections */
   width: 100%;
-  display: flex;
-  justify-content: center;
-  background: #000;
-  padding-top: 20px;
-
-  @media (--viewportMedium) {
-    padding-top: 32px;
-    background: #111;
-  }
+  max-width: var(--contentMaxWidthPages);
+  margin: 0 auto;
+  padding: 48px 32px 48px;
+  box-sizing: border-box;
 }
 
 .videoWrapper {
-  /* Mobile: full viewport width, 9:16 */
+  /* Cap height so content below is visible on mobile */
   width: 100%;
+  max-height: 62vh;
   aspect-ratio: 9 / 16;
   position: relative;
   overflow: hidden;
   border-radius: 12px;
 
-  /* Desktop: cap at 420px and center */
+  /* Desktop: narrow centered column */
   @media (--viewportMedium) {
-    width: 420px;
+    width: 340px;
+    max-height: none;
+    margin: 0 auto;
     border-radius: 16px;
-    margin-bottom: 32px;
   }
 }
 
