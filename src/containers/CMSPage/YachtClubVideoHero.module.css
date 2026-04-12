@@ -4,54 +4,41 @@
   margin: 0 auto;
   padding: 40px 24px 32px;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 
 /*
- * Outer clip box: full width, capped at 70vh so content below stays visible.
- * overflow:hidden hides the small top/bottom crop from the iframe.
+ * Single container, always a true 9:16 shape.
+ *
+ * Mobile: height is fixed at 70vh, width is DERIVED from that height
+ * using calc(70vh * 9/16). This is the only reliable way to guarantee
+ * a correct aspect ratio when height is the constraint — no two-layer
+ * tricks, no aspect-ratio on an absolutely-positioned element.
+ *
+ * Result: ~332px × 591px on a typical iPhone (70% of 844px height).
+ * The iframe fills this exact shape so Google Drive renders correctly.
  */
 .videoWrapper {
-  width: 100%;
   height: 70vh;
+  width: calc(70vh * 9 / 16);
+  flex-shrink: 0;
   position: relative;
-  overflow: hidden;
   border-radius: 12px;
+  overflow: hidden;
 
   @media (--viewportMedium) {
+    /* Desktop: fixed column width, height derived from 9:16 */
     width: 340px;
-    height: auto;
-    aspect-ratio: 9 / 16;
-    margin: 0 auto;
+    height: calc(340px * 16 / 9);
     border-radius: 16px;
   }
 }
 
-/*
- * Inner iframe container: always a true 9:16 rectangle based on the wrapper width.
- * Centered vertically inside the clip box so the crop is even top and bottom.
- * This prevents any distortion — the iframe is always the correct shape.
- */
-.iframeContainer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
-  /* 9:16 height from the full width */
-  aspect-ratio: 9 / 16;
-  /* Center vertically within the clipping box */
-  top: 50%;
-  transform: translateY(-50%);
-
-  @media (--viewportMedium) {
-    position: static;
-    transform: none;
-    aspect-ratio: unset;
-    width: 100%;
-    height: 100%;
-  }
-}
-
 .iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: none;
