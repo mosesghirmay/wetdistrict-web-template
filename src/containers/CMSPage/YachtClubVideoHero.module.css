@@ -3,24 +3,31 @@
   width: 100%;
   max-width: var(--contentMaxWidthPages);
   margin: 0 auto;
-  padding: 48px 32px 48px;
+  padding: 48px 32px;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 
 .videoWrapper {
-  /* Cap height so content below is visible on mobile */
-  width: 100%;
-  max-height: 62vh;
-  aspect-ratio: 9 / 16;
+  /*
+   * Mobile: fix the height at 62vh, derive width from 9:16 ratio.
+   * This keeps the aspect ratio intact even with a capped height,
+   * so the preview thumbnail isn't squished or stretched.
+   */
+  height: 62vh;
+  width: calc(62vh * 9 / 16);
+  max-width: 100%;
   position: relative;
   overflow: hidden;
   border-radius: 12px;
+  flex-shrink: 0;
 
-  /* Desktop: narrow centered column */
+  /* Desktop: fixed narrow column */
   @media (--viewportMedium) {
+    height: auto;
     width: 340px;
-    max-height: none;
-    margin: 0 auto;
+    aspect-ratio: 9 / 16;
     border-radius: 16px;
   }
 }
