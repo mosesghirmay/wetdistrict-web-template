@@ -262,6 +262,26 @@ const hasValidPriceVariants = priceVariants => {
  *
  * @returns {JSX.Element} Component that displays the order panel with appropriate form
  */
+
+const SQUARE_SCRIPT_URL =
+  'https://square.site/appointments/buyer/widget/qc6km2l1hl0rub/LWETW210G5WNP.js';
+
+/**
+ * Dynamically loads the Square Appointments widget script once.
+ * Square's script auto-injects a "Book Now" button into the container div.
+ */
+const SquareBookingWidget = () => {
+  useEffect(() => {
+    if (document.querySelector(`script[src="${SQUARE_SCRIPT_URL}"]`)) return;
+    const script = document.createElement('script');
+    script.src = SQUARE_SCRIPT_URL;
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+  return <div className={css.squareWidgetContainer} />;
+};
+
 const OrderPanel = props => {
   const [mounted, setMounted] = useState(false);
   const [selectedVariantType, setSelectedVariantType] = useState(null);
@@ -569,14 +589,7 @@ const OrderPanel = props => {
             <FormattedMessage id="OrderPanel.closedListingButtonText" />
           </div>
         ) : (
-          <a
-            href="https://app.squareup.com/appointments/book/qc6km2l1hl0rub/LWETW210G5WNP/start"
-            target="_top"
-            rel="nofollow"
-            className={css.squareBookButton}
-          >
-            Book Now
-          </a>
+          <SquareBookingWidget />
         )}
       </div>
     </div>
