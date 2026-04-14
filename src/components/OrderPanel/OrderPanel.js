@@ -569,24 +569,14 @@ const OrderPanel = props => {
             <FormattedMessage id="OrderPanel.closedListingButtonText" />
           </div>
         ) : (
-          <PrimaryButton
-            onClick={handleSubmit(
-              isOwnListing,
-              isClosed,
-              showInquiryForm,
-              onSubmit,
-              history,
-              location
-            )}
-            disabled={isOutOfStock}
-            style={{ "--content-override": "none" }}
+          <a
+            href="https://app.squareup.com/appointments/book/qc6km2l1hl0rub/LWETW210G5WNP/start"
+            target="_top"
+            rel="nofollow"
+            className={css.squareBookButton}
           >
-            {isOutOfStock ? (
-              <FormattedMessage id="OrderPanel.ctaButtonMessageNoStock" />
-            ) : (
-              "Request to book"
-            )}
-          </PrimaryButton>
+            Book Now
+          </a>
         )}
       </div>
     </div>
