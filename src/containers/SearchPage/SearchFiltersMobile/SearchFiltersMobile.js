@@ -8,7 +8,8 @@ import { createResourceLocatorString } from '../../../util/routes';
 
 import { ModalInMobile, Button } from '../../../components';
 
-import PopupOpenerButton from '../PopupOpenerButton/PopupOpenerButton';
+// PopupOpenerButton preserved for when filter is restored
+// import PopupOpenerButton from '../PopupOpenerButton/PopupOpenerButton';
 import css from './SearchFiltersMobile.module.css';
 
 class SearchFiltersMobileComponent extends Component {
