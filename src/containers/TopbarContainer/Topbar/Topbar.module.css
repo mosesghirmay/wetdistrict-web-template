@@ -46,18 +46,18 @@
 .mobileLogo {
   display: block;
   height: auto;
-  width: 150px;
-  max-width: 150px;
+  width: 168px;
+  max-width: 168px;
   object-fit: contain;
 
   @media (--viewportSmall) {
-    width: 165px;
-    max-width: 165px;
+    width: 185px;
+    max-width: 185px;
   }
 
   @media (--viewportMedium) {
-    width: 180px;
-    max-width: 180px;
+    width: 200px;
+    max-width: 200px;
   }
 }
 

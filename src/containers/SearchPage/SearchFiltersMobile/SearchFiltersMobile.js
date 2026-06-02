@@ -116,8 +116,8 @@ class SearchFiltersMobileComponent extends Component {
               <span className={css.yachtButtonSub}>View Upcoming Events</span>
             </div>
             <span className={css.yachtButtonChevron}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 13" fill="none" width="6" height="10">
-                <path d="M1 1l6 5.5L1 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10" fill="none" width="6" height="10">
+                <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
           </a>

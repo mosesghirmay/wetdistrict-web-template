@@ -11,7 +11,7 @@
   top: var(--topbarHeight);
   z-index: calc(var(--zIndexTopbar) - 1);
   margin: 0;
-  padding: 10px 16px 10px;
+  padding: 10px 16px 14px;
 
   /* Subtle separator from topbar */
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.06);
@@ -174,7 +174,7 @@
 .yachtButtonSub {
   font-size: 9.5px;
   font-weight: var(--fontWeightRegular);
-  color: var(--colorGrey500);
+  color: var(--colorGrey600);
   line-height: 1.2;
   letter-spacing: 0.1px;
   white-space: nowrap;
@@ -184,9 +184,10 @@
 .yachtButtonChevron {
   flex: 0 0 auto;
   margin-left: 6px;
-  color: var(--colorGrey400);
+  color: var(--colorGrey500);
   display: flex;
   align-items: center;
+  line-height: 0;
 }
 
 .modalContainer {
