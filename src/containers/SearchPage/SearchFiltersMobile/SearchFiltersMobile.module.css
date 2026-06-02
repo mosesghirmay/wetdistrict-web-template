@@ -41,9 +41,15 @@
 
 .buttons {
   display: flex;
-  gap: 8px; /* Ensures consistent spacing between all buttons */
+  gap: 6px;
   width: 100%;
-  justify-content: space-between;
+  align-items: center;
+}
+
+/* Sort — left, shrinks to content */
+.sortWrapper {
+  flex: 0 0 auto;
+  display: flex;
 }
 
 .buttonWrapper {
@@ -78,22 +84,47 @@
   align-items: center;
 }
 
+/* Phone — icon only, compact square */
 .phoneButton {
-  font-weight: var(--fontWeightMedium);
-  font-size: 13px;
-  line-height: 35px;
-  text-align: center;
-  text-decoration: none;
-  color: var(--colorBlack);
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  height: 35px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--borderRadiusMedium);
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  color: var(--colorBlack);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transitionStyleButton);
+
+  &:hover,
+  &:focus {
+    border-color: var(--colorGrey300);
+    outline: none;
+    box-shadow: var(--boxShadowFilterButton);
+  }
+}
+
+/* Middle — takes up all remaining space, most prominent */
+.yachtButton {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
   padding: 0 8px;
   border-radius: var(--borderRadiusMedium);
   background-color: var(--colorWhite);
   border: 1px solid var(--colorGrey100);
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--colorBlack);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transitionStyleButton);
@@ -104,51 +135,6 @@
     text-decoration: none;
     outline: none;
     box-shadow: var(--boxShadowFilterButton);
-  }
-}
-
-.yachtButton {
-  /* Exact same font styling as PopupOpenerButton */
-  font-weight: var(--fontWeightMedium);
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: 0.2px;
-  text-align: center;
-  text-decoration: none;
-  color: var(--colorBlack);
-
-  /* Button styling to exactly match other buttons */
-  display: inline-block;
-  flex: 1; /* Make button take equal space */
-  width: 100%; /* Full width within its flex space */
-  height: 35px;
-  min-height: 35px;
-  padding: 0 10px; /* Reduced padding to fit text */
-  margin: 0; /* Remove margin to match other buttons */
-  border-radius: var(--borderRadiusMedium);
-  background-color: var(--colorWhite);
-  border: 1px solid var(--colorGrey100);
-  transition: all var(--transitionStyleButton);
-  cursor: pointer;
-  line-height: 35px; /* Center text vertically */
-  white-space: nowrap; /* Prevent text wrapping */
-
-  &:hover,
-  &:focus {
-    border-color: var(--colorGrey300);
-    text-decoration: none;
-    outline: none;
-    box-shadow: var(--boxShadowFilterButton);
-  }
-
-  @media (--viewportMedium) {
-    height: auto;
-    min-height: 0;
-    padding: var(--marketplaceButtonSmallDesktopPadding);
-    margin: 0;
-    font-weight: var(--fontWeightMedium);
-    font-size: 13px;
-    line-height: 20px;
   }
 }
 
