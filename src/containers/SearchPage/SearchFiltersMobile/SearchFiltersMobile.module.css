@@ -78,6 +78,35 @@
   align-items: center;
 }
 
+.phoneButton {
+  font-weight: var(--fontWeightMedium);
+  font-size: 13px;
+  line-height: 35px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--colorBlack);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 35px;
+  padding: 0 8px;
+  border-radius: var(--borderRadiusMedium);
+  background-color: var(--colorWhite);
+  border: 1px solid var(--colorGrey100);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transitionStyleButton);
+
+  &:hover,
+  &:focus {
+    border-color: var(--colorGrey300);
+    text-decoration: none;
+    outline: none;
+    box-shadow: var(--boxShadowFilterButton);
+  }
+}
+
 .yachtButton {
   /* Exact same font styling as PopupOpenerButton */
   font-weight: var(--fontWeightMedium);

@@ -360,7 +360,10 @@ export class SearchPageComponent extends Component {
       isOriginInUse(config)
     );
 
-    const validQueryParams = urlQueryParams;
+    // Default to highest-price sort when none is specified in the URL
+    const validQueryParams = urlQueryParams.sort
+      ? urlQueryParams
+      : { ...urlQueryParams, sort: 'price' };
 
     const isWindowDefined = typeof window !== 'undefined';
     const isMobileLayout = isWindowDefined && window.innerWidth < MODAL_BREAKPOINT;

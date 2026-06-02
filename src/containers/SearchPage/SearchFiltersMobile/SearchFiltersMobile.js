@@ -98,21 +98,20 @@ class SearchFiltersMobileComponent extends Component {
       <div className={classes}>
         {/* Results count removed */}
         <div className={css.buttons}>
-          <div className={css.buttonWrapper}>
-            <PopupOpenerButton isSelected={selectedFiltersCount > 0} toggleOpen={this.openFilters}>
-              <FormattedMessage
-                id="SearchFiltersMobile.filtersButtonLabel"
-                className={css.mapIconText}
-              />
-            </PopupOpenerButton>
-          </div>
-          <a 
-            href="https://wetdistrict.com/p/yachtclub" 
+          {/* Filter button hidden — preserved below inside ModalInMobile */}
+          <a href="tel:+12028766998" className={css.phoneButton} aria-label="Call us">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style={{marginRight: '5px', verticalAlign: 'middle'}}>
+              <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.59.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.59 1 1 0 01-.25 1.01l-2.2 2.19z"/>
+            </svg>
+            (202) 876-6998
+          </a>
+          <a
+            href="https://wetdistrict.com/p/yachtclub"
             className={css.yachtButton}
             target="_blank"
             rel="noopener noreferrer"
           >
-            MEMORIAL DAY WKND PARTIES
+            YACHT + POOL PARTY
           </a>
           <div className={css.buttonWrapper}>
             {sortByComponent}
