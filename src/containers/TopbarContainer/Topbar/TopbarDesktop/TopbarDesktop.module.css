@@ -30,8 +30,22 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  height: 40px; /* Restored to original size */
+  height: 32px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  pointer-events: none;
   z-index: 1;
+
+  @media (--viewportLarge) {
+    height: 38px;
+    max-width: 220px;
+  }
+
+  @media (--viewportLargeWithPaddings) {
+    height: 44px;
+    max-width: 260px;
+  }
 }
 
 /* logo */

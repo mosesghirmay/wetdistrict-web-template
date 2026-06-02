@@ -84,20 +84,23 @@
   align-items: center;
 }
 
-/* Phone — icon only, compact square */
+/* Phone — icon + label inline */
 .phoneButton {
   flex: 0 0 auto;
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  gap: 4px;
+  height: 38px;
+  padding: 0 10px;
   border-radius: var(--borderRadiusMedium);
   background-color: var(--colorWhite);
   border: 1px solid var(--colorGrey100);
   color: var(--colorBlack);
   text-decoration: none;
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--transitionStyleButton);
 
   &:hover,
@@ -108,34 +111,58 @@
   }
 }
 
+.phoneLabel {
+  font-size: 10px;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorBlack);
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+
 /* Middle — takes up all remaining space, most prominent */
 .yachtButton {
   flex: 1 1 auto;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 32px;
+  height: 38px;
   padding: 0 8px;
-  border-radius: var(--borderRadiusMedium);
-  background-color: var(--colorWhite);
-  border: 1px solid var(--colorGrey100);
-  font-weight: var(--fontWeightSemiBold);
-  font-size: 12px;
-  letter-spacing: 0.3px;
-  text-align: center;
+  border-radius: 10px;
+  /* Gradient border via background-clip trick */
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, #ff69b4, #cc00cc, #6633cc, #ff8c00) border-box;
   text-decoration: none;
   color: var(--colorBlack);
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--transitionStyleButton);
+  transition: opacity var(--transitionStyleButton);
 
   &:hover,
   &:focus {
-    border-color: var(--colorGrey300);
+    opacity: 0.85;
     text-decoration: none;
     outline: none;
-    box-shadow: var(--boxShadowFilterButton);
   }
+}
+
+.yachtButtonMain {
+  font-weight: var(--fontWeightBold);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--colorBlack);
+}
+
+.yachtButtonSub {
+  font-size: 9px;
+  font-weight: var(--fontWeightRegular);
+  color: var(--colorGrey500);
+  line-height: 1.2;
+  letter-spacing: 0.2px;
 }
 
 .modalContainer {

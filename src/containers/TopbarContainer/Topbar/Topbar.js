@@ -13,7 +13,6 @@ import { createResourceLocatorString, matchPathname, pathByRouteName } from '../
 import {
   Button,
   LimitedAccessBanner,
-  LinkedLogo,
   Modal,
   ModalMissingInformation,
 } from '../../../components';
@@ -308,19 +307,15 @@ class TopbarComponent extends React.Component {
         currentPage={resolvedCurrentPage}
       />
       <div className={classNames(mobileRootClassName || css.container, mobileClassName)}>
-        <LinkedLogo
-          layout={'mobile'}
-          alt={intl.formatMessage({ id: 'Topbar.logoIcon' })}
-          linkToExternalSite={config?.topbar?.logoLink}
-        />
-        
-        {/* Centered logo */}
-        <img 
-          src="/images/WrittenLogo.png" 
-          alt="Wet District" 
-          className={css.centeredLogo} 
-        />
-        
+        {/* Left-aligned written logo — padding mirrors hamburger's right padding */}
+        <a href="/" className={css.mobileLogoLink}>
+          <img
+            src="/images/WrittenLogo.png"
+            alt="Wet District"
+            className={css.mobileLogo}
+          />
+        </a>
+
         <Button
           rootClassName={css.menu}
           onClick={() => redirectToURLWithModalState(history, location, 'mobilemenu')}
@@ -329,7 +324,6 @@ class TopbarComponent extends React.Component {
           <MenuIcon className={css.menuIcon} />
           {notificationDot}
         </Button>
-        {/* Search button removed */}
       </div>
       <div className={css.desktop}>
         <TopbarDesktop

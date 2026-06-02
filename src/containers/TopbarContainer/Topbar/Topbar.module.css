@@ -21,7 +21,6 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  position: relative; /* For absolute positioning of centered logo */
 
   /* fill */
   background-color: var(--colorWhite);
@@ -38,16 +37,27 @@
   }
 }
 
-.centeredLogo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  height: 40px; /* Increased from 30px to 40px for mobile */
-  z-index: 1;
+.mobileLogoLink {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.mobileLogo {
+  display: block;
+  height: 26px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+
+  @media (--viewportSmall) {
+    height: 30px;
+    max-width: 190px;
+  }
 
   @media (--viewportMedium) {
-    height: 50px; /* Increased from 40px to 50px for tablet/medium screens */
+    height: 36px;
+    max-width: 220px;
   }
 }
 
@@ -93,11 +103,12 @@
 }
 
 .menu {
-  padding: 15px 24px;
+  padding: 15px 16px;
+  width: auto;
   position: relative;
 
   @media (--viewportMedium) {
-    padding: 21px 24px;
+    padding: 21px 16px;
   }
 }
 .searchMenu {
