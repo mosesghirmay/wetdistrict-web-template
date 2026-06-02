@@ -248,6 +248,124 @@ export const handleSubmit = parameters => values => {
 };
 
 /**
+ * Wet District manual booking request handler.
+ *
+ * ONLY intercepts listings using the default-booking process (isBooking === true).
+ * All other processes (purchase, inquiry) fall through to the original handleSubmit
+ * checkout path unchanged.
+ *
+ * Does NOT call initiatePrivileged, does NOT touch Stripe, does NOT create a
+ * Sharetribe transaction.
+ *
+ * @param {Object} parameters - same shape as handleSubmit parameters, plus:
+ *   @param {boolean} parameters.isBooking - from isBookingProcess(processName)
+ *   @param {Function} parameters.onRequestSent - setState callback to show confirmation
+ *   @param {Function} parameters.onRequestError - setState callback to show error
+ *   @param {Array}   parameters.lineItems - current price breakdown from Redux
+ */
+export const handleBookingRequest = parameters => values => {
+  const {
+    isBooking,
+    onRequestSent,
+    onRequestError,
+    lineItems,
+    // original handleSubmit params kept for fallback
+    history,
+    params,
+    currentUser,
+    getListing,
+    callSetInitialValues,
+    onInitializeCardPaymentData,
+    routes,
+  } = parameters;
+
+  // ── Fallback: not a booking listing → use original checkout path unchanged ──
+  if (!isBooking) {
+    return handleSubmit({
+      history,
+      params,
+      currentUser,
+      getListing,
+      callSetInitialValues,
+      onInitializeCardPaymentData,
+      routes,
+    })(values);
+  }
+
+  // ── Booking listing: send manual request, no Stripe ──
+  const listingId = new UUID(params.id);
+  const listing = getListing(listingId);
+  const { title = '', publicData = {} } = listing?.attributes || {};
+  const { priceVariants = [] } = publicData;
+
+  const {
+    bookingStartTime,
+    bookingEndTime,
+    priceVariantName,
+    seats: seatsRaw,
+  } = values;
+
+  const startDate = bookingStartTime ? timestampToDate(bookingStartTime) : null;
+  const endDate = bookingEndTime ? timestampToDate(bookingEndTime) : null;
+  const seats = Number.parseInt(seatsRaw, 10);
+
+  // Resolve estimated total from lineItems if available
+  const customerTotal = lineItems
+    ? lineItems.reduce((sum, li) => {
+        const amount = li.lineTotal?.amount || 0;
+        return li.includeFor?.includes('customer') ? sum + amount : sum;
+      }, 0)
+    : null;
+  const estimatedTotal = customerTotal != null
+    ? `$${(customerTotal / 100).toFixed(2)}`
+    : null;
+
+  // Resolve selected variant price label
+  const selectedVariant = priceVariants.find(v => v.name === priceVariantName);
+  const variantLabel = selectedVariant
+    ? `${selectedVariant.name} — $${(selectedVariant.priceInSubunits / 100).toFixed(2)}`
+    : priceVariantName || null;
+
+  // Customer info
+  const profile = currentUser?.attributes?.profile || {};
+  const customerName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || null;
+  const customerEmail = currentUser?.attributes?.email || null;
+
+  const payload = {
+    listingId: listing?.id?.uuid,
+    listingTitle: title,
+    listingUrl: typeof window !== 'undefined' ? window.location.href : null,
+    selectedDate: startDate ? startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : null,
+    startTime: startDate ? startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null,
+    endTime: endDate ? endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null,
+    duration: startDate && endDate ? `${Math.round((endDate - startDate) / 60000)} minutes` : null,
+    priceVariantName: variantLabel,
+    estimatedTotal,
+    seats: Number.isInteger(seats) ? seats : null,
+    customerName,
+    customerEmail,
+    submittedAt: new Date().toISOString(),
+  };
+
+  fetch('/api/booking-request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+      return res.json();
+    })
+    .then(() => {
+      if (onRequestSent) onRequestSent();
+    })
+    .catch(err => {
+      console.error('Booking request failed:', err);
+      if (onRequestError) onRequestError(err);
+    });
+};
+
+/**
  * Create fallback views for the ListingPage: LoadingPage and ErrorPage.
  * The PlainPage is just a helper for them.
  */

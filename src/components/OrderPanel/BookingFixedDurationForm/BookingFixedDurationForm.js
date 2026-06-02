@@ -135,6 +135,8 @@ export const BookingFixedDurationForm = props => {
     priceVariantFieldComponent: PriceVariantFieldComponent,
     preselectedPriceVariant,
     isPublishedListing,
+    bookingRequestSent,
+    bookingRequestError,
     ...rest
   } = props;
 
@@ -287,29 +289,48 @@ export const BookingFixedDurationForm = props => {
               </span>
             ) : null}
 
-            <div className={css.submitButton}>
-              <PrimaryButton
-                type="submit"
-                inProgress={fetchLineItemsInProgress}
-                disabled={submitDisabled}
-              >
-                <FormattedMessage id="BookingFixedDurationForm.requestToBook" />
-              </PrimaryButton>
-            </div>
+            {bookingRequestSent ? (
+              <div className={css.bookingRequestConfirmation}>
+                <p className={css.bookingRequestConfirmationMain}>
+                  <FormattedMessage id="BookingFixedDurationForm.requestReceived" />
+                </p>
+                <p className={css.bookingRequestConfirmationSub}>
+                  <FormattedMessage id="BookingFixedDurationForm.requestManualVerification" />
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className={css.submitButton}>
+                  <PrimaryButton
+                    type="submit"
+                    inProgress={fetchLineItemsInProgress}
+                    disabled={submitDisabled}
+                  >
+                    <FormattedMessage id="BookingFixedDurationForm.sendBookingRequest" />
+                  </PrimaryButton>
+                </div>
 
-            <p className={css.finePrint}>
-              {payoutDetailsWarning ? (
-                payoutDetailsWarning
-              ) : (
-                <FormattedMessage
-                  id={
-                    isOwnListing
-                      ? 'BookingFixedDurationForm.ownListing'
-                      : 'BookingFixedDurationForm.youWontBeChargedInfo'
-                  }
-                />
-              )}
-            </p>
+                {bookingRequestError ? (
+                  <p className={css.bookingRequestError}>
+                    <FormattedMessage id="BookingFixedDurationForm.requestError" />
+                  </p>
+                ) : (
+                  <p className={css.finePrint}>
+                    {payoutDetailsWarning ? (
+                      payoutDetailsWarning
+                    ) : (
+                      <FormattedMessage
+                        id={
+                          isOwnListing
+                            ? 'BookingFixedDurationForm.ownListing'
+                            : 'BookingFixedDurationForm.youWontBeChargedInfo'
+                        }
+                      />
+                    )}
+                  </p>
+                )}
+              </>
+            )}
           </Form>
         );
       }}

@@ -16,6 +16,8 @@ const transactionLineItems = require('./api/transaction-line-items');
 const initiatePrivileged = require('./api/initiate-privileged');
 const transitionPrivileged = require('./api/transition-privileged');
 
+const bookingRequest = require('./api/booking-request');
+
 const createUserWithIdp = require('./api/auth/createUserWithIdp');
 
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
@@ -54,6 +56,10 @@ router.get('/login-as', loginAs);
 router.post('/transaction-line-items', transactionLineItems);
 router.post('/initiate-privileged', initiatePrivileged);
 router.post('/transition-privileged', transitionPrivileged);
+
+// Wet District manual booking request — no Stripe, no Sharetribe transaction
+// express.json() is required here because the global middleware only parses transit+json
+router.post('/booking-request', express.json(), bookingRequest);
 
 // Create user with identity provider (e.g. Facebook or Google)
 // This endpoint is called to create a new user after user has confirmed

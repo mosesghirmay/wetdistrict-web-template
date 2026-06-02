@@ -73,6 +73,7 @@ import {
   handleContactUser,
   handleSubmitInquiry,
   handleSubmit,
+  handleBookingRequest,
   priceForSchemaMaybe,
 } from './ListingPage.shared';
 import ActionBarMaybe from './ActionBarMaybe';
@@ -95,6 +96,8 @@ export const ListingPageComponent = props => {
     props.inquiryModalOpenForListingId === props.params.id
   );
   const [mounted, setMounted] = useState(false);
+  const [bookingRequestSent, setBookingRequestSent] = useState(false);
+  const [bookingRequestError, setBookingRequestError] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -247,7 +250,19 @@ export const ListingPageComponent = props => {
     onSendInquiry,
     setInquiryModalOpen,
   });
-  const onSubmit = handleSubmit({
+  // lineItems lives in Redux state — passed through restOfProps from the duck
+  const { lineItems } = restOfProps;
+
+  const onSubmit = handleBookingRequest({
+    // Wet District branch: fires for booking listings, falls back to checkout for all others
+    isBooking,
+    onRequestSent: () => {
+      setBookingRequestSent(true);
+      setBookingRequestError(null);
+    },
+    onRequestError: err => setBookingRequestError(err),
+    lineItems,
+    // Fallback params — passed straight through to original handleSubmit if not a booking listing
     ...commonParams,
     currentUser,
     callSetInitialValues,
@@ -383,6 +398,8 @@ export const ListingPageComponent = props => {
               listing={currentListing}
               isOwnListing={isOwnListing}
               onSubmit={handleOrderSubmit}
+              bookingRequestSent={bookingRequestSent}
+              bookingRequestError={bookingRequestError}
               authorLink={
                 <NamedLink
                   className={css.authorNameLink}

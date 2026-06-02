@@ -87,3 +87,39 @@
     margin: 24px 0;
   }
 }
+
+.bookingRequestConfirmation {
+  padding: 16px 24px;
+  margin-top: 16px;
+  background-color: var(--colorSuccess, #f0fdf4);
+  border: 1px solid var(--colorSuccessDark, #86efac);
+  border-radius: var(--borderRadiusMedium);
+
+  @media (--viewportMedium) {
+    padding: 16px;
+  }
+}
+
+.bookingRequestConfirmationMain {
+  composes: h5 from global;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorBlack);
+  margin: 0 0 6px 0;
+}
+
+.bookingRequestConfirmationSub {
+  composes: h6 from global;
+  color: var(--colorGrey700);
+  margin: 0;
+}
+
+.bookingRequestError {
+  composes: h6 from global;
+  color: var(--colorFail);
+  padding: 0 24px;
+  margin: 8px 0 0 0;
+
+  @media (--viewportMedium) {
+    padding: 0;
+  }
+}

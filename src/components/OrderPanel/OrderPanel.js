@@ -298,6 +298,8 @@ const OrderPanel = props => {
     fetchLineItemsInProgress,
     fetchLineItemsError,
     payoutDetailsWarning,
+    bookingRequestSent,
+    bookingRequestError,
   } = props;
 
   const publicData = listing?.attributes?.publicData || {};
@@ -436,6 +438,8 @@ const OrderPanel = props => {
     payoutDetailsWarning,
     onPriceVariantChange: handlePriceVariantChange,
     selectedVariantType,
+    bookingRequestSent,
+    bookingRequestError,
   };
 
   const showClosedListingHelpText = listing.id && isClosed;
