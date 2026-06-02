@@ -104,20 +104,27 @@ class SearchFiltersMobileComponent extends Component {
             {sortByComponent}
           </div>
 
-          {/* Middle — biggest button, gradient border */}
+          {/* Middle — main CTA, gradient border */}
           <a
             href="https://wetdistrict.com/p/yachtclub"
             className={css.yachtButton}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span className={css.yachtButtonMain}>YACHT + POOL PARTIES</span>
-            <span className={css.yachtButtonSub}>View Upcoming Events ›</span>
+            <div className={css.yachtButtonContent}>
+              <span className={css.yachtButtonMain}>YACHT + POOL PARTIES</span>
+              <span className={css.yachtButtonSub}>View Upcoming Events</span>
+            </div>
+            <span className={css.yachtButtonChevron}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 13" fill="none" width="6" height="10">
+                <path d="M1 1l6 5.5L1 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
           </a>
 
-          {/* Phone — icon + label, right */}
+          {/* Phone — icon + label, matches sort button style */}
           <a href="tel:+12028766998" className={css.phoneButton} aria-label="Call us">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
               <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.59.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.59 1 1 0 01-.25 1.01l-2.2 2.19z"/>
             </svg>
             <span className={css.phoneLabel}>Call / Text</span>

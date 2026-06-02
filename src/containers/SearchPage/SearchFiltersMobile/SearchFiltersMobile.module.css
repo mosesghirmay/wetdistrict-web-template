@@ -10,15 +10,12 @@
   position: sticky;
   top: var(--topbarHeight);
   z-index: calc(var(--zIndexTopbar) - 1);
-  margin-top: 0;
-  padding-top: 12px;
-  
-  /* Add box shadow for visual separation */
-  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0.1);
-  
-  /* Remove any margin between topbar and filters */
   margin: 0;
-  
+  padding: 10px 16px 10px;
+
+  /* Subtle separator from topbar */
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.06);
+
   @media (--viewportMedium) {
     top: var(--topbarHeightDesktop);
   }
@@ -41,7 +38,7 @@
 
 .buttons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   align-items: center;
 }
@@ -50,6 +47,7 @@
 .sortWrapper {
   flex: 0 0 auto;
   display: flex;
+  align-items: center;
 }
 
 .buttonWrapper {
@@ -84,20 +82,20 @@
   align-items: center;
 }
 
-/* Phone — icon + label inline */
+/* Phone — matches sort button styling exactly */
 .phoneButton {
   flex: 0 0 auto;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 38px;
-  padding: 0 10px;
+  gap: 5px;
+  height: 35px;
+  padding: 0 12px;
   border-radius: var(--borderRadiusMedium);
   background-color: var(--colorWhite);
   border: 1px solid var(--colorGrey100);
-  color: var(--colorBlack);
+  color: var(--colorGrey700);
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
@@ -108,27 +106,29 @@
     border-color: var(--colorGrey300);
     outline: none;
     box-shadow: var(--boxShadowFilterButton);
+    text-decoration: none;
   }
 }
 
 .phoneLabel {
-  font-size: 10px;
-  font-weight: var(--fontWeightMedium);
-  color: var(--colorBlack);
+  font-size: 13px;
+  font-weight: var(--fontWeightSemiBold);
+  color: var(--colorGrey700);
   letter-spacing: 0.2px;
-  line-height: 1;
+  line-height: 18px;
 }
 
-/* Middle — takes up all remaining space, most prominent */
+/* Middle — main CTA, gradient border, more prominent than side buttons */
 .yachtButton {
   flex: 1 1 auto;
-  display: inline-flex;
-  flex-direction: column;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   height: 38px;
-  padding: 0 8px;
-  border-radius: 10px;
+  padding: 0 10px;
+  border-radius: 12px;
   /* Gradient border via background-clip trick */
   border: 1.5px solid transparent;
   background:
@@ -137,32 +137,56 @@
   text-decoration: none;
   color: var(--colorBlack);
   cursor: pointer;
-  white-space: nowrap;
   transition: opacity var(--transitionStyleButton);
 
   &:hover,
   &:focus {
-    opacity: 0.85;
+    opacity: 0.82;
     text-decoration: none;
     outline: none;
   }
+}
+
+/* Text column — centered inside the button */
+.yachtButtonContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .yachtButtonMain {
   font-weight: var(--fontWeightBold);
   font-size: 11px;
   letter-spacing: 0.5px;
-  line-height: 1.2;
+  line-height: 1.25;
   text-transform: uppercase;
   color: var(--colorBlack);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .yachtButtonSub {
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: var(--fontWeightRegular);
   color: var(--colorGrey500);
   line-height: 1.2;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+}
+
+/* Chevron — right side, vertically centered */
+.yachtButtonChevron {
+  flex: 0 0 auto;
+  margin-left: 6px;
+  color: var(--colorGrey400);
+  display: flex;
+  align-items: center;
 }
 
 .modalContainer {
