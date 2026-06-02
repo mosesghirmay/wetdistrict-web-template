@@ -41,6 +41,7 @@ const SortBy = props => {
       ? {
           rootClassName: css.sortBy,
           menuLabelRootClassName: css.sortByMenuLabel,
+          iconOnly: true,
         }
       : {
           className: css.sortByDesktop,

@@ -122,12 +122,11 @@ class SearchFiltersMobileComponent extends Component {
             </span>
           </a>
 
-          {/* Phone — icon + label, matches sort button style */}
-          <a href="tel:+12028766998" className={css.phoneButton} aria-label="Call us">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+          {/* Phone — icon only */}
+          <a href="tel:+12028766998" className={css.phoneButton} aria-label="Call or text Wet District" title="Call or text Wet District">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
               <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.59.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.47 11.47 0 00.57 3.59 1 1 0 01-.25 1.01l-2.2 2.19z"/>
             </svg>
-            <span className={css.phoneLabel}>Call / Text</span>
           </a>
           {isMapVariant ? (
             <div className={css.buttonWrapper}>

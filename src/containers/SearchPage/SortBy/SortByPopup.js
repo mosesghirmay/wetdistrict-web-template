@@ -52,6 +52,7 @@ const SortByPopup = props => {
     initialValue,
     contentPlacementOffset = 0,
     onSelect,
+    iconOnly = false,
   } = props;
 
   const onToggleActive = isOpenParam => {
@@ -80,9 +81,17 @@ const SortByPopup = props => {
       isOpen={isOpen}
       preferScreenWidthOnMobile
     >
-      <MenuLabel rootClassName={menuLabelClasses}>
-        {menuLabel}
-        <SortByIcon className={iconArrowClassName} />
+      <MenuLabel rootClassName={menuLabelClasses} title="Sort listings">
+        {iconOnly ? (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
+            <path d="M4 6h16M6 12h12M8 18h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+        ) : (
+          <>
+            {menuLabel}
+            <SortByIcon className={iconArrowClassName} />
+          </>
+        )}
       </MenuLabel>
       <MenuContent className={css.menuContent}>
         {options.map(option => {

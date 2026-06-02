@@ -82,23 +82,21 @@
   align-items: center;
 }
 
-/* Phone — matches sort button styling exactly */
+/* Phone — square icon-only button, matches sort icon button */
 .phoneButton {
-  flex: 0 0 auto;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  height: 35px;
-  padding: 0 12px;
+  padding: 0;
   border-radius: var(--borderRadiusMedium);
   background-color: var(--colorWhite);
   border: 1px solid var(--colorGrey100);
   color: var(--colorGrey700);
   text-decoration: none;
   cursor: pointer;
-  white-space: nowrap;
   transition: all var(--transitionStyleButton);
 
   &:hover,
@@ -108,14 +106,6 @@
     box-shadow: var(--boxShadowFilterButton);
     text-decoration: none;
   }
-}
-
-.phoneLabel {
-  font-size: 13px;
-  font-weight: var(--fontWeightSemiBold);
-  color: var(--colorGrey700);
-  letter-spacing: 0.2px;
-  line-height: 18px;
 }
 
 /* Middle — main CTA, gradient border, more prominent than side buttons */
@@ -160,19 +150,16 @@
 
 .yachtButtonMain {
   font-weight: var(--fontWeightBold);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   line-height: 1.25;
   text-transform: uppercase;
   color: var(--colorBlack);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
 
 .yachtButtonSub {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: var(--fontWeightRegular);
   color: var(--colorGrey600);
   line-height: 1.2;

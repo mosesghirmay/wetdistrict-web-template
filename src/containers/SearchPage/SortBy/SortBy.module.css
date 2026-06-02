@@ -2,7 +2,7 @@
 
 .sortBy {
   margin: 0;
-  width: 100%;
+  width: auto;
 }
 
 .sortByDesktop {
@@ -11,39 +11,29 @@
 }
 
 .sortByMenuLabel {
-  display: inline-block;
-  width: 100%;
-  height: 35px;
-  min-height: 35px;
-
-  padding: 0 18px;
+  /* Mobile: square icon-only button */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
   margin: 0;
 
   transition: all var(--transitionStyleButton);
   cursor: pointer;
-
-  /* Font */
-  font-weight: var(--fontWeightSemiBold);
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: 0.2px;
-
-  /* Button text styles */
-  /* Default button text is centered without decorations */
-  text-align: center;
-  text-decoration: none;
+  color: var(--colorGrey700);
 
   /* Button borders */
   border: 1px solid var(--colorGrey100);
   border-radius: var(--borderRadiusMedium);
-
   background-color: var(--colorWhite);
 
   &:focus,
   &:hover {
     outline: none;
     box-shadow: var(--boxShadowFilterButton);
-    text-decoration: none;
     border-color: var(--colorGrey300);
   }
 
@@ -53,10 +43,12 @@
   }
 
   @media (--viewportMedium) {
+    /* Desktop: restore text label style */
+    width: auto;
     height: auto;
     min-height: 0;
     padding: var(--marketplaceButtonSmallDesktopPadding);
-    margin: 0;
+    display: inline-block;
 
     font-weight: var(--fontWeightMedium);
     font-size: 13px;
