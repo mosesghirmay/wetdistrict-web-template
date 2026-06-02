@@ -83,8 +83,14 @@ const SortByPopup = props => {
     >
       <MenuLabel rootClassName={menuLabelClasses} title="Sort listings">
         {iconOnly ? (
+          /* Sliders/tune icon — clearly "sort", not hamburger */
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden="true">
-            <path d="M4 6h16M6 12h12M8 18h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            <circle cx="9" cy="6" r="2.2" fill="currentColor" stroke="none"/>
+            <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            <circle cx="16" cy="12" r="2.2" fill="currentColor" stroke="none"/>
+            <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            <circle cx="10" cy="18" r="2.2" fill="currentColor" stroke="none"/>
           </svg>
         ) : (
           <>
