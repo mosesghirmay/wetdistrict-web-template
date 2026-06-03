@@ -314,9 +314,6 @@ const fetchMonthData = (
 
     // Use endOfRangeDate, if the first day of the next month is too far in the future
     const nextMonthDate = nextMonthFn(date, timeZone);
-    const end = isDateSameOrAfter(nextMonthDate, endOfRangeDate)
-      ? getStartOf(endOfRangeDate, 'day', timeZone)
-      : nextMonthDate;
 
     const nextMonthEnd = getStartOf(
       nextMonthDate,
@@ -833,12 +830,13 @@ const FieldDateAndTimeInput = props => {
         </div>
       </div>
 
-      {/* Row 2: Start time dropdown (left) | End time read-only display (right)
+      {/* Row 2: Start time (left) | End time read-only (right)
+          Uses the existing .formRow + .field pattern which is proven to render.
           Wet District uses fixed 3-hour charter slots so end time is always
           derived automatically — no separate end-time picker needed. */}
-      <div className={css.timeRow}>
+      <div className={classNames(css.formRow, css.timeFormRow)}>
         {/* Start time dropdown */}
-        <div className={css.timeField}>
+        <div className={classNames(css.field, css.halfField)}>
           <FieldSelect
             name="bookingStartTime"
             id={formId ? `${formId}.bookingStartTime` : 'bookingStartTime'}
@@ -863,7 +861,7 @@ const FieldDateAndTimeInput = props => {
         </div>
 
         {/* End time — read-only, auto-updates when start time changes */}
-        <div className={css.timeField}>
+        <div className={classNames(css.field, css.endTime)}>
           <div className={css.endTimeWrapper}>
             <label
               className={classNames(

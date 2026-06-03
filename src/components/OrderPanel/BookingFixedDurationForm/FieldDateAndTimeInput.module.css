@@ -191,34 +191,30 @@
   font-style: italic;
 }
 
-/* ── Wet District: Start time / End time row ────────────────────────────── */
+/* ── Wet District: Start time / End time side-by-side ──────────────────── */
 
-/* Two-column row: start time on left, end time on right.
-   Stacks to one column only on very small screens (<360px). */
-.timeRow {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12px;
-  width: 100%;
-  margin-top: 12px;
+/* The time row needs horizontal padding on mobile (same as .startTime had).
+   Applied as a modifier on the shared .formRow container. */
+.timeFormRow {
   padding: 0 24px;
-
-  @media (min-width: 360px) {
-    flex-wrap: nowrap;
-  }
 
   @media (--viewportMedium) {
     padding: 0;
-    margin-top: 8px;
   }
 }
 
-/* Each time field takes half the row */
-.timeField {
-  flex: 1 1 calc(50% - 6px);
-  min-width: 120px;
-  position: relative;
+/* On mobile the .field class defaults to width:100% (stacked).
+   .halfField overrides that so start and end time sit side by side
+   at all normal modal widths. */
+.halfField {
+  width: calc(50% - 6px) !important;
+  margin-top: 0 !important;
+}
+
+/* End time field — same half-width, no top margin */
+.endTime {
+  width: calc(50% - 6px);
+  margin-top: 0 !important;
 }
 
 /* ── Read-only end time display ─────────────────────────────────────────── */
@@ -229,7 +225,7 @@
   width: 100%;
 }
 
-/* Matches the FieldSelect label style */
+/* Label matches FieldSelect label appearance */
 .endTimeLabel {
   composes: marketplaceSmallFontStyles from global;
   font-weight: var(--fontWeightMedium);
@@ -243,25 +239,18 @@
   color: var(--colorGrey300);
 }
 
-/* Matches the dimensions and border of the <select> element but is non-interactive.
-   Uses a subtly muted background to signal read-only state. */
+/* Matches height/border of the <select> but is non-interactive.
+   Muted background signals read-only. */
 .endTimeDisplay {
-  /* Match select sizing */
   height: 35px;
   display: flex;
   align-items: center;
   padding-left: 12px;
   padding-right: 12px;
-
-  /* Match select border / radius from global theme */
   border-bottom: 2px solid var(--colorGrey100);
-
-  /* Muted background to show read-only */
-  background-color: var(--colorGrey50, #f9f9f9);
-
-  font-size: var(--fontSizeBase, 16px);
+  background-color: #f9f9f9;
+  font-size: 16px;
   color: var(--colorGrey700);
-  border-radius: 0;
   cursor: default;
   user-select: none;
 
@@ -271,7 +260,6 @@
   }
 }
 
-/* When no time is selected yet, match the disabled/placeholder appearance */
 .endTimeDisplayEmpty {
   color: var(--colorGrey300);
 }
