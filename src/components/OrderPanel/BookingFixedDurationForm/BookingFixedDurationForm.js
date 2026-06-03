@@ -7,7 +7,8 @@ import { timestampToDate } from '../../../util/dates';
 import { propTypes } from '../../../util/types';
 import { BOOKING_PROCESS_NAME } from '../../../transactions/transaction';
 
-import { Form, H6, PrimaryButton, FieldSelect } from '../../../components';
+import { Form, H6, PrimaryButton, FieldSelect, FieldTextInput } from '../../../components';
+import { required } from '../../../util/validators';
 
 import EstimatedCustomerBreakdownMaybe from '../EstimatedCustomerBreakdownMaybe';
 import FieldDateAndTimeInput from './FieldDateAndTimeInput';
@@ -300,6 +301,17 @@ export const BookingFixedDurationForm = props => {
               </div>
             ) : (
               <>
+                {/* Phone number field — required for Wet District manual booking requests */}
+                <FieldTextInput
+                  id="customerPhone"
+                  name="customerPhone"
+                  type="tel"
+                  className={css.phoneField}
+                  label={intl.formatMessage({ id: 'BookingFixedDurationForm.phoneLabel' })}
+                  placeholder={intl.formatMessage({ id: 'BookingFixedDurationForm.phonePlaceholder' })}
+                  validate={required(intl.formatMessage({ id: 'BookingFixedDurationForm.phoneRequired' }))}
+                />
+
                 <div className={css.submitButton}>
                   <PrimaryButton
                     type="submit"

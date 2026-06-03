@@ -48,22 +48,29 @@ import css from './FieldDateAndTimeInput.module.css';
 //   10:00 AM → 1:00 PM  (180 min)
 //    2:00 PM → 5:00 PM  (180 min)
 //    6:00 PM → 9:00 PM  (180 min)
-const WET_DISTRICT_CHARTER_HOURS = [10, 14, 18]; // 24-hour clock
+const WET_DISTRICT_CHARTER_HOURS = [10, 14, 18]; // hours in the listing's own timezone (24-hour)
 
-const getHourInTimeZone = (timestamp, timeZone) => {
-  const ms = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
-  const date = new Date(ms);
-  const hourStr = new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    hour12: false,
-    timeZone,
-  }).format(date);
-  const hour = parseInt(hourStr, 10);
-  return hour === 24 ? 0 : hour; // some locales return "24" for midnight
+/**
+ * Filters start-time options down to the three Wet District charter slots.
+ * Builds the exact millisecond timestamps for 10 AM, 2 PM, and 6 PM using
+ * getStartOf (timezone-aware), then keeps only options whose timestamp matches.
+ * This is reliable across all timezones without locale-specific string parsing.
+ */
+const filterToCharterSlots = (startTimes, bookingStartDate, timeZone) => {
+  if (!startTimes.length || !bookingStartDate || !timeZone) return startTimes;
+
+  // Start of the selected day in the listing's timezone
+  const dayStart = getStartOf(bookingStartDate, 'day', timeZone);
+
+  // Exact timestamps for each charter slot on this date
+  const charterTimestamps = new Set(
+    WET_DISTRICT_CHARTER_HOURS.map(hour =>
+      getStartOf(dayStart, 'minute', timeZone, hour * 60, 'minutes').getTime()
+    )
+  );
+
+  return startTimes.filter(t => charterTimestamps.has(t.timestamp));
 };
-
-const filterToFixedChartSlots = (startTimes, timeZone) =>
-  startTimes.filter(t => WET_DISTRICT_CHARTER_HOURS.includes(getHourInTimeZone(t.timestamp, timeZone)));
 // ─────────────────────────────────────────────────────────────────────────────
 
 const findLastAdjacent = (index, timeSlots) => {
@@ -146,7 +153,7 @@ const getAvailableStartTimes = params => {
   }, []);
 
   // Wet District: only show the three fixed charter slots (10 AM, 2 PM, 6 PM)
-  return filterToFixedChartSlots(allStartTimes, timeZone);
+  return filterToCharterSlots(allStartTimes, bookingStartDate, timeZone);
 };
 
 const getBookingEndTimeAsDate = (bookingStartTime, bookingLengthInMinutes) => {

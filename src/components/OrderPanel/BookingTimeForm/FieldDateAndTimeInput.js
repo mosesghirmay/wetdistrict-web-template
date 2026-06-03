@@ -46,6 +46,23 @@ import css from './FieldDateAndTimeInput.module.css';
 // See also the API reference for querying time slots:
 // https://www.sharetribe.com/api-reference/marketplace.html#query-time-slots
 
+// ─── Wet District: fixed charter start times ─────────────────────────────────
+// Wet District operates on three fixed charter slots per day: 10 AM, 2 PM, 6 PM.
+// All other hours are filtered out before rendering the dropdown.
+const WET_DISTRICT_CHARTER_HOURS = [10, 14, 18]; // listing timezone, 24-hour
+
+const filterToCharterSlots = (startTimes, bookingStartDate, timeZone) => {
+  if (!startTimes.length || !bookingStartDate || !timeZone) return startTimes;
+  const dayStart = getStartOf(bookingStartDate, 'day', timeZone);
+  const charterTimestamps = new Set(
+    WET_DISTRICT_CHARTER_HOURS.map(hour =>
+      getStartOf(dayStart, 'minute', timeZone, hour * 60, 'minutes').getTime()
+    )
+  );
+  return startTimes.filter(t => charterTimestamps.has(t.timestamp));
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const getAvailableStartTimes = params => {
   const { intl, timeZone, bookingStart, timeSlotsOnSelectedDate } = params;
 
@@ -72,7 +89,9 @@ const getAvailableStartTimes = params => {
     const hours = getStartHours(startLimit, endLimit, timeZone, intl);
     return availableHours.concat(hours);
   }, []);
-  return allHours;
+
+  // Wet District: only show the three fixed charter slots (10 AM, 2 PM, 6 PM)
+  return filterToCharterSlots(allHours, bookingStartDate, timeZone);
 };
 
 const getAvailableEndTimes = params => {
@@ -473,9 +492,6 @@ const onBookingStartDateChange = (props, setCurrentMonth) => value => {
 };
 
 const onBookingStartTimeChange = props => value => {
-  console.log('⏰ Start time changed:', value);
-  console.log('Props at time change:', props);
-  
   const {
     timeSlotsForDate,
     timeZone,
@@ -492,17 +508,12 @@ const onBookingStartTimeChange = props => value => {
 
   const { endTime } = getAllTimeValues(intl, timeZone, timeSlotsOnSelectedDate, startDate, value);
 
-  console.log('🕒 Selected start time:', value, 'End time:', endTime);
-
   formApi.batch(() => {
     formApi.change('bookingEndTime', endTime);
     if (seatsEnabled) {
       formApi.change('seats', 1);
     }
   });
-  
-  // Include the price variant name when fetching line items
-  console.log('Including price variant in line items fetch:', priceVariantName);
   
   handleFetchLineItems({
     values: {
@@ -515,18 +526,12 @@ const onBookingStartTimeChange = props => value => {
 };
 
 const onBookingEndTimeChange = props => value => {
-  console.log('⏰ End time changed:', value);
-  console.log('Props at end time change:', props);
-  
   const { values, handleFetchLineItems, form: formApi, seatsEnabled } = props;
   const priceVariantName = values.priceVariantName || null;
 
   if (seatsEnabled) {
     formApi.change('seats', 1);
   }
-
-  // Include the price variant name when fetching line items
-  console.log('End time change with price variant:', priceVariantName);
 
   handleFetchLineItems({
     values: {
@@ -670,15 +675,7 @@ const FieldDateAndTimeInput = props => {
     if (onMonthChanged) {
       onMonthChanged(monthId);
     }
-    
-    // Debug step to ensure we're tracking state properly
-    console.log('FieldDateAndTimeInput state changed:', {
-      bookingStartDate,
-      bookingStartTime,
-      bookingEndTime,
-      timeSlotsAvailable: timeSlotsOnDate.length > 0
-    });
-  }, [currentMonth, bookingStartDate, bookingStartTime, bookingEndTime]);
+  }, [currentMonth]);
 
   useEffect(() => {
     // Log time slots marked for each day for debugging
@@ -752,9 +749,10 @@ const FieldDateAndTimeInput = props => {
   };
 
   const isDayBlocked = day => {
-    // For price variant listings, we'll use fixed time slots so we can allow all days
-    // This ensures time slots are available regardless of the price variant
-    return false;
+    const dayInListingTZ = timeOfDayFromLocalToTimeZone(day, timeZone);
+    const dateIdString = stringifyDateToISO8601(dayInListingTZ, timeZone);
+    const timeSlotData = monthlyTimeSlotsData[dateIdString];
+    return !timeSlotData?.hasAvailability;
   };
 
   let placeholderTime = getPlaceholder('08:00', intl, timeZone);

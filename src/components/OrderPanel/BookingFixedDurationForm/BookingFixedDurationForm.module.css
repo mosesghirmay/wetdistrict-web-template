@@ -123,3 +123,13 @@
     padding: 0;
   }
 }
+
+.phoneField {
+  width: calc(100% - 48px);
+  margin: 24px 24px 0 24px;
+
+  @media (--viewportMedium) {
+    width: 100%;
+    margin: 24px 0 0 0;
+  }
+}

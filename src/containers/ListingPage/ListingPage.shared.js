@@ -303,6 +303,7 @@ export const handleBookingRequest = parameters => values => {
     bookingEndTime,
     priceVariantName,
     seats: seatsRaw,
+    customerPhone,
   } = values;
 
   const startDate = bookingStartTime ? timestampToDate(bookingStartTime) : null;
@@ -326,10 +327,17 @@ export const handleBookingRequest = parameters => values => {
     ? `${selectedVariant.name} — $${(selectedVariant.priceInSubunits / 100).toFixed(2)}`
     : priceVariantName || null;
 
-  // Customer info
+  // Customer info — phone comes from the form field (source of truth)
   const profile = currentUser?.attributes?.profile || {};
   const customerName = [profile.firstName, profile.lastName].filter(Boolean).join(' ') || null;
   const customerEmail = currentUser?.attributes?.email || null;
+  // Fallback to profile protectedData/privateData if form field is somehow empty
+  const resolvedPhone =
+    customerPhone ||
+    profile.protectedData?.phoneNumber ||
+    profile.privateData?.phoneNumber ||
+    profile.publicData?.phoneNumber ||
+    null;
 
   const payload = {
     listingId: listing?.id?.uuid,
@@ -344,6 +352,7 @@ export const handleBookingRequest = parameters => values => {
     seats: Number.isInteger(seats) ? seats : null,
     customerName,
     customerEmail,
+    customerPhone: resolvedPhone,
     submittedAt: new Date().toISOString(),
   };
 
