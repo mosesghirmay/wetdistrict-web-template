@@ -39,6 +39,33 @@ import {
 
 import css from './FieldDateAndTimeInput.module.css';
 
+// ─── Wet District: fixed charter start times ─────────────────────────────────
+// Wet District operates on three fixed charter slots per day: 10 AM, 2 PM, and
+// 6 PM. All other start times returned by Sharetribe availability are filtered
+// out before being shown to the customer or auto-selected by the form.
+//
+// End times are determined by the price variant's bookingLengthInMinutes:
+//   10:00 AM → 1:00 PM  (180 min)
+//    2:00 PM → 5:00 PM  (180 min)
+//    6:00 PM → 9:00 PM  (180 min)
+const WET_DISTRICT_CHARTER_HOURS = [10, 14, 18]; // 24-hour clock
+
+const getHourInTimeZone = (timestamp, timeZone) => {
+  const ms = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+  const date = new Date(ms);
+  const hourStr = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone,
+  }).format(date);
+  const hour = parseInt(hourStr, 10);
+  return hour === 24 ? 0 : hour; // some locales return "24" for midnight
+};
+
+const filterToFixedChartSlots = (startTimes, timeZone) =>
+  startTimes.filter(t => WET_DISTRICT_CHARTER_HOURS.includes(getHourInTimeZone(t.timestamp, timeZone)));
+// ─────────────────────────────────────────────────────────────────────────────
+
 const findLastAdjacent = (index, timeSlots) => {
   const current = timeSlots[index];
   const next = timeSlots[index + 1];
@@ -117,7 +144,9 @@ const getAvailableStartTimes = params => {
     const uniqueStartTimes = startTimes.filter(t => !pickedTimestamps.includes(t.timestamp));
     return availableStartTimes.concat(uniqueStartTimes);
   }, []);
-  return allStartTimes;
+
+  // Wet District: only show the three fixed charter slots (10 AM, 2 PM, 6 PM)
+  return filterToFixedChartSlots(allStartTimes, timeZone);
 };
 
 const getBookingEndTimeAsDate = (bookingStartTime, bookingLengthInMinutes) => {
