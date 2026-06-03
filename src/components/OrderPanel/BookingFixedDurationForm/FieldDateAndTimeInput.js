@@ -763,9 +763,23 @@ const FieldDateAndTimeInput = props => {
 
   let placeholderTime = getPlaceholder('08:00', timeZone, intl);
 
+  // Format the end time for the read-only display.
+  // bookingEndTime is a timestamp (number or string) set by onBookingStartTimeChange.
+  const endTimeAsDate = bookingEndTime ? timestampToDate(bookingEndTime) : null;
+  const endTimeFormatted =
+    endTimeAsDate && timeZone
+      ? new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone,
+        }).format(endTimeAsDate)
+      : null;
+
   const startOfToday = getStartOf(TODAY, 'day', timeZone);
   return (
     <div className={classes}>
+      {/* Row 1: Date picker — full width */}
       <div className={css.formRow}>
         <div className={classNames(css.field, css.startDate)}>
           <FieldSingleDatePicker
@@ -817,8 +831,14 @@ const FieldDateAndTimeInput = props => {
             }
           />
         </div>
+      </div>
 
-        <div className={classNames(css.field, css.startTime)}>
+      {/* Row 2: Start time dropdown (left) | End time read-only display (right)
+          Wet District uses fixed 3-hour charter slots so end time is always
+          derived automatically — no separate end-time picker needed. */}
+      <div className={css.timeRow}>
+        {/* Start time dropdown */}
+        <div className={css.timeField}>
           <FieldSelect
             name="bookingStartTime"
             id={formId ? `${formId}.bookingStartTime` : 'bookingStartTime'}
@@ -840,6 +860,28 @@ const FieldDateAndTimeInput = props => {
             )}
           </FieldSelect>
           <FieldHidden name="bookingEndTime" value={bookingEndTime} />
+        </div>
+
+        {/* End time — read-only, auto-updates when start time changes */}
+        <div className={css.timeField}>
+          <div className={css.endTimeWrapper}>
+            <label
+              className={classNames(
+                css.endTimeLabel,
+                !bookingStartDate && css.endTimeLabelDisabled
+              )}
+            >
+              {intl.formatMessage({ id: 'FieldDateAndTimeInput.endTime' })}
+            </label>
+            <div
+              className={classNames(
+                css.endTimeDisplay,
+                !endTimeFormatted && css.endTimeDisplayEmpty
+              )}
+            >
+              {endTimeFormatted || placeholderTime}
+            </div>
+          </div>
         </div>
       </div>
     </div>

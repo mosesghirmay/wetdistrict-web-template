@@ -190,3 +190,88 @@
   margin-bottom: 0;
   font-style: italic;
 }
+
+/* ── Wet District: Start time / End time row ────────────────────────────── */
+
+/* Two-column row: start time on left, end time on right.
+   Stacks to one column only on very small screens (<360px). */
+.timeRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 0 24px;
+
+  @media (min-width: 360px) {
+    flex-wrap: nowrap;
+  }
+
+  @media (--viewportMedium) {
+    padding: 0;
+    margin-top: 8px;
+  }
+}
+
+/* Each time field takes half the row */
+.timeField {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 120px;
+  position: relative;
+}
+
+/* ── Read-only end time display ─────────────────────────────────────────── */
+
+.endTimeWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Matches the FieldSelect label style */
+.endTimeLabel {
+  composes: marketplaceSmallFontStyles from global;
+  font-weight: var(--fontWeightMedium);
+  color: var(--colorGrey700);
+  padding: 0;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.endTimeLabelDisabled {
+  color: var(--colorGrey300);
+}
+
+/* Matches the dimensions and border of the <select> element but is non-interactive.
+   Uses a subtly muted background to signal read-only state. */
+.endTimeDisplay {
+  /* Match select sizing */
+  height: 35px;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+  padding-right: 12px;
+
+  /* Match select border / radius from global theme */
+  border-bottom: 2px solid var(--colorGrey100);
+
+  /* Muted background to show read-only */
+  background-color: var(--colorGrey50, #f9f9f9);
+
+  font-size: var(--fontSizeBase, 16px);
+  color: var(--colorGrey700);
+  border-radius: 0;
+  cursor: default;
+  user-select: none;
+
+  @media (--viewportMedium) {
+    height: 41px;
+    padding-left: 14px;
+  }
+}
+
+/* When no time is selected yet, match the disabled/placeholder appearance */
+.endTimeDisplayEmpty {
+  color: var(--colorGrey300);
+}
