@@ -72,6 +72,7 @@ const SearchResultsPanel = props => {
 
   return (
     <div className={classes}>
+      <p className={css.bookingNote}>All rentals are 3 hours</p>
       <div className={isMapVariant ? css.listingCardsMapVariant : css.listingCards}>
         {listings.map(l => (
           <ListingCard

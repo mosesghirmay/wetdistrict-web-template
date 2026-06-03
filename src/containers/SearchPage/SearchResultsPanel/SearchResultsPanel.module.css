@@ -56,6 +56,19 @@
   width: 100%;
 }
 
+.bookingNote {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--colorGrey500);
+  text-align: center;
+  letter-spacing: 0.02em;
+
+  @media (--viewportMedium) {
+    margin: 0 0 20px 0;
+    font-size: 14px;
+  }
+}
+
 .pagination {
   /* margin-top: auto; pushes pagination to the end of the page. */
   margin-top: auto;
