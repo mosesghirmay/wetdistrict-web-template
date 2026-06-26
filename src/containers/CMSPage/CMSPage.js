@@ -7,42 +7,35 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
 import NotFoundPage from '../../containers/NotFoundPage/NotFoundPage';
-import YachtClubVideoHero from './YachtClubVideoHero';
 
 const PageBuilder = loadable(() =>
   import(/* webpackChunkName: "PageBuilder" */ '../PageBuilder/PageBuilder')
 );
 
-// Synthetic section type that renders the video inside the PageBuilder layout
-const YACHT_VIDEO_SECTION = { sectionType: 'yacht-club-video', sectionId: 'promo-video' };
-
 export const CMSPageComponent = props => {
   const { params, pageAssetsData, inProgress, error } = props;
   const pageId = params.pageId || props.pageId;
+  const isYachtClub = pageId === 'yachtclub';
 
-  if (!inProgress && error?.status === 404) {
+  // For all pages except yachtclub, show the standard 404 when the hosted
+  // assets API can't find the page. yachtclub is exempt so it always renders
+  // even if no Console CMS page is configured (the content lives in Console
+  // but we don't want a 404 race condition to blank the page).
+  if (!inProgress && error?.status === 404 && !isYachtClub) {
     return <NotFoundPage staticContext={props.staticContext} />;
   }
 
-  const isYachtClub = pageId === 'yachtclub';
   const rawData = pageAssetsData?.[pageId]?.data;
 
-  // For the yacht club page, prepend the video as the first section so it
-  // renders inside the existing layout (below the topbar).
-  const pageData = isYachtClub
-    ? { ...rawData, sections: [YACHT_VIDEO_SECTION, ...(rawData?.sections || [])] }
-    : rawData;
-
-  const options = isYachtClub
-    ? { sectionComponents: { 'yacht-club-video': { component: YachtClubVideoHero } } }
-    : undefined;
+  // For yachtclub, if there's no hosted page data yet, provide an empty
+  // sections array so PageBuilder renders the shell without erroring.
+  const pageData = isYachtClub ? { ...rawData, sections: rawData?.sections || [] } : rawData;
 
   return (
     <PageBuilder
       pageAssetsData={pageData}
       inProgress={inProgress}
       schemaType="Article"
-      options={options}
     />
   );
 };
